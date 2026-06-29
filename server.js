@@ -14,6 +14,7 @@ const sessions = new Map();
 const resetTokens = new Map();
 const reportRateLimits = new Map();
 const authRateLimits = new Map();
+const clientIdFailures = new Map();
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -143,6 +144,27 @@ const requireAuthRateLimit = (request, response, action, identifier = "") => {
   if (rateLimit(authRateLimits, key, limit, windowMs)) return true;
   json(response, 429, { error: "Too many attempts. Wait before trying again." });
   return false;
+};
+
+const CLIENT_ID_LOCKOUT_LIMIT = 5;
+const CLIENT_ID_LOCKOUT_WINDOW_MS = 15 * 60 * 1000;
+
+const isClientIdLocked = (clientId) => {
+  const now = Date.now();
+  const attempts = (clientIdFailures.get(clientId) || []).filter((t) => now - t < CLIENT_ID_LOCKOUT_WINDOW_MS);
+  clientIdFailures.set(clientId, attempts);
+  return attempts.length >= CLIENT_ID_LOCKOUT_LIMIT;
+};
+
+const recordClientIdFailure = (clientId) => {
+  const now = Date.now();
+  const attempts = (clientIdFailures.get(clientId) || []).filter((t) => now - t < CLIENT_ID_LOCKOUT_WINDOW_MS);
+  attempts.push(now);
+  clientIdFailures.set(clientId, attempts);
+};
+
+const clearClientIdFailures = (clientId) => {
+  clientIdFailures.delete(clientId);
 };
 
 const getCookie = (request, name) => {
@@ -475,6 +497,9 @@ const handleApi = async (request, response, pathname) => {
         user.accountCategory = accountCategory;
       } else {
         user.clientId = makeClientId(users);
+        user.safetyStatus = "active";
+        user.riskScore = 0;
+        user.reportsCount = 0;
         const deviceToken = crypto.randomBytes(32).toString("hex");
         user.deviceTokenHash = hashPrivateValue(deviceToken);
         user.signupIpHash = hashPrivateValue(getClientIp(request));
@@ -511,6 +536,11 @@ const handleApi = async (request, response, pathname) => {
       const role = accountRole(body.role);
       const identifier = isEmailAccount(role) ? normaliseEmail(body.email) : normaliseClientId(body.clientId);
       if (!requireAuthRateLimit(request, response, "login", `${role}:${identifier}`)) return;
+
+      if (role === "client" && identifier && isClientIdLocked(identifier)) {
+        return json(response, 401, { error: "Those login details do not match an account." });
+      }
+
       const users = readUsers();
       const user =
         isEmailAccount(role)
@@ -518,8 +548,11 @@ const handleApi = async (request, response, pathname) => {
           : users.find((item) => item.role === role && item.clientId === normaliseClientId(body.clientId));
 
       if (!user || !verifyPassword(String(body.password || ""), user)) {
+        if (role === "client" && identifier) recordClientIdFailure(identifier);
         return json(response, 401, { error: "Those login details do not match an account." });
       }
+
+      if (role === "client" && identifier) clearClientIdFailures(identifier);
 
       const wasDeactivated = Boolean(user.deactivatedAt);
       let ipChanged = false;
