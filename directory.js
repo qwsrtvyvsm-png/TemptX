@@ -306,10 +306,12 @@ document.querySelectorAll("[data-view]").forEach((button) => {
   });
 });
 
-menuButton.addEventListener("click", () => {
-  const isOpen = nav.classList.toggle("is-open");
-  menuButton.setAttribute("aria-expanded", String(isOpen));
-});
+if (menuButton && nav) {
+  menuButton.addEventListener("click", () => {
+    const isOpen = nav.classList.toggle("is-open");
+    menuButton.setAttribute("aria-expanded", String(isOpen));
+  });
+}
 
 openFilters.addEventListener("click", () => filterForm.classList.add("is-open"));
 closeFilters.addEventListener("click", () => filterForm.classList.remove("is-open"));
