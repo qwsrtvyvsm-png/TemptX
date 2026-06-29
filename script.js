@@ -55,7 +55,7 @@ favouriteProviderButtons.forEach((button) => {
   });
 });
 
-const ageConfirmed = sessionStorage.getItem("temptxAgeConfirmed") === "true";
+const ageConfirmed = localStorage.getItem("temptxAgeConfirmed") === "true";
 
 if (ageGate && enterSite && leaveSite) {
   if (ageConfirmed) {
@@ -65,7 +65,7 @@ if (ageGate && enterSite && leaveSite) {
   }
 
   enterSite.addEventListener("click", () => {
-    sessionStorage.setItem("temptxAgeConfirmed", "true");
+    localStorage.setItem("temptxAgeConfirmed", "true");
     ageGate.classList.add("hidden");
     document.body.classList.remove("gate-open");
   });
