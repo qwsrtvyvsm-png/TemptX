@@ -5254,7 +5254,6 @@ h3 {
     inset -1px -2px 1px rgba(255, 255, 255, 0.04),
     inset 0 0 42px rgba(255, 255, 255, 0.025);
   animation: authCardFloat 7s ease-in-out infinite;
-  transform-style: preserve-3d;
 }
 
 .auth-card::before {
