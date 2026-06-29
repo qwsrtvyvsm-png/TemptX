@@ -5424,6 +5424,7 @@ body[data-auth-role] .account-type-switch {
   min-height: 46px;
   padding: 0 16px;
   color: var(--cream);
+  -webkit-text-fill-color: var(--cream);
   border: 1px solid rgba(var(--cream-rgb), 0.18);
   border-radius: 999px;
   outline: 0;
