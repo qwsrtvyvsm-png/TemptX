@@ -71,10 +71,10 @@ if (authForm) {
   };
 
   const updateView = () => {
-    document.querySelectorAll("[data-auth-mode]").forEach((button) => {
+    document.querySelectorAll("button[data-auth-mode]").forEach((button) => {
       button.classList.toggle("is-active", button.dataset.authMode === mode);
     });
-    document.querySelectorAll("[data-account-role]").forEach((button) => {
+    document.querySelectorAll("button[data-account-role]").forEach((button) => {
       button.classList.toggle("is-active", button.dataset.accountRole === role);
     });
 
@@ -140,7 +140,7 @@ if (authForm) {
     setStatus(authStatus);
   };
 
-  document.querySelectorAll("[data-auth-mode]").forEach((button) => {
+  document.querySelectorAll("button[data-auth-mode]").forEach((button) => {
     button.addEventListener("click", () => {
       mode = button.dataset.authMode;
       authForm.reset();
@@ -148,7 +148,7 @@ if (authForm) {
     });
   });
 
-  document.querySelectorAll("[data-account-role]").forEach((button) => {
+  document.querySelectorAll("button[data-account-role]").forEach((button) => {
     button.addEventListener("click", () => {
       role = button.dataset.accountRole;
       authForm.reset();
