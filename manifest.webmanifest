@@ -1,0 +1,45 @@
+{
+  "id": "/",
+  "name": "TEMPTX - Australia's Adult Industry Network",
+  "short_name": "TEMPTX",
+  "description": "Australia's premium adult industry ecosystem for discovery, profiles, memberships, bookings, messaging, partnerships, resources, and growth.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#080604",
+  "theme_color": "#15100d",
+  "lang": "en-AU",
+  "categories": ["lifestyle", "social"],
+  "icons": [
+    {
+      "src": "/assets/temptx-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/temptx-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Messages",
+      "short_name": "Messages",
+      "url": "/chat.html"
+    },
+    {
+      "name": "Browse",
+      "short_name": "Browse",
+      "url": "/index.html#directory"
+    },
+    {
+      "name": "Account",
+      "short_name": "Account",
+      "url": "/auth.html"
+    }
+  ]
+}

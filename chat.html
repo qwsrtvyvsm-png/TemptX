@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Messages | TEMPTX</title>
+  <meta name="description" content="Private direct messages and community group chats on TEMPTX." />
+  <script>
+    if (window.location.protocol === "file:") {
+      window.location.replace("client-signin.html?next=%2Fchat.html");
+    }
+  </script>
+  <link rel="stylesheet" href="style.css?v=20260630-08" />
+</head>
+
+<body class="chat-body cinematic-background">
+  <div id="ageGate" class="age-gate">
+    <div class="age-box">
+      <h1>Tempt<span>X</span></h1>
+      <p>This website is intended for adults aged 18+ only.</p>
+      <p class="small-text">By entering, you confirm you are at least 18 years old.</p>
+      <p class="age-policy-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="safety-hub.html">Safety</a>
+      </p>
+      <div class="age-buttons">
+        <button id="enterSite">I am 18+</button>
+        <button id="leaveSite" class="outline-btn">Leave</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="messageStandardsGate" class="age-gate message-standards-gate hidden">
+    <div class="age-box standards-box">
+      <p class="eyebrow">Messaging standards</p>
+      <h1>Respectful contact only.</h1>
+      <p>
+        Before sending messages, each TEMPTX user must agree not to harass, threaten, coerce, spam, impersonate,
+        expose private information, or pressure anyone.
+      </p>
+      <p class="small-text">
+        Abusive messaging can be reported, reviewed, restricted, or removed under TEMPTX safety standards.
+      </p>
+      <p class="age-policy-links">
+        <a href="client-standards.html">Client Standards</a>
+        <a href="creator-standards.html">Creator Standards</a>
+        <a href="community-standards.html">Community Standards</a>
+      </p>
+      <div class="age-buttons">
+        <button id="acceptMessageStandards" type="button">I agree</button>
+        <a class="outline-btn" href="community-standards.html">Review standards</a>
+      </div>
+    </div>
+  </div>
+
+  <header class="chat-header">
+    <a class="brand-mark chat-brand" href="index.html">
+      <span class="chat-brand-wordmark">
+        <span class="brand-word">TEMPT</span>
+        <span class="brand-x">X</span>
+      </span>
+      <small>Australia's Adult Industry Network</small>
+    </a>
+
+    <nav class="chat-top-nav" aria-label="Chat navigation">
+      <a href="index.html">Home</a>
+      <a href="index.html#directory">Browse</a>
+      <a href="chat.html" aria-current="page">Messages</a>
+    </nav>
+
+    <div class="account-dropdown hover-dropdown">
+      <a href="profile.html" class="header-tool profile-tool" aria-label="Profile">
+        <span></span>
+      </a>
+      <div class="dropdown-menu account-menu">
+        <a href="creator-dashboard.html">Creator Dashboard</a>
+        <a href="profile.html">My Profile</a>
+        <a href="settings.html">Settings</a>
+        <a href="client-signin.html" data-login>Client Sign In</a>
+          <a href="provider-signin.html" data-login>Provider Sign In</a>
+          <a href="creator-signin.html" data-login>Creator Sign In</a>
+        <a href="auth.html" data-logout hidden>Log Out</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="chat-shell">
+    <aside class="chat-sidebar" aria-label="Conversations">
+      <div class="chat-sidebar-heading">
+        <div>
+          <p class="eyebrow">TEMPTX chat</p>
+          <h1>Messages</h1>
+        </div>
+        <button class="compact-btn" id="newGroupButton" type="button" hidden>New group</button>
+      </div>
+
+      <label class="chat-search">
+        <span class="sr-only">Search conversations</span>
+        <input id="conversationSearch" type="search" placeholder="Search conversations" />
+      </label>
+
+      <div class="chat-tabs" role="group" aria-label="Conversation type">
+        <button class="chat-tab is-active" type="button" data-chat-filter="all">All</button>
+        <button class="chat-tab" type="button" data-chat-filter="direct">Direct</button>
+        <button class="chat-tab" type="button" data-chat-filter="group">Groups</button>
+      </div>
+
+      <div class="conversation-list" id="conversationList"></div>
+
+      <button class="discover-groups-btn" id="discoverGroupsButton" type="button">
+        Discover group chats
+      </button>
+    </aside>
+
+    <section class="chat-panel" aria-label="Current conversation">
+      <header class="conversation-header">
+        <button class="mobile-conversations-btn" id="mobileConversationsButton" type="button">Conversations</button>
+        <div>
+          <p class="eyebrow" id="conversationType">Direct message</p>
+          <h2 id="conversationName">Advertiser Name</h2>
+          <p class="conversation-meta" id="conversationMeta">Online now · Sample provider</p>
+        </div>
+        <button class="text-button" id="conversationInfoButton" type="button" aria-expanded="false">Details</button>
+      </header>
+
+      <div class="message-thread" id="messageThread" aria-live="polite"></div>
+
+      <form class="message-composer" id="messageForm">
+        <button
+          class="tip-button"
+          id="tipButton"
+          type="button"
+          aria-label="Send a tip"
+          title="Send a tip"
+          onclick="openTipPanel()"
+          hidden
+        >$</button>
+        <label class="sr-only" for="messageInput">Write a message</label>
+        <textarea id="messageInput" rows="1" placeholder="Write a message…" required></textarea>
+        <button type="submit">Send</button>
+      </form>
+    </section>
+
+    <aside class="chat-details" id="chatDetails" aria-label="Conversation details">
+      <button class="details-close" id="detailsCloseButton" type="button" aria-label="Close details">×</button>
+      <div class="details-avatar" id="detailsAvatar">AN</div>
+      <p class="eyebrow" id="detailsType">Sample provider</p>
+      <h2 id="detailsName">Advertiser Name</h2>
+      <p id="detailsDescription">Private direct conversation. Keep personal contact details inside TEMPTX.</p>
+
+      <div class="details-card">
+        <span id="detailsStatLabel">Privacy</span>
+        <strong id="detailsStatValue">In-site messaging</strong>
+      </div>
+      <div class="details-card">
+        <span>Safety</span>
+        <strong>Reporting available · Blocking in development</strong>
+      </div>
+
+      <button class="outline-btn details-action favourite-provider-button" id="favouriteProviderButton" type="button" hidden>
+        Save to Favourites
+      </button>
+      <button class="outline-btn details-action" id="leaveGroupButton" type="button" hidden>Leave group</button>
+      <a class="outline-btn details-action" id="reportConversationLink" href="report.html?type=conversation">Report conversation</a>
+    </aside>
+  </main>
+
+  <div class="group-browser" id="groupBrowser" hidden>
+    <div class="group-browser-panel" role="dialog" aria-modal="true" aria-labelledby="groupBrowserTitle">
+      <div class="group-browser-header">
+        <div>
+          <p class="eyebrow">Community</p>
+          <h2 id="groupBrowserTitle">Discover group chats</h2>
+        </div>
+        <button class="text-button" id="closeGroupBrowser" type="button">Close</button>
+      </div>
+      <p class="group-browser-intro">Join moderated spaces for local updates, safety discussion, events, and community support.</p>
+      <div class="group-discovery-grid" id="groupDiscoveryGrid"></div>
+    </div>
+  </div>
+
+  <div class="group-browser" id="newGroupModal" hidden>
+    <form class="group-browser-panel new-group-form" id="newGroupForm">
+      <div class="group-browser-header">
+        <div>
+          <p class="eyebrow">Create a space</p>
+          <h2>New group chat</h2>
+        </div>
+        <button class="text-button" id="closeNewGroup" type="button">Close</button>
+      </div>
+      <label>
+        Group name
+        <input id="newGroupName" type="text" maxlength="40" required placeholder="e.g. Adelaide community" />
+      </label>
+      <label>
+        Description
+        <textarea id="newGroupDescription" maxlength="140" required placeholder="What is this group for?"></textarea>
+      </label>
+      <button type="submit">Create group</button>
+    </form>
+  </div>
+
+  <div class="group-browser" id="tipModal" hidden>
+    <form class="group-browser-panel tip-form" id="tipForm">
+      <div class="group-browser-header">
+        <div>
+          <p class="eyebrow">Send appreciation</p>
+          <h2>Tip <span id="tipProviderName">provider</span></h2>
+        </div>
+        <button class="text-button" id="closeTipModal" type="button">Close</button>
+      </div>
+      <div class="tip-options" aria-label="Tip amount">
+        <button type="button" data-tip-amount="10">$10</button>
+        <button type="button" data-tip-amount="20">$20</button>
+        <button type="button" data-tip-amount="50">$50</button>
+        <button type="button" data-tip-amount="100">$100</button>
+      </div>
+      <label>
+        Custom amount
+        <input id="customTipAmount" type="number" min="1" max="1000" step="1" inputmode="decimal" placeholder="$" />
+      </label>
+      <p class="tip-note">Demo only—connect a payment provider before accepting real money.</p>
+      <button type="submit">Send Tip</button>
+    </form>
+  </div>
+
+  <script>
+    function openTipPanel() {
+      const modal = document.getElementById("tipModal");
+      const providerName = document.getElementById("tipProviderName");
+      const conversationName = document.getElementById("conversationName");
+
+      if (!modal) return;
+      if (providerName && conversationName) {
+        providerName.textContent = conversationName.textContent;
+      }
+
+      modal.hidden = false;
+      modal.classList.add("is-open");
+      document.body.classList.add("modal-open");
+    }
+  </script>
+  <script src="script.js?v=20260627-07"></script>
+  <script src="chat.js?v=20260627-01"></script>
+</body>
+</html>

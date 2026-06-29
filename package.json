@@ -1,0 +1,13 @@
+{
+  "name": "temptx-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TEMPTX static site with a local authentication backend.",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check auth.js && node --check script.js && node --check directory.js && node --check profile-public.js && node --check chat.js && node --check settings.js && node --check info-page.js && node --check report.js && node --check pwa.js && node --check sw.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

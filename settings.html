@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings | TEMPTX</title>
+  <meta name="description" content="Manage your TEMPTX account, privacy, messaging, and notification settings." />
+  <link rel="stylesheet" href="style.css?v=20260630-08" />
+</head>
+
+<body class="settings-body cinematic-background">
+  <header class="chat-header settings-header">
+    <a class="brand-mark chat-brand" href="index.html">
+      <span class="brand-word">TEMPT</span>
+      <span class="brand-x">X</span>
+    </a>
+
+    <nav class="chat-top-nav" aria-label="Settings navigation">
+      <a href="index.html">Home</a>
+      <a href="chat.html">Messages</a>
+      <a href="settings.html" aria-current="page">Settings</a>
+    </nav>
+
+    <div class="account-dropdown hover-dropdown">
+      <a href="profile.html" class="header-tool profile-tool" aria-label="Profile">
+        <span></span>
+      </a>
+      <div class="dropdown-menu account-menu">
+        <a href="creator-dashboard.html">Creator Dashboard</a>
+        <a href="profile.html">My Profile</a>
+        <a href="chat.html">Messages</a>
+        <a href="client-signin.html" data-login>Client Sign In</a>
+          <a href="provider-signin.html" data-login>Provider Sign In</a>
+          <a href="creator-signin.html" data-login>Creator Sign In</a>
+        <a href="auth.html" data-logout hidden>Log Out</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="settings-shell">
+    <aside class="settings-intro">
+      <p class="eyebrow">Private member controls</p>
+      <h1>Settings.</h1>
+      <p>Choose how people can connect with you and how much activity is visible across TEMPTX.</p>
+
+      <div class="settings-identity">
+        <span class="settings-avatar" id="settingsAvatar">TX</span>
+        <div>
+          <strong id="settingsAccountName">TEMPTX member</strong>
+          <small id="settingsAccountMeta">Loading account…</small>
+        </div>
+      </div>
+
+      <a class="outline-btn settings-back" href="chat.html">Back to messages</a>
+    </aside>
+
+    <form class="settings-form" id="settingsForm">
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Account</p>
+            <h2>Identity</h2>
+          </div>
+          <p>The name shown in chats and community spaces.</p>
+        </div>
+
+        <label class="settings-text-field">
+          <span>Display name</span>
+          <input id="displayName" type="text" maxlength="50" placeholder="Your display name" />
+        </label>
+
+        <div class="settings-readonly">
+          <span id="accountIdentifierLabel">Account identifier</span>
+          <strong id="accountIdentifier">—</strong>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Messaging</p>
+            <h2>Conversation controls</h2>
+          </div>
+          <p>Control how other members can reach you.</p>
+        </div>
+
+        <label class="setting-row">
+          <span>
+            <strong>Direct messages</strong>
+            <small>Allow members to start private conversations.</small>
+          </span>
+          <input id="directMessages" type="checkbox" />
+        </label>
+
+        <label class="setting-row">
+          <span>
+            <strong>Group invitations</strong>
+            <small>Allow members and moderators to invite you to groups.</small>
+          </span>
+          <input id="groupInvites" type="checkbox" />
+        </label>
+
+        <label class="setting-row">
+          <span>
+            <strong>Message previews</strong>
+            <small>Show the latest message in your conversation list.</small>
+          </span>
+          <input id="messagePreviews" type="checkbox" />
+        </label>
+      </section>
+
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Privacy</p>
+            <h2>Visibility</h2>
+          </div>
+          <p>Keep your presence as open or discreet as you prefer.</p>
+        </div>
+
+        <label class="setting-row">
+          <span>
+            <strong>Activity status</strong>
+            <small>Let conversations show when you are online.</small>
+          </span>
+          <input id="activityStatus" type="checkbox" />
+        </label>
+
+        <label class="setting-row provider-setting" id="profileVisibleRow" hidden>
+          <span>
+            <strong>Profile visibility</strong>
+            <small>Allow your provider profile to appear in directory browsing.</small>
+          </span>
+          <input id="profileVisible" type="checkbox" />
+        </label>
+
+        <label class="setting-row">
+          <span>
+            <strong>Email notifications</strong>
+            <small>Provider accounts can receive important account updates by email.</small>
+          </span>
+          <input id="emailNotifications" type="checkbox" />
+        </label>
+      </section>
+
+      <section class="settings-section provider-directory-settings" id="providerDirectorySettings" hidden>
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Directory</p>
+            <h2>Where your profile appears</h2>
+          </div>
+          <p>Select every location, service and attribute that accurately applies to your profile.</p>
+        </div>
+
+        <fieldset class="directory-choice-group">
+          <legend>Locations</legend>
+          <div class="directory-choice-grid">
+            <label><input type="checkbox" name="providerLocation" value="Adelaide" /> Adelaide</label>
+            <label><input type="checkbox" name="providerLocation" value="Brisbane" /> Brisbane</label>
+            <label><input type="checkbox" name="providerLocation" value="Canberra" /> Canberra</label>
+            <label><input type="checkbox" name="providerLocation" value="Darwin" /> Darwin</label>
+            <label><input type="checkbox" name="providerLocation" value="Gold Coast" /> Gold Coast</label>
+            <label><input type="checkbox" name="providerLocation" value="Hobart" /> Hobart</label>
+            <label><input type="checkbox" name="providerLocation" value="Melbourne" /> Melbourne</label>
+            <label><input type="checkbox" name="providerLocation" value="Newcastle" /> Newcastle</label>
+            <label><input type="checkbox" name="providerLocation" value="Perth" /> Perth</label>
+            <label><input type="checkbox" name="providerLocation" value="Sydney" /> Sydney</label>
+          </div>
+        </fieldset>
+
+        <fieldset class="directory-choice-group">
+          <legend>Services</legend>
+          <div class="directory-choice-grid">
+            <label><input type="checkbox" name="providerService" value="Anal play" /> Anal play</label>
+            <label><input type="checkbox" name="providerService" value="Anal sex" /> Anal sex</label>
+            <label><input type="checkbox" name="providerService" value="ATM" /> ATM</label>
+            <label><input type="checkbox" name="providerService" value="Bi twin" /> Bi twin</label>
+            <label><input type="checkbox" name="providerService" value="BJ" /> BJ</label>
+            <label><input type="checkbox" name="providerService" value="BBBJ" /> BBBJ</label>
+            <label><input type="checkbox" name="providerService" value="BBBJTC" /> BBBJTC</label>
+            <label><input type="checkbox" name="providerService" value="BLS" /> BLS</label>
+            <label><input type="checkbox" name="providerService" value="B &amp; D" /> B &amp; D</label>
+            <label><input type="checkbox" name="providerService" value="BDSM" /> BDSM</label>
+            <label><input type="checkbox" name="providerService" value="Bondage" /> Bondage</label>
+            <label><input type="checkbox" name="providerService" value="Brazilian" /> Brazilian</label>
+            <label><input type="checkbox" name="providerService" value="BS" /> BS</label>
+            <label><input type="checkbox" name="providerService" value="CBT" /> CBT</label>
+            <label><input type="checkbox" name="providerService" value="CIM" /> CIM</label>
+            <label><input type="checkbox" name="providerService" value="CIMWS" /> CIMWS</label>
+            <label><input type="checkbox" name="providerService" value="CBJ" /> CBJ</label>
+            <label><input type="checkbox" name="providerService" value="COB" /> COB</label>
+            <label><input type="checkbox" name="providerService" value="COF" /> COF</label>
+            <label><input type="checkbox" name="providerService" value="Costumes and role play" /> Costumes and role play</label>
+            <label><input type="checkbox" name="providerService" value="Couples" /> Couples</label>
+            <label><input type="checkbox" name="providerService" value="DATY" /> DATY</label>
+            <label><input type="checkbox" name="providerService" value="DATO" /> DATO</label>
+            <label><input type="checkbox" name="providerService" value="DFK" /> DFK</label>
+            <label><input type="checkbox" name="providerService" value="Dinner companion" /> Dinner companion</label>
+            <label><input type="checkbox" name="providerService" value="Dirty talk" /> Dirty talk</label>
+            <label><input type="checkbox" name="providerService" value="DP" /> DP</label>
+            <label><input type="checkbox" name="providerService" value="DDP" /> DDP</label>
+            <label><input type="checkbox" name="providerService" value="DT" /> DT</label>
+            <label><input type="checkbox" name="providerService" value="Doggy style" /> Doggy style</label>
+            <label><input type="checkbox" name="providerService" value="Erotic sensual massage" /> Erotic sensual massage</label>
+            <label><input type="checkbox" name="providerService" value="Facial" /> Facial</label>
+            <label><input type="checkbox" name="providerService" value="FE" /> FE</label>
+            <label><input type="checkbox" name="providerService" value="Fetish" /> Fetish</label>
+            <label><input type="checkbox" name="providerService" value="Filming" /> Filming</label>
+            <label><input type="checkbox" name="providerService" value="Fire and ice" /> Fire and ice</label>
+            <label><input type="checkbox" name="providerService" value="Fisting" /> Fisting</label>
+            <label><input type="checkbox" name="providerService" value="FK" /> FK</label>
+            <label><input type="checkbox" name="providerService" value="Foot fetish" /> Foot fetish</label>
+            <label><input type="checkbox" name="providerService" value="French" /> French</label>
+            <label><input type="checkbox" name="providerService" value="FS" /> FS</label>
+            <label><input type="checkbox" name="providerService" value="Gagging" /> Gagging</label>
+            <label><input type="checkbox" name="providerService" value="GFE" /> GFE</label>
+            <label><input type="checkbox" name="providerService" value="Greek" /> Greek</label>
+            <label><input type="checkbox" name="providerService" value="GS" /> GS</label>
+            <label><input type="checkbox" name="providerService" value="Happy ending" /> Happy ending</label>
+            <label><input type="checkbox" name="providerService" value="HJ" /> HJ</label>
+            <label><input type="checkbox" name="providerService" value="Italian" /> Italian</label>
+            <label><input type="checkbox" name="providerService" value="LK" /> LK</label>
+            <label><input type="checkbox" name="providerService" value="MFF" /> MFF</label>
+            <label><input type="checkbox" name="providerService" value="MMF" /> MMF</label>
+            <label><input type="checkbox" name="providerService" value="Multiple positions" /> Multiple positions</label>
+            <label><input type="checkbox" name="providerService" value="Masturbation" /> Masturbation</label>
+            <label><input type="checkbox" name="providerService" value="Mutual masturbation" /> Mutual masturbation</label>
+            <label><input type="checkbox" name="providerService" value="Mutual French" /> Mutual French</label>
+            <label><input type="checkbox" name="providerService" value="Mutual natural French" /> Mutual natural French</label>
+            <label><input type="checkbox" name="providerService" value="MSOG" /> MSOG</label>
+            <label><input type="checkbox" name="providerService" value="Natural bush" /> Natural bush</label>
+            <label><input type="checkbox" name="providerService" value="OWO" /> OWO</label>
+            <label><input type="checkbox" name="providerService" value="Overnight stays" /> Overnight stays</label>
+            <label><input type="checkbox" name="providerService" value="Photography" /> Photography</label>
+            <label><input type="checkbox" name="providerService" value="Prostate massage" /> Prostate massage</label>
+            <label><input type="checkbox" name="providerService" value="PSE" /> PSE</label>
+            <label><input type="checkbox" name="providerService" value="Role play" /> Role play</label>
+            <label><input type="checkbox" name="providerService" value="Rimming" /> Rimming</label>
+            <label><input type="checkbox" name="providerService" value="Sex toy" /> Sex toy</label>
+            <label><input type="checkbox" name="providerService" value="Snowballing" /> Snowballing</label>
+            <label><input type="checkbox" name="providerService" value="Spanish" /> Spanish</label>
+            <label><input type="checkbox" name="providerService" value="Spanking" /> Spanking</label>
+            <label><input type="checkbox" name="providerService" value="Spit roasting" /> Spit roasting</label>
+            <label><input type="checkbox" name="providerService" value="Squirting" /> Squirting</label>
+            <label><input type="checkbox" name="providerService" value="Strap on" /> Strap on</label>
+            <label><input type="checkbox" name="providerService" value="Strip tease" /> Strip tease</label>
+            <label><input type="checkbox" name="providerService" value="Tea bagging" /> Tea bagging</label>
+            <label><input type="checkbox" name="providerService" value="Toy show" /> Toy show</label>
+            <label><input type="checkbox" name="providerService" value="Tromboning" /> Tromboning</label>
+            <label><input type="checkbox" name="providerService" value="TTM" /> TTM</label>
+            <label><input type="checkbox" name="providerService" value="Water sports" /> Water sports</label>
+          </div>
+        </fieldset>
+
+        <fieldset class="directory-choice-group">
+          <legend>Attributes</legend>
+          <div class="directory-choice-grid">
+            <label><input type="checkbox" name="providerAttribute" value="Independent" /> Independent</label>
+            <label><input type="checkbox" name="providerAttribute" value="Agency" /> Agency</label>
+            <label><input type="checkbox" name="providerAttribute" value="Incall" /> Incall</label>
+            <label><input type="checkbox" name="providerAttribute" value="Outcall" /> Outcall</label>
+            <label><input type="checkbox" name="providerAttribute" value="Touring" /> Touring</label>
+            <label><input type="checkbox" name="providerAttribute" value="Discreet" /> Discreet</label>
+            <label><input type="checkbox" name="providerAttribute" value="LGBTQ+ friendly" /> LGBTQ+ friendly</label>
+          </div>
+        </fieldset>
+
+        <p class="directory-choice-note">Your profile will automatically appear on every matching directory page after you save.</p>
+      </section>
+
+      <section class="settings-section danger-zone">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Account</p>
+            <h2>Danger zone</h2>
+          </div>
+          <p>Temporarily deactivate your account or permanently delete it.</p>
+        </div>
+
+        <div class="danger-row">
+          <span>
+            <strong>Deactivate account</strong>
+            <small>Your profile and activity are disabled. Logging in again reactivates the account.</small>
+          </span>
+          <button type="button" class="danger-button" data-account-action="deactivate">Deactivate</button>
+        </div>
+
+        <div class="danger-row">
+          <span>
+            <strong>Delete account</strong>
+            <small>Permanently remove your account and saved settings. This cannot be undone.</small>
+          </span>
+          <button type="button" class="danger-button is-destructive" data-account-action="delete">Delete account</button>
+        </div>
+      </section>
+
+      <div class="settings-save-bar">
+        <p id="settingsStatus" aria-live="polite"></p>
+        <button type="submit">Save settings</button>
+      </div>
+    </form>
+  </main>
+
+  <div class="account-action-modal" id="accountActionModal" hidden>
+    <form class="account-action-card" id="accountActionForm">
+      <button type="button" class="auth-modal-close" id="closeAccountAction">Close</button>
+      <p class="eyebrow">Account confirmation</p>
+      <h2 id="accountActionTitle">Deactivate account?</h2>
+      <p id="accountActionDescription">Enter your password to continue.</p>
+
+      <label class="settings-text-field">
+        <span>Current password</span>
+        <input id="accountActionPassword" type="password" autocomplete="current-password" required />
+      </label>
+
+      <label class="settings-text-field" id="deleteConfirmationField" hidden>
+        <span>Type DELETE to confirm</span>
+        <input id="deleteConfirmation" type="text" autocomplete="off" />
+      </label>
+
+      <p class="account-action-status" id="accountActionStatus" aria-live="polite"></p>
+      <button type="submit" class="account-action-submit" id="accountActionSubmit">Deactivate account</button>
+    </form>
+  </div>
+
+  <script src="script.js?v=20260627-07"></script>
+  <script src="settings.js?v=20260624-8"></script>
+</body>
+</html>
