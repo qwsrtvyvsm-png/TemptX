@@ -379,6 +379,7 @@ const nav = `
         <span class="nav-dropdown-label" tabindex="0">Join Us</span>
         <div class="dropdown-menu">
           <a href="why-temptx.html">Why TemptX</a>
+          <a href="membership.html">Membership</a>
           <a href="creator-signup.html">Creator Sign Up</a>
           <a href="provider-signup.html">Provider Sign Up</a>
           <a href="client-signup.html">Client Sign Up</a>
