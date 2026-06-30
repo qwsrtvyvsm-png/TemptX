@@ -7267,6 +7267,43 @@ body.cinematic-background {
   border-color: rgba(var(--gold-rgb), 0.64);
 }
 
+/* Profile details two-column grid */
+.profile-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+.settings-text-field select {
+  min-height: 50px;
+  padding: 0 15px;
+  color: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  outline: 0;
+  background: rgba(255, 255, 255, 0.025);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c5a06a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  cursor: pointer;
+}
+
+.settings-text-field select:focus {
+  border-color: rgba(var(--gold-rgb), 0.64);
+}
+
+.settings-text-field select option {
+  background: #1a100a;
+  color: var(--cream);
+}
+
+@media (max-width: 640px) {
+  .profile-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Photo upload */
 .profile-photo-grid {
   display: flex;

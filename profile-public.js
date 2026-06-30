@@ -41,10 +41,45 @@ const renderPublicProvider = (provider) => {
 };
 
 /**
+ * When a provider views their own profile, overwrite the static fact <dd>
+ * elements with any values saved in localStorage via the edit page.
+ *
+ * Mapping: localStorage key → fact element ID
+ */
+const applyLocalDetails = () => {
+  try {
+    const data = JSON.parse(localStorage.getItem("temptx_profile_content")) || {};
+    const details = data.details || {};
+
+    const factMap = {
+      location:       "publicProviderLocationFact",
+      age:            "factAge",
+      height:         "factHeight",
+      orientation:    "factOrientation",
+      hairColour:     "factHair",
+      eyeColour:      "factEyes",
+      bodyType:       "factBodyType",
+      placeOfService: "publicProviderAttributeFact",
+    };
+
+    Object.entries(factMap).forEach(([key, elId]) => {
+      const value = details[key];
+      if (value) {
+        const el = document.querySelector(`#${elId}`);
+        if (el) el.textContent = value;
+      }
+    });
+  } catch {
+    // Silently ignore — static placeholder values remain visible.
+  }
+};
+
+/**
  * Applies profile action controls based on who is viewing the profile.
  *
  * Rules for providers:
- *   - Own profile: replace "Message Now" with "Edit Profile", hide "Save to Favourites"
+ *   - Own profile: replace "Message Now" with "Edit Profile", hide "Save to Favourites",
+ *                  and overlay stored profile details onto the facts panel.
  *   - Client / unknown profile: hide "Message Now" only
  *   - Another provider/creator profile: no changes (default behaviour)
  *
@@ -61,6 +96,7 @@ const applyOwnerControls = (viewerRole, viewerId, profileIsProvider) => {
     messageCtas.forEach((btn) => { btn.hidden = true; });
     editProfileLinks.forEach((link) => { link.hidden = false; });
     favouriteButtons.forEach((btn) => { btn.hidden = true; });
+    applyLocalDetails();
     return;
   }
 

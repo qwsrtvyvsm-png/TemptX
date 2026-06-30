@@ -54,7 +54,101 @@
 
     <form class="settings-form" id="profileEditForm" novalidate>
 
-      <!-- 1. Upload Photos -->
+      <!-- 1. Profile Details -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">About you</p>
+            <h2>Profile details</h2>
+          </div>
+          <p>Essential information shown in your public profile facts panel.</p>
+        </div>
+
+        <div class="profile-details-grid">
+          <label class="settings-text-field">
+            <span>Location</span>
+            <input type="text" id="detailLocation" placeholder="Sydney, NSW" maxlength="60" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>Age</span>
+            <input type="number" id="detailAge" placeholder="25" min="18" max="99" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>Height</span>
+            <input type="text" id="detailHeight" placeholder="168 cm" maxlength="20" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>Orientation</span>
+            <select id="detailOrientation">
+              <option value="">Select orientation</option>
+              <option value="Straight">Straight</option>
+              <option value="Gay">Gay</option>
+              <option value="Lesbian">Lesbian</option>
+              <option value="Bisexual">Bisexual</option>
+              <option value="Pansexual">Pansexual</option>
+              <option value="Prefer not to say">Prefer not to say</option>
+            </select>
+          </label>
+
+          <label class="settings-text-field">
+            <span>Hair colour</span>
+            <select id="detailHairColour">
+              <option value="">Select hair colour</option>
+              <option value="Blonde">Blonde</option>
+              <option value="Brunette">Brunette</option>
+              <option value="Black">Black</option>
+              <option value="Red">Red</option>
+              <option value="Auburn">Auburn</option>
+              <option value="Silver">Silver</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+
+          <label class="settings-text-field">
+            <span>Eye colour</span>
+            <select id="detailEyeColour">
+              <option value="">Select eye colour</option>
+              <option value="Brown">Brown</option>
+              <option value="Blue">Blue</option>
+              <option value="Green">Green</option>
+              <option value="Hazel">Hazel</option>
+              <option value="Grey">Grey</option>
+              <option value="Amber">Amber</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+
+          <label class="settings-text-field">
+            <span>Body type</span>
+            <select id="detailBodyType">
+              <option value="">Select body type</option>
+              <option value="Slim">Slim</option>
+              <option value="Petite">Petite</option>
+              <option value="Athletic">Athletic</option>
+              <option value="Average">Average</option>
+              <option value="Curvy">Curvy</option>
+              <option value="Plus size">Plus size</option>
+              <option value="Muscular">Muscular</option>
+            </select>
+          </label>
+
+          <label class="settings-text-field">
+            <span>Place of service</span>
+            <select id="detailPlaceOfService">
+              <option value="">Select place of service</option>
+              <option value="Incall only">Incall only</option>
+              <option value="Outcall only">Outcall only</option>
+              <option value="Incall &amp; Outcall">Incall &amp; Outcall</option>
+              <option value="On request">On request</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <!-- 2. Upload Photos -->
       <section class="settings-section">
         <div class="settings-section-heading">
           <div>
