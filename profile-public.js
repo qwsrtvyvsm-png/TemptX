@@ -1,5 +1,7 @@
 const providerId = new URLSearchParams(window.location.search).get("provider");
 const messageCtas = document.querySelectorAll("[data-message-cta]");
+const editProfileLinks = document.querySelectorAll("[data-edit-profile]");
+const favouriteButtons = document.querySelectorAll("[data-favourite-provider]");
 
 const renderPublicProvider = (provider) => {
   const name = document.querySelector("#publicProviderName");
@@ -39,24 +41,31 @@ const renderPublicProvider = (provider) => {
 };
 
 /**
- * Hides message CTAs when the viewer is a provider who is:
- *   - viewing their own profile, or
- *   - viewing a profile that does not belong to a provider/creator
- *     (i.e. a client profile, or an unrecognised ID).
+ * Applies profile action controls based on who is viewing the profile.
+ *
+ * Rules for providers:
+ *   - Own profile: replace "Message Now" with "Edit Profile", hide "Save to Favourites"
+ *   - Client / unknown profile: hide "Message Now" only
+ *   - Another provider/creator profile: no changes (default behaviour)
  *
  * profileIsProvider: true only when the URL's providerId was found in
  * the public directory listing (which only contains provider accounts).
  */
-const applyMessageVisibility = (viewerRole, viewerId, profileIsProvider) => {
+const applyOwnerControls = (viewerRole, viewerId, profileIsProvider) => {
   if (viewerRole !== "provider") return;
 
   const isOwnProfile = viewerId === providerId;
   const isClientOrUnknown = !profileIsProvider;
 
-  if (isOwnProfile || isClientOrUnknown) {
-    messageCtas.forEach((btn) => {
-      btn.hidden = true;
-    });
+  if (isOwnProfile) {
+    messageCtas.forEach((btn) => { btn.hidden = true; });
+    editProfileLinks.forEach((link) => { link.hidden = false; });
+    favouriteButtons.forEach((btn) => { btn.hidden = true; });
+    return;
+  }
+
+  if (isClientOrUnknown) {
+    messageCtas.forEach((btn) => { btn.hidden = true; });
   }
 };
 
@@ -80,7 +89,7 @@ const loadPublicProvider = async () => {
 
     if (sessionResponse.ok) {
       const { user } = await sessionResponse.json();
-      applyMessageVisibility(user.role, user.id, profileIsProvider);
+      applyOwnerControls(user.role, user.id, profileIsProvider);
     }
   } catch {
     // The sample profile remains visible when the local account server is offline.
