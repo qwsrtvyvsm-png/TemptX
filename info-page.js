@@ -340,9 +340,9 @@ const nav = `
           <a href="profile.html">My Profile</a>
           <a href="chat.html">Messages</a>
           <a href="settings.html">Settings</a>
-          <a href="client-signin.html" data-login>Client Sign In</a>
-          <a href="provider-signin.html" data-login>Provider Sign In</a>
-          <a href="creator-signin.html" data-login>Creator Sign In</a>
+          <a href="client-login.html" data-login>Client Log In</a>
+          <a href="provider-login.html" data-login>Provider Log In</a>
+          <a href="creator-login.html" data-login>Creator Log In</a>
           <a href="auth.html" data-logout hidden>Log Out</a>
         </div>
       </div>
@@ -403,7 +403,7 @@ const nav = `
     <a href="why-temptx.html">Join Us</a>
     <a href="report.html">Report a concern</a>
     <a href="chat.html">Messages</a>
-    <a href="client-signin.html">Account</a>
+    <a href="client-login.html">Account</a>
   </nav>`;
 
 const sections = content.sections

@@ -222,7 +222,7 @@ if (profileEditForm) {
     try {
       const response = await fetch("/api/auth/me");
       if (!response.ok) {
-        window.location.href = "provider-signin.html";
+        window.location.href = "provider-login.html";
         return;
       }
       const { user } = await response.json();
