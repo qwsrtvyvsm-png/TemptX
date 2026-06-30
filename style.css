@@ -7223,6 +7223,25 @@ body.cinematic-background {
   text-align: center;
 }
 
+.auth-nav-hint {
+  position: relative;
+  z-index: 1;
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 0.72rem;
+  color: rgba(var(--cream-rgb), 0.45);
+}
+
+.auth-nav-hint a {
+  color: var(--gold);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-nav-hint a:hover {
+  color: var(--cream);
+}
+
 .password-requirements {
   padding: 0 14px;
   color: rgba(var(--cream-rgb), 0.58);
