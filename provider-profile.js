@@ -168,8 +168,27 @@ if (profileEditForm) {
       .filter(([to, from]) => to || from)
       .map(([to, from, until]) => ({ to, from, until }));
 
+  // ── Details field map (edit id → storage key) ────────────────────────────────
+  const DETAIL_FIELDS = {
+    detailLocation:     "location",
+    detailAge:          "age",
+    detailHeight:       "height",
+    detailOrientation:  "orientation",
+    detailHairColour:   "hairColour",
+    detailEyeColour:    "eyeColour",
+    detailBodyType:     "bodyType",
+    detailPlaceOfService: "placeOfService",
+  };
+
   // ── Populate from saved data ─────────────────────────────────────────────────
   const populateLocal = (data) => {
+    // Profile details
+    const details = data.details || {};
+    Object.entries(DETAIL_FIELDS).forEach(([elId, key]) => {
+      const el = document.querySelector(`#${elId}`);
+      if (el && details[key] !== undefined) el.value = details[key];
+    });
+
     if (profileNoteEl) {
       profileNoteEl.value = data.profileNote || "";
       if (profileNoteCount) {
@@ -252,7 +271,14 @@ if (profileEditForm) {
 
     try {
       // 1. Persist all non-API content to localStorage.
+      const details = {};
+      Object.entries(DETAIL_FIELDS).forEach(([elId, key]) => {
+        const el = document.querySelector(`#${elId}`);
+        details[key] = el ? el.value.trim() : "";
+      });
+
       const localData = {
+        details,
         profileNote: profileNoteEl?.value.trim() || "",
         rates: {
           incall: {
