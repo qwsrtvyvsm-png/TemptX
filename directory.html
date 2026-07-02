@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Directory | TemptX</title>
   <meta name="description" content="Browse the TemptX directory — curated providers, agencies and adult businesses across Australia." />
-  <link rel="stylesheet" href="style.css?v=20260703-04" />
+  <link rel="stylesheet" href="style.css?v=20260703-07" />
 </head>
 
 <body class="directory-body">
@@ -70,249 +70,272 @@
       <p id="directoryPageIntro" class="dir-hero-subtitle">Australia's Adult Network — Curated Providers, Agencies &amp; Adult Businesses</p>
     </section>
 
-    <!-- ═══════════════════════════ FILTER BAR ═══════════════════════════ -->
-    <div class="dir-filter-wrapper">
-      <form class="directory-filters" id="filters">
+    <!-- ═══════════════════════════ LAYOUT (listings left, filter sidebar right) ═══════════════════════════ -->
+    <div class="dir-layout">
 
-        <!-- Mobile header (shown only on small screens) -->
-        <div class="directory-filter-heading">
-          <h2>Search &amp; Filters</h2>
-          <button id="closeFilters" class="directory-filter-close" type="button">✕ Close</button>
-        </div>
+      <!-- ══ Filters (right sidebar on desktop, stacks above on tablet/mobile) ══ -->
+      <aside class="dir-sidebar">
+        <form class="directory-filters" id="filters">
 
-        <!-- Primary horizontal filter row -->
-        <div class="dir-filter-primary">
-          <div class="dir-filter-search-wrap">
-            <svg class="dir-filter-search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/>
-              <path d="m11 11 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- Mobile header (shown only on small screens in drawer) -->
+          <div class="directory-filter-heading">
+            <h2>Search &amp; Filters</h2>
+            <button id="closeFilters" class="directory-filter-close" type="button">✕ Close</button>
+          </div>
+
+          <!-- Sidebar panel heading (desktop / tablet) -->
+          <div class="dir-sidebar-heading">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M1 2.5h12M3 7h8M5 11.5h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
-            <input id="directorySearch" type="search" placeholder="Search location..." autocomplete="off" />
+            <span>Filters</span>
+            <button id="resetDirectory" class="dir-reset-btn" type="button">Reset</button>
           </div>
 
-          <span class="dir-filter-sep" aria-hidden="true"></span>
+          <!-- Primary filters — vertical stack with labels -->
+          <div class="dir-filter-primary">
 
-          <div class="dir-filter-select-wrap">
-            <select id="directoryLocation">
-              <option value="">All Locations</option>
-              <option>Adelaide</option>
-              <option>Brisbane</option>
-              <option>Canberra</option>
-              <option>Darwin</option>
-              <option>Gold Coast</option>
-              <option>Hobart</option>
-              <option>Melbourne</option>
-              <option>Newcastle</option>
-              <option>Perth</option>
-              <option>Sydney</option>
-            </select>
-          </div>
-
-          <span class="dir-filter-sep" aria-hidden="true"></span>
-
-          <div class="dir-filter-select-wrap">
-            <select id="directoryCategory">
-              <option value="">All Categories</option>
-              <option>Anal play</option>
-              <option>Anal sex</option>
-              <option>ATM</option>
-              <option>Bi twin</option>
-              <option>BJ</option>
-              <option>BBBJ</option>
-              <option>BBBJTC</option>
-              <option>BLS</option>
-              <option>B &amp; D</option>
-              <option>BDSM</option>
-              <option>Bondage</option>
-              <option>Brazilian</option>
-              <option>BS</option>
-              <option>CBT</option>
-              <option>CIM</option>
-              <option>CIMWS</option>
-              <option>CBJ</option>
-              <option>COB</option>
-              <option>COF</option>
-              <option>Costumes and role play</option>
-              <option>Couples</option>
-              <option>DATY</option>
-              <option>DATO</option>
-              <option>DFK</option>
-              <option>Dinner companion</option>
-              <option>Dirty talk</option>
-              <option>DP</option>
-              <option>DDP</option>
-              <option>DT</option>
-              <option>Doggy style</option>
-              <option>Erotic sensual massage</option>
-              <option>Facial</option>
-              <option>FE</option>
-              <option>Fetish</option>
-              <option>Filming</option>
-              <option>Fire and ice</option>
-              <option>Fisting</option>
-              <option>FK</option>
-              <option>Foot fetish</option>
-              <option>French</option>
-              <option>FS</option>
-              <option>Gagging</option>
-              <option>GFE</option>
-              <option>Greek</option>
-              <option>GS</option>
-              <option>Happy ending</option>
-              <option>HJ</option>
-              <option>Italian</option>
-              <option>LK</option>
-              <option>MFF</option>
-              <option>MMF</option>
-              <option>Multiple positions</option>
-              <option>Masturbation</option>
-              <option>Mutual masturbation</option>
-              <option>Mutual French</option>
-              <option>Mutual natural French</option>
-              <option>MSOG</option>
-              <option>Natural bush</option>
-              <option>OWO</option>
-              <option>Overnight stays</option>
-              <option>Photography</option>
-              <option>Prostate massage</option>
-              <option>PSE</option>
-              <option>Role play</option>
-              <option>Rimming</option>
-              <option>Sex toy</option>
-              <option>Snowballing</option>
-              <option>Spanish</option>
-              <option>Spanking</option>
-              <option>Spit roasting</option>
-              <option>Squirting</option>
-              <option>Strap on</option>
-              <option>Strip tease</option>
-              <option>Tea bagging</option>
-              <option>Toy show</option>
-              <option>Tromboning</option>
-              <option>TTM</option>
-              <option>Water sports</option>
-            </select>
-          </div>
-
-          <span class="dir-filter-sep" aria-hidden="true"></span>
-
-          <div class="dir-filter-select-wrap">
-            <select id="directoryAvailability">
-              <option value="">Availability</option>
-              <option>Now</option>
-              <option>Tonight</option>
-              <option>Tomorrow</option>
-              <option>Today</option>
-              <option>This week</option>
-              <option>Weekend</option>
-              <option>By appointment</option>
-            </select>
-          </div>
-
-          <span class="dir-filter-sep" aria-hidden="true"></span>
-
-          <div class="dir-filter-select-wrap">
-            <select id="directorySort">
-              <option value="featured">Sort: Featured</option>
-              <option value="name">Sort: Name</option>
-              <option value="location">Sort: Place</option>
-            </select>
-          </div>
-
-          <span class="dir-filter-sep" aria-hidden="true"></span>
-
-          <!-- Verified toggle (visual) — synced to #directoryVerified via JS -->
-          <label class="dir-verified-toggle" for="dir-verified-checkbox">
-            <input type="checkbox" id="dir-verified-checkbox" class="dir-verified-checkbox" />
-            <span class="dir-toggle-track" aria-hidden="true"><span class="dir-toggle-thumb"></span></span>
-            <span class="dir-verified-text">Verified only</span>
-          </label>
-          <!-- Hidden select controlled by toggle above -->
-          <select id="directoryVerified" data-no-enhance class="dir-hidden-verified">
-            <option value="">Any</option>
-            <option value="verified">Verified</option>
-          </select>
-
-          <button class="dir-search-btn" type="submit">SEARCH</button>
-        </div>
-
-        <!-- Secondary filters (mobile drawer + accessible on desktop via mobile-like expandable) -->
-        <div class="dir-filter-secondary">
-          <div class="dir-filter-group">
-            <label for="directoryAttribute">Booking Mode</label>
-            <select id="directoryAttribute">
-              <option value="">Any</option>
-              <option>Independent</option>
-              <option>Agency</option>
-              <option>Incall</option>
-              <option>Outcall</option>
-              <option>Touring</option>
-            </select>
-          </div>
-
-          <div class="dir-filter-group">
-            <label for="directoryIdentity">Gender</label>
-            <select id="directoryIdentity">
-              <option value="">Inclusive (any)</option>
-              <option>Woman</option>
-              <option>Man</option>
-              <option>Trans woman</option>
-              <option>Trans man</option>
-              <option>Non-binary</option>
-            </select>
-          </div>
-
-          <div class="dir-filter-group">
-            <label for="directoryPrice">Price range</label>
-            <div class="directory-price-filter">
-              <div class="directory-price-readout">
-                <span>Up to</span>
-                <strong id="directoryPriceValue">Any price</strong>
+            <div class="dir-filter-group">
+              <label for="directorySearch">Search location</label>
+              <div class="dir-filter-search-wrap">
+                <svg class="dir-filter-search-icon" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="m11 11 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <input id="directorySearch" type="search" placeholder="Search location..." autocomplete="off" />
               </div>
-              <input id="directoryPrice" type="range" min="100" max="10000" step="100" value="10000" />
-              <label class="directory-price-poa">
-                <input id="directoryPricePoa" type="checkbox" checked />
-                Include price on application
+            </div>
+
+            <div class="dir-filter-group">
+              <label for="directoryLocation">Location</label>
+              <div class="dir-filter-select-wrap">
+                <select id="directoryLocation">
+                  <option value="">All Locations</option>
+                  <option>Adelaide</option>
+                  <option>Brisbane</option>
+                  <option>Canberra</option>
+                  <option>Darwin</option>
+                  <option>Gold Coast</option>
+                  <option>Hobart</option>
+                  <option>Melbourne</option>
+                  <option>Newcastle</option>
+                  <option>Perth</option>
+                  <option>Sydney</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="dir-filter-group">
+              <label for="directoryCategory">Category</label>
+              <div class="dir-filter-select-wrap">
+                <select id="directoryCategory">
+                  <option value="">All Categories</option>
+                  <option>Anal play</option>
+                  <option>Anal sex</option>
+                  <option>ATM</option>
+                  <option>Bi twin</option>
+                  <option>BJ</option>
+                  <option>BBBJ</option>
+                  <option>BBBJTC</option>
+                  <option>BLS</option>
+                  <option>B &amp; D</option>
+                  <option>BDSM</option>
+                  <option>Bondage</option>
+                  <option>Brazilian</option>
+                  <option>BS</option>
+                  <option>CBT</option>
+                  <option>CIM</option>
+                  <option>CIMWS</option>
+                  <option>CBJ</option>
+                  <option>COB</option>
+                  <option>COF</option>
+                  <option>Costumes and role play</option>
+                  <option>Couples</option>
+                  <option>DATY</option>
+                  <option>DATO</option>
+                  <option>DFK</option>
+                  <option>Dinner companion</option>
+                  <option>Dirty talk</option>
+                  <option>DP</option>
+                  <option>DDP</option>
+                  <option>DT</option>
+                  <option>Doggy style</option>
+                  <option>Erotic sensual massage</option>
+                  <option>Facial</option>
+                  <option>FE</option>
+                  <option>Fetish</option>
+                  <option>Filming</option>
+                  <option>Fire and ice</option>
+                  <option>Fisting</option>
+                  <option>FK</option>
+                  <option>Foot fetish</option>
+                  <option>French</option>
+                  <option>FS</option>
+                  <option>Gagging</option>
+                  <option>GFE</option>
+                  <option>Greek</option>
+                  <option>GS</option>
+                  <option>Happy ending</option>
+                  <option>HJ</option>
+                  <option>Italian</option>
+                  <option>LK</option>
+                  <option>MFF</option>
+                  <option>MMF</option>
+                  <option>Multiple positions</option>
+                  <option>Masturbation</option>
+                  <option>Mutual masturbation</option>
+                  <option>Mutual French</option>
+                  <option>Mutual natural French</option>
+                  <option>MSOG</option>
+                  <option>Natural bush</option>
+                  <option>OWO</option>
+                  <option>Overnight stays</option>
+                  <option>Photography</option>
+                  <option>Prostate massage</option>
+                  <option>PSE</option>
+                  <option>Role play</option>
+                  <option>Rimming</option>
+                  <option>Sex toy</option>
+                  <option>Snowballing</option>
+                  <option>Spanish</option>
+                  <option>Spanking</option>
+                  <option>Spit roasting</option>
+                  <option>Squirting</option>
+                  <option>Strap on</option>
+                  <option>Strip tease</option>
+                  <option>Tea bagging</option>
+                  <option>Toy show</option>
+                  <option>Tromboning</option>
+                  <option>TTM</option>
+                  <option>Water sports</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="dir-filter-group">
+              <label for="directoryAvailability">Availability</label>
+              <div class="dir-filter-select-wrap">
+                <select id="directoryAvailability">
+                  <option value="">Any availability</option>
+                  <option>Now</option>
+                  <option>Tonight</option>
+                  <option>Tomorrow</option>
+                  <option>Today</option>
+                  <option>This week</option>
+                  <option>Weekend</option>
+                  <option>By appointment</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="dir-filter-group">
+              <label for="directorySort">Sort by</label>
+              <div class="dir-filter-select-wrap">
+                <select id="directorySort">
+                  <option value="featured">Featured</option>
+                  <option value="name">Name</option>
+                  <option value="location">Location</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Verified toggle -->
+            <div class="dir-filter-group dir-filter-group--toggle">
+              <label class="dir-verified-toggle" for="dir-verified-checkbox">
+                <input type="checkbox" id="dir-verified-checkbox" class="dir-verified-checkbox" />
+                <span class="dir-toggle-track" aria-hidden="true"><span class="dir-toggle-thumb"></span></span>
+                <span class="dir-verified-text">Verified only</span>
               </label>
+              <!-- Hidden select synced by JS -->
+              <select id="directoryVerified" data-no-enhance class="dir-hidden-verified">
+                <option value="">Any</option>
+                <option value="verified">Verified</option>
+              </select>
+            </div>
+
+          </div><!-- /.dir-filter-primary -->
+
+          <!-- Secondary filters + submit (always visible in sidebar) -->
+          <div class="dir-filter-secondary">
+
+            <div class="dir-filter-group">
+              <label for="directoryAttribute">Booking Mode</label>
+              <select id="directoryAttribute">
+                <option value="">Any</option>
+                <option>Independent</option>
+                <option>Agency</option>
+                <option>Incall</option>
+                <option>Outcall</option>
+                <option>Touring</option>
+              </select>
+            </div>
+
+            <div class="dir-filter-group">
+              <label for="directoryIdentity">Gender</label>
+              <select id="directoryIdentity">
+                <option value="">Inclusive (any)</option>
+                <option>Woman</option>
+                <option>Man</option>
+                <option>Trans woman</option>
+                <option>Trans man</option>
+                <option>Non-binary</option>
+              </select>
+            </div>
+
+            <div class="dir-filter-group">
+              <label for="directoryPrice">Price range</label>
+              <div class="directory-price-filter">
+                <div class="directory-price-readout">
+                  <span>Up to</span>
+                  <strong id="directoryPriceValue">Any price</strong>
+                </div>
+                <input id="directoryPrice" type="range" min="100" max="10000" step="100" value="10000" />
+                <label class="directory-price-poa">
+                  <input id="directoryPricePoa" type="checkbox" checked />
+                  Include price on application
+                </label>
+              </div>
+            </div>
+
+            <div class="dir-filter-actions">
+              <button class="directory-primary-button dir-search-btn" type="submit">Search</button>
+            </div>
+
+          </div><!-- /.dir-filter-secondary -->
+
+        </form>
+      </aside><!-- /.dir-sidebar -->
+
+      <!-- ══ Provider Listings (left on desktop) ══ -->
+      <div class="dir-content">
+
+        <!-- Results meta bar -->
+        <div class="dir-results-bar">
+          <div class="dir-results-count">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="8" cy="5.5" r="2.75" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M2.5 14c0-3.04 2.462-5 5.5-5s5.5 1.96 5.5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            <span id="directoryCount">6</span> Providers Found
+          </div>
+          <div class="dir-results-tools">
+            <span class="dir-featured-label">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 1l1.27 2.57 2.84.41-2.05 2 .48 2.83L6 7.57 3.46 8.81l.48-2.83-2.05-2 2.84-.41L6 1Z" fill="currentColor"/></svg>
+              Featured Profiles
+            </span>
+            <button id="openFilters" class="directory-secondary-button directory-mobile-filter" type="button">Filters</button>
+            <div class="directory-view-switch" aria-label="Result view">
+              <button class="is-active" type="button" data-view="grid">Grid</button>
+              <button type="button" data-view="list">List</button>
             </div>
           </div>
-
-          <div class="dir-filter-actions">
-            <button class="directory-primary-button" type="submit">Apply Filters</button>
-            <button id="resetDirectory" class="directory-secondary-button" type="button">Reset</button>
-          </div>
         </div>
 
-      </form>
+        <!-- Results -->
+        <div class="directory-results">
+          <p id="directoryEmpty" class="directory-empty" hidden>No profiles match those filters. Try a broader search.</p>
 
-      <!-- Results meta bar -->
-      <div class="dir-results-bar">
-        <div class="dir-results-count">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <circle cx="8" cy="5.5" r="2.75" stroke="currentColor" stroke-width="1.4"/>
-            <path d="M2.5 14c0-3.04 2.462-5 5.5-5s5.5 1.96 5.5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-          </svg>
-          <span id="directoryCount">6</span> Providers Found
-        </div>
-        <div class="dir-results-tools">
-          <span class="dir-featured-label">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 1l1.27 2.57 2.84.41-2.05 2 .48 2.83L6 7.57 3.46 8.81l.48-2.83-2.05-2 2.84-.41L6 1Z" fill="currentColor"/></svg>
-            Featured Profiles
-          </span>
-          <button id="openFilters" class="directory-secondary-button directory-mobile-filter" type="button">Filters</button>
-          <div class="directory-view-switch" aria-label="Result view">
-            <button class="is-active" type="button" data-view="grid">Grid</button>
-            <button type="button" data-view="list">List</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══════════════════════════ RESULTS ═══════════════════════════ -->
-    <div class="directory-results">
-      <p id="directoryEmpty" class="directory-empty" hidden>No profiles match those filters. Try a broader search.</p>
-
-      <div id="directoryCards" class="directory-cards">
+          <div id="directoryCards" class="directory-cards">
 
         <article class="directory-card" data-name="Alex" data-location="Adelaide" data-category="GFE|Dinner companion" data-attributes="Independent|Incall|Discreet" data-price="750" data-identity="Woman" data-availability="Now" data-status="verified" data-tag="featured">
           <div class="dir-card-media">
@@ -488,8 +511,12 @@
           </div>
         </article>
 
-      </div>
-    </div>
+        </div><!-- /#directoryCards -->
+        </div><!-- /.directory-results -->
+
+      </div><!-- /.dir-content -->
+
+    </div><!-- /.dir-layout -->
 
     <!-- ═══════════════════════════ QUICK LINKS ═══════════════════════════ -->
     <section class="dir-quick-links" aria-label="Browse directory categories">
