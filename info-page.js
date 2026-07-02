@@ -318,94 +318,87 @@ const pageContent = {
 const pageKey = document.body.dataset.infoPage;
 const content = pageContent[pageKey] || pageContent["about-temptx"];
 
-const nav = `
-  <header class="store-header compact-site-header content-site-header">
-    <div class="announcement">${content.group}</div>
-    <div class="brand-row">
-      <a class="simple-discovery-link" href="directory.html" aria-label="Search"></a>
+const supportPages = ["safety-hub","educational-hub","sex-work-resources","sex-work-abbreviations","friendly-businesses","moderation","report","verification"];
+const communityPages = ["community-support","community-standards","news","links","developments"];
+const joinPages = ["why-temptx","creator-standards","provider-standards","client-standards","pricing","creator-pricing","client-pricing","membership"];
 
+const navCurrent = (key) => {
+  if (key === "directory") return ' aria-current="page"';
+  if (supportPages.includes(key)) return ' class="nav-current" aria-current="page"';
+  if (communityPages.includes(key)) return ' class="nav-current" aria-current="page"';
+  if (joinPages.includes(key)) return ' class="nav-current" aria-current="page"';
+  return "";
+};
+
+const nav = `
+  <header class="site-header">
+    <div class="announcement">Safety First &nbsp;·&nbsp; Verified Profiles &nbsp;·&nbsp; Community Focused &nbsp;·&nbsp; Australian Owned</div>
+    <div class="site-header-bar">
       <a class="brand-mark" href="index.html">
         <span class="brand-word">TEMPT</span>
         <span class="brand-x">X</span>
       </a>
-
-      <button class="content-menu-button" type="button" aria-expanded="false" aria-controls="contentMobileNav">
-        Menu
-      </button>
-
+      <nav class="store-nav home-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="directory.html">Directory</a>
+        <a href="safety-hub.html"${supportPages.includes(pageKey) ? ' class="nav-current" aria-current="page"' : ""}>Support</a>
+        <a href="community-support.html"${communityPages.includes(pageKey) ? ' class="nav-current" aria-current="page"' : ""}>Community</a>
+        <a href="join.html"${joinPages.includes(pageKey) ? ' class="nav-current" aria-current="page"' : ""}>Join Us</a>
+        <a href="chat.html" data-authenticated hidden>Messages</a>
+      </nav>
       <div class="account-dropdown hover-dropdown">
         <a href="profile.html" class="header-tool profile-tool" aria-label="Profile"><span></span></a>
         <div class="dropdown-menu account-menu">
-          <a href="creator-dashboard.html">Creator Dashboard</a>
-          <a href="profile.html">My Profile</a>
-          <a href="chat.html">Messages</a>
-          <a href="settings.html">Settings</a>
-          <a href="client-login.html" data-login>Client Log In</a>
           <a href="provider-login.html" data-login>Provider Log In</a>
-          <a href="creator-login.html" data-login>Creator Log In</a>
+          <a href="client-login.html" data-login>Client Log In</a>
           <a href="auth.html" data-logout hidden>Log Out</a>
         </div>
       </div>
     </div>
+  </header>`;
 
-    <nav class="store-nav" aria-label="Main navigation">
-      <div class="nav-dropdown hover-dropdown nav-dropdown-wide">
-        <span class="nav-dropdown-label" tabindex="0">Behind TemptX</span>
-        <div class="dropdown-menu">
-          <a href="about-temptx.html">About TemptX</a>
-          <a href="how-it-works.html">How It Works</a>
-          <a href="founders-note.html">Founders Note</a>
-          <a href="our-mission.html">Our Mission</a>
-          <a href="our-values.html">Our Values</a>
-          <a href="our-team.html">Our Team</a>
-          <a href="faq.html">FAQ</a>
-        </div>
+const footer = `
+  <footer class="footer home-footer">
+    <div class="home-footer-brand">
+      <div class="logo">Tempt<span>X</span></div>
+      <p class="home-footer-tagline">Australia's Adult Network</p>
+    </div>
+    <div class="home-footer-columns">
+      <div class="home-footer-col">
+        <span class="home-footer-col-title">Support</span>
+        <a href="safety-hub.html">Safety Hub</a>
+        <a href="community-support.html">Community Support</a>
+        <a href="report.html?type=profile">Report a Profile</a>
       </div>
-      <div class="nav-dropdown hover-dropdown hub-dropdown">
-        <span class="nav-dropdown-label" tabindex="0">The Hub</span>
-        <div class="dropdown-menu">
-          <a href="safety-hub.html">Safety Hub</a>
-          <a href="educational-hub.html">Educational Hub</a>
-          <a href="sex-work-resources.html">Sex Work Resources</a>
-          <a href="sex-work-abbreviations.html">Sex Work Abbreviations</a>
-          <a href="friendly-businesses.html">Sex Work Friendly Businesses</a>
-          <a href="news.html">News &amp; Announcements</a>
-          <a href="community-support.html">Community Support</a>
-          <a href="developments.html">Our Developments</a>
-          <a href="links.html">Links</a>
-        </div>
+      <div class="home-footer-col">
+        <span class="home-footer-col-title">Resources</span>
+        <a href="educational-hub.html">Educational Hub</a>
+        <a href="sex-work-resources.html">Sex Work Resources</a>
+        <a href="friendly-businesses.html">Friendly Businesses</a>
       </div>
-      <div class="nav-dropdown hover-dropdown join-dropdown">
-        <span class="nav-dropdown-label" tabindex="0">Join Us</span>
-        <div class="dropdown-menu">
-          <a href="why-temptx.html">Why TemptX</a>
-          <a href="membership.html">Membership</a>
-          <a href="creator-signup.html">Creator Sign Up</a>
-          <a href="provider-signup.html">Provider Sign Up</a>
-          <a href="client-signup.html">Client Sign Up</a>
-          <a href="pricing.html">Pricing</a>
-          <a href="creator-pricing.html">Creator Pricing</a>
-          <a href="client-pricing.html">Client Pricing</a>
-          <a href="creator-standards.html">Creator Standards</a>
-          <a href="provider-standards.html">Provider Standards</a>
-          <a href="client-standards.html">Client Standards</a>
-          <a href="faq.html">FAQ</a>
-        </div>
+      <div class="home-footer-col">
+        <span class="home-footer-col-title">Community</span>
+        <a href="community-standards.html">Community Guidelines</a>
+        <a href="verification.html">Verification</a>
+        <a href="news.html">News &amp; Announcements</a>
       </div>
-      <a href="report.html">Report</a>
-      <a href="chat.html">Messages</a>
-    </nav>
-  </header>
-  <nav class="content-mobile-nav" id="contentMobileNav" aria-label="Mobile navigation" hidden>
-    <a href="index.html">Home</a>
-    <a href="directory.html">Search</a>
-    <a href="about-temptx.html">Behind TemptX</a>
-    <a href="safety-hub.html">The Hub</a>
-    <a href="why-temptx.html">Join Us</a>
-    <a href="report.html">Report a concern</a>
-    <a href="chat.html">Messages</a>
-    <a href="client-login.html">Account</a>
-  </nav>`;
+      <div class="home-footer-col">
+        <span class="home-footer-col-title">Policies</span>
+        <a href="terms.html">Terms of Service</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="provider-standards.html">Provider Standards</a>
+        <a href="client-standards.html">Client Standards</a>
+      </div>
+    </div>
+    <div class="home-footer-bottom">
+      <p class="home-footer-legal">© 2026 TEMPTX. All rights reserved. For adults aged 18+ only.</p>
+      <div class="home-footer-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="safety-hub.html">Safety</a>
+      </div>
+    </div>
+  </footer>`;
 
 const sections = content.sections
   .map(
@@ -429,6 +422,7 @@ document.querySelector("#contentTitle").textContent = content.title;
 document.querySelector("#contentIntro").textContent = content.intro;
 document.querySelector("#contentCards").innerHTML = sections;
 document.querySelector("#contentAction").innerHTML = action;
+document.body.insertAdjacentHTML("beforeend", footer);
 
 const contentMenuButton = document.querySelector(".content-menu-button");
 const contentMobileNav = document.querySelector("#contentMobileNav");
