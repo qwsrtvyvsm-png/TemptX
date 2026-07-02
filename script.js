@@ -176,6 +176,11 @@ const updateAccountActions = (isLoggedIn) => {
   logoutLinks.forEach((link) => {
     link.hidden = !isLoggedIn;
   });
+
+  // Authenticated-only nav items (e.g. Messages) — hidden for logged-out visitors
+  document.querySelectorAll("[data-authenticated]").forEach((el) => {
+    el.hidden = !isLoggedIn;
+  });
 };
 
 if (loginLinks.length || logoutLinks.length || favouriteProviderButtons.length) {

@@ -10151,3 +10151,306 @@ body.creator-dashboard-body {
     margin: 0 auto;
   }
 }
+
+
+/* ══════════════════════════════════════════════════
+   JOIN PAGE — Role Chooser
+   ══════════════════════════════════════════════════ */
+
+.join-page-hero {
+  padding: 72px clamp(24px, 8vw, 120px) 64px;
+  text-align: center;
+  border-bottom: 1px solid rgba(var(--champagne-rgb), 0.1);
+  background:
+    radial-gradient(ellipse at center 30%, rgba(var(--gold-rgb), 0.05), transparent 26rem),
+    linear-gradient(180deg, rgba(7, 3, 4, 0.04), rgba(0, 0, 0, 0.22));
+}
+
+.join-page-title {
+  margin: 8px 0 0;
+  color: var(--cream);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  text-transform: none;
+  text-shadow: 0 12px 40px rgba(0, 0, 0, 0.36);
+}
+
+.join-page-subtitle {
+  max-width: 44ch;
+  margin: 18px auto 0;
+  color: rgba(var(--cream-rgb), 0.52);
+  font-size: clamp(0.86rem, 1.2vw, 0.98rem);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.68;
+}
+
+/* ─── Role Grid ─── */
+
+.join-roles {
+  padding: 80px clamp(24px, 8vw, 120px) 96px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(var(--gold-rgb), 0.04), transparent 28rem),
+    linear-gradient(180deg, rgba(8, 6, 4, 0.88), rgba(18, 12, 8, 0.96));
+}
+
+.join-roles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  max-width: 1020px;
+  margin: 0 auto;
+  border: 1px solid rgba(var(--champagne-rgb), 0.16);
+  background: rgba(var(--champagne-rgb), 0.1);
+  box-shadow:
+    0 20px 56px rgba(0, 0, 0, 0.32),
+    inset 0 1px rgba(255, 244, 220, 0.08);
+}
+
+.join-role-card {
+  display: flex;
+  flex-direction: column;
+  padding: 48px 36px 44px;
+  background: linear-gradient(145deg, rgba(20, 15, 10, 0.97), rgba(7, 6, 5, 0.99));
+  text-align: center;
+  transition: background 300ms ease;
+}
+
+.join-role-card:hover {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(var(--gold-rgb), 0.06), transparent 12rem),
+    linear-gradient(145deg, rgba(26, 18, 12, 0.98), rgba(9, 7, 5, 0.99));
+}
+
+.join-role-card-center {
+  border-left: 1px solid rgba(var(--champagne-rgb), 0.1);
+  border-right: 1px solid rgba(var(--champagne-rgb), 0.1);
+}
+
+.join-role-mark {
+  display: block;
+  margin: 0 auto 20px;
+  color: var(--gold);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.join-role-name {
+  margin: 0 0 14px;
+  color: var(--cream);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.55rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-transform: none;
+}
+
+.join-role-desc {
+  margin: 0 0 24px;
+  color: rgba(var(--cream-rgb), 0.52);
+  font-size: 0.84rem;
+  line-height: 1.65;
+}
+
+.join-role-points {
+  margin: 0 0 32px;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  flex: 1;
+}
+
+.join-role-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: rgba(var(--cream-rgb), 0.58);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.join-role-points li::before {
+  content: "—";
+  flex-shrink: 0;
+  color: rgba(var(--gold-rgb), 0.6);
+  font-size: 0.7rem;
+  margin-top: 2px;
+}
+
+.join-role-cta {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin-top: auto;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.22),
+    inset 0 1px rgba(255, 255, 255, 0.38);
+}
+
+.join-page-note {
+  max-width: 56ch;
+  margin: 48px auto 0;
+  text-align: center;
+  color: rgba(var(--cream-rgb), 0.3);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+}
+
+/* ─── Join Page Responsive ─── */
+
+@media (max-width: 760px) {
+  .join-roles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .join-role-card-center {
+    border-left: none;
+    border-right: none;
+    border-top: 1px solid rgba(var(--champagne-rgb), 0.1);
+    border-bottom: 1px solid rgba(var(--champagne-rgb), 0.1);
+  }
+
+  .join-role-card {
+    padding: 40px 28px 36px;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════
+   SITE HEADER — Compact horizontal nav bar
+   ══════════════════════════════════════════════════ */
+
+.site-header {
+  position: relative;
+  z-index: 700;
+  width: min(1360px, calc(100% - 48px));
+  margin: clamp(14px, 2vh, 24px) auto 0;
+  overflow: visible;
+  background:
+    radial-gradient(circle at 50% -20%, rgba(var(--champagne-rgb), 0.1), transparent 20rem),
+    linear-gradient(180deg, rgba(14, 12, 9, 0.94), rgba(6, 5, 4, 0.96));
+  border: 1px solid var(--luxury-border);
+  border-radius: 12px;
+  box-shadow:
+    0 18px 56px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(0, 0, 0, 0.82),
+    inset 0 1px rgba(255, 244, 220, 0.12);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.site-header::before,
+.site-header::after {
+  position: absolute;
+  left: 50%;
+  z-index: 2;
+  width: min(480px, 54vw);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--gold-rgb), 0.3), #fff2b7, rgba(var(--gold-rgb), 0.3), transparent);
+  box-shadow: 0 0 10px rgba(var(--gold-rgb), 0.44);
+  content: "";
+  transform: translateX(-50%);
+}
+
+.site-header::before { top: 0; }
+.site-header::after  { bottom: 0; }
+
+/* ─── Header Bar ─── */
+
+.site-header-bar {
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 3vw, 40px);
+  padding: 14px clamp(20px, 3vw, 36px);
+}
+
+/* ─── Logo in bar (use .site-header prefix for specificity) ─── */
+
+.site-header .site-header-bar .brand-mark {
+  font-size: clamp(1.05rem, 1.8vw, 1.5rem);
+  flex-shrink: 0;
+  letter-spacing: 0.1em;
+  line-height: 1;
+}
+
+/* Hide subtitle ::after text if present */
+.site-header .site-header-bar .brand-mark::after {
+  display: none;
+}
+
+/* ─── Nav in bar — override old .temptx-home / .compact-site-header rules ─── */
+
+.site-header .site-header-bar .store-nav {
+  flex: 1;
+  width: auto;
+  padding: 0;
+  gap: clamp(16px, 3vw, 44px);
+  justify-content: center;
+  border-block: none;
+  overflow: visible;
+}
+
+.site-header .site-header-bar .store-nav > * {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 0;
+  border-left: none;
+}
+
+.site-header .site-header-bar .store-nav > * + * {
+  border-left: none;
+}
+
+/* ─── Account dropdown — reset absolute positioning from old brand-row ─── */
+
+.site-header .site-header-bar .account-dropdown {
+  position: relative;
+  top: auto;
+  right: auto;
+  flex-shrink: 0;
+  transform: none;
+}
+
+/* ─── Cinematic/homepage variant — restrained transparency ─── */
+
+.cinematic-background .site-header {
+  background: rgba(10, 8, 6, 0.72);
+  border-color: rgba(var(--champagne-rgb), 0.22);
+  box-shadow:
+    0 14px 44px rgba(0, 0, 0, 0.36),
+    0 0 0 1px rgba(0, 0, 0, 0.7),
+    inset 0 1px rgba(255, 244, 220, 0.1);
+}
+
+/* ─── Responsive: stack on small screens ─── */
+
+@media (max-width: 600px) {
+  .site-header-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 18px;
+  }
+
+  .site-header-bar .store-nav {
+    order: 3;
+    flex: 0 0 100%;
+    justify-content: flex-start;
+    padding-bottom: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .site-header-bar .account-dropdown {
+    margin-left: auto;
+  }
+}
