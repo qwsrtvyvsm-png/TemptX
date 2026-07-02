@@ -73,6 +73,7 @@ const syncCustomSelect = ({ select, button, valueLabel, items }) => {
 const enhanceDirectorySelects = () => {
   document.querySelectorAll(".directory-filters select").forEach((select) => {
     if (select.dataset.customSelect === "true") return;
+    if (select.dataset.noEnhance !== undefined) return;
     select.dataset.customSelect = "true";
 
     const shell = document.createElement("div");
@@ -292,6 +293,7 @@ pricePoaFilter.addEventListener("change", applyFilters);
 
 resetButton.addEventListener("click", () => {
   filterForm.reset();
+  if (verifiedCheckbox) verifiedCheckbox.checked = false;
   clearDirectoryUrlFilters();
   syncCustomSelects();
   updatePriceReadout();
@@ -324,15 +326,41 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeCustomSelects();
 });
 
+const verifiedCheckbox = document.querySelector("#dir-verified-checkbox");
+if (verifiedCheckbox && verifiedFilter) {
+  verifiedCheckbox.addEventListener("change", () => {
+    verifiedFilter.value = verifiedCheckbox.checked ? "verified" : "";
+    applyFilters();
+  });
+}
+
+const checkmarkSvg = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M10 5.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" fill="currentColor" opacity=".18"/><path d="M3.5 5.5 5 7l3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const pinSvg = `<svg width="9" height="11" viewBox="0 0 9 11" fill="none" aria-hidden="true"><path d="M4.5 0C2.57 0 1 1.57 1 3.5 1 6.38 4.5 11 4.5 11S8 6.38 8 3.5C8 1.57 6.43 0 4.5 0Zm0 4.9a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8Z" fill="currentColor"/></svg>`;
+
+const PLACEHOLDER_CLASSES = [
+  "dir-card-placeholder--1",
+  "dir-card-placeholder--2",
+  "dir-card-placeholder--3",
+  "dir-card-placeholder--4",
+  "dir-card-placeholder--5",
+  "dir-card-placeholder--6",
+];
+
+let liveCardIndex = 0;
+
 const createProviderCard = (provider) => {
   const card = document.createElement("article");
   const locations = provider.locations || [];
   const services = provider.services || [];
   const attributes = provider.attributes || [];
-  const summary = [
-    locations.length ? locations.join(", ") : "Location available on request",
-    services.length ? services.join(", ") : "Services listed on profile"
-  ].join(" · ");
+  const locationText = locations.length ? locations.join(", ") : "Location on request";
+  const bioText = services.length
+    ? services.slice(0, 3).join(", ")
+    : "Services listed on profile";
+  const placeholderClass = PLACEHOLDER_CLASSES[liveCardIndex % PLACEHOLDER_CLASSES.length];
+  liveCardIndex++;
+  const initial = (provider.name || "?").charAt(0).toUpperCase();
+  const profileHref = `profile.html?provider=${encodeURIComponent(provider.id)}`;
 
   card.className = "directory-card directory-card-live";
   card.dataset.name = provider.name;
@@ -343,25 +371,32 @@ const createProviderCard = (provider) => {
   card.dataset.identity = "";
   card.dataset.availability = "";
   card.dataset.status = "";
+  card.dataset.tag = "new";
 
-  const eyebrow = document.createElement("p");
-  eyebrow.className = "directory-card-eyebrow";
-  eyebrow.textContent = "TemptX provider";
-  const heading = document.createElement("h3");
-  heading.textContent = provider.name;
-  const description = document.createElement("p");
-  description.textContent = summary;
-  const badges = document.createElement("div");
-  badges.className = "directory-badges";
-  [...services, ...attributes].slice(0, 4).forEach((label) => {
-    const badge = document.createElement("span");
-    badge.textContent = label;
-    badges.appendChild(badge);
-  });
-  const link = document.createElement("a");
-  link.href = `profile.html?provider=${encodeURIComponent(provider.id)}`;
-  link.textContent = "View profile";
-  card.append(eyebrow, heading, description, badges, link);
+  card.innerHTML = `
+    <div class="dir-card-media">
+      ${provider.photo
+        ? `<img src="${provider.photo}" alt="${provider.name}" loading="lazy" />`
+        : `<div class="dir-card-placeholder ${placeholderClass}" aria-hidden="true"><span class="dir-card-initial">${initial}</span></div>`
+      }
+      <span class="dir-card-badge dir-card-badge--new">New</span>
+    </div>
+    <div class="dir-card-info">
+      <div class="dir-card-name-row">
+        <h3 class="dir-card-name">${provider.name.toUpperCase()}</h3>
+        <span class="dir-card-verified-mark">${checkmarkSvg} Verified</span>
+      </div>
+      <p class="dir-card-location">${pinSvg} ${locationText}</p>
+      <p class="dir-card-bio">${bioText}</p>
+      <div class="dir-card-footer">
+        <span class="dir-card-status">
+          <span class="dir-status-dot"></span>Available
+        </span>
+        <a href="${profileHref}" class="dir-card-cta">View Profile →</a>
+      </div>
+    </div>
+  `;
+
   return card;
 };
 

@@ -41,36 +41,95 @@ const renderPublicProvider = (provider) => {
 };
 
 /**
- * When a provider views their own profile, overwrite the static fact <dd>
- * elements with any values saved in localStorage via the edit page.
- *
- * Mapping: localStorage key → fact element ID
+ * Applies server-persisted profile details to the public profile page.
+ * Runs for every visitor when the provider has saved profile content.
  */
-const applyLocalDetails = () => {
-  try {
-    const data = JSON.parse(localStorage.getItem("temptx_profile_content")) || {};
-    const details = data.details || {};
+const applyProfileDetails = (profile) => {
+  if (!profile) return;
 
-    const factMap = {
-      location:       "publicProviderLocationFact",
-      age:            "factAge",
-      height:         "factHeight",
-      orientation:    "factOrientation",
-      hairColour:     "factHair",
-      eyeColour:      "factEyes",
-      bodyType:       "factBodyType",
-      placeOfService: "publicProviderAttributeFact",
-    };
+  const details = profile.details || {};
 
-    Object.entries(factMap).forEach(([key, elId]) => {
-      const value = details[key];
-      if (value) {
-        const el = document.querySelector(`#${elId}`);
-        if (el) el.textContent = value;
-      }
-    });
-  } catch {
-    // Silently ignore — static placeholder values remain visible.
+  const factMap = {
+    location:       "publicProviderLocationFact",
+    age:            "factAge",
+    height:         "factHeight",
+    orientation:    "factOrientation",
+    hairColour:     "factHair",
+    eyeColour:      "factEyes",
+    bodyType:       "factBodyType",
+    placeOfService: "publicProviderAttributeFact",
+  };
+
+  Object.entries(factMap).forEach(([key, elId]) => {
+    const value = details[key];
+    if (value) {
+      const el = document.querySelector(`#${elId}`);
+      if (el) el.textContent = value;
+    }
+  });
+
+  // Profile note
+  if (profile.profileNote) {
+    const noteEl = document.querySelector("#publicProviderNote");
+    const noteHeadingEl = document.querySelector("#publicProviderNoteHeading");
+    if (noteEl) noteEl.textContent = profile.profileNote;
+    if (noteHeadingEl) noteHeadingEl.textContent = "A note from this provider";
+  }
+
+  // Rates
+  const rateMap = {
+    publicRateIncall1h:   profile.rates?.incall?.oneHour,
+    publicRateIncall2h:   profile.rates?.incall?.twoHours,
+    publicRateIncallOvn:  profile.rates?.incall?.overnight,
+    publicRateOutcall1h:  profile.rates?.outcall?.oneHour,
+    publicRateOutcall2h:  profile.rates?.outcall?.twoHours,
+    publicRateOutcallOvn: profile.rates?.outcall?.overnight,
+  };
+  Object.entries(rateMap).forEach(([id, value]) => {
+    if (value) {
+      const el = document.querySelector(`#${id}`);
+      if (el) el.textContent = value;
+    }
+  });
+
+  // Tours — replace placeholder rows when provider has tour data
+  if (profile.tours && profile.tours.length) {
+    const toursTable = document.querySelector("#publicToursTable");
+    if (toursTable) {
+      const header = toursTable.querySelector(".table-head");
+      toursTable.innerHTML = "";
+      if (header) toursTable.appendChild(header);
+      profile.tours.forEach(({ to, from, until }) => {
+        const row = document.createElement("div");
+        row.className = "table-row";
+        ["to", "from", "until"].forEach((key) => {
+          const span = document.createElement("span");
+          span.textContent = { to, from, until }[key] || "—";
+          row.appendChild(span);
+        });
+        toursTable.appendChild(row);
+      });
+    }
+  }
+
+  // Availability — replace placeholder rows when provider has availability data
+  if (profile.availability && profile.availability.length) {
+    const availTable = document.querySelector("#publicAvailabilityTable");
+    if (availTable) {
+      const header = availTable.querySelector(".table-head");
+      availTable.innerHTML = "";
+      if (header) availTable.appendChild(header);
+      profile.availability.forEach(({ day, availability, notes }) => {
+        const row = document.createElement("div");
+        row.className = "table-row";
+        [day, availability, notes].forEach((text) => {
+          const span = document.createElement("span");
+          span.textContent = text || "—";
+          row.appendChild(span);
+        });
+        availTable.appendChild(row);
+      });
+    }
   }
 };
 
@@ -78,8 +137,7 @@ const applyLocalDetails = () => {
  * Applies profile action controls based on who is viewing the profile.
  *
  * Rules for providers:
- *   - Own profile: replace "Message Now" with "Edit Profile", hide "Save to Favourites",
- *                  and overlay stored profile details onto the facts panel.
+ *   - Own profile: replace "Message Now" with "Edit Profile", hide "Save to Favourites"
  *   - Client / unknown profile: hide "Message Now" only
  *   - Another provider/creator profile: no changes (default behaviour)
  *
@@ -96,7 +154,6 @@ const applyOwnerControls = (viewerRole, viewerId, profileIsProvider) => {
     messageCtas.forEach((btn) => { btn.hidden = true; });
     editProfileLinks.forEach((link) => { link.hidden = false; });
     favouriteButtons.forEach((btn) => { btn.hidden = true; });
-    applyLocalDetails();
     return;
   }
 
@@ -107,10 +164,25 @@ const applyOwnerControls = (viewerRole, viewerId, profileIsProvider) => {
 
 const loadPublicProvider = async () => {
   try {
-    const [dirResponse, sessionResponse] = await Promise.all([
-      providerId ? fetch("/api/directory/providers") : Promise.resolve(null),
+    const fetches = [
       fetch("/api/auth/me"),
-    ]);
+    ];
+    if (providerId) {
+      fetches.unshift(fetch("/api/directory/providers"));
+      fetches.push(fetch(`/api/providers/${encodeURIComponent(providerId)}/profile`));
+    }
+
+    const responses = await Promise.all(fetches);
+
+    let dirResponse = null;
+    let sessionResponse = null;
+    let profileResponse = null;
+
+    if (providerId) {
+      [dirResponse, sessionResponse, profileResponse] = responses;
+    } else {
+      [sessionResponse] = responses;
+    }
 
     let profileIsProvider = false;
 
@@ -121,6 +193,12 @@ const loadPublicProvider = async () => {
         renderPublicProvider(provider);
         profileIsProvider = true;
       }
+    }
+
+    // Apply server-persisted profile content for all visitors
+    if (profileResponse && profileResponse.ok) {
+      const { profile } = await profileResponse.json();
+      applyProfileDetails(profile);
     }
 
     if (sessionResponse.ok) {

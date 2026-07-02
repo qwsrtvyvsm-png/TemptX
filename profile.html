@@ -11,7 +11,7 @@
     content="A premium TEMPTX advertiser profile template with gallery, profile details, availability, and private messaging."
   />
 
-  <link rel="stylesheet" href="style.css?v=20260630-08" />
+  <link rel="stylesheet" href="style.css?v=20260702-01" />
 </head>
 
 <body class="cinematic-background">
@@ -345,8 +345,8 @@
 
       <div class="profile-note-card">
         <p class="eyebrow">Profile note</p>
-        <h3>Respectful messages only</h3>
-        <p>Each profile can include verification notes, boundaries, booking etiquette, or screening requirements.</p>
+        <h3 id="publicProviderNoteHeading">Respectful messages only</h3>
+        <p id="publicProviderNote">Each profile can include verification notes, boundaries, booking etiquette, or screening requirements.</p>
       </div>
     </section>
 
@@ -370,13 +370,13 @@
       </article>
     </section>
 
-    <section class="profile-table-section">
+    <section class="profile-table-section" id="publicToursSection">
       <div class="section-title-row">
         <p class="eyebrow">My tours</p>
         <h2>Tour schedule.</h2>
       </div>
 
-      <div class="profile-table">
+      <div class="profile-table" id="publicToursTable">
         <div class="table-row table-head">
           <span>To</span>
           <span>From</span>
@@ -395,13 +395,13 @@
       </div>
     </section>
 
-    <section class="profile-table-section">
+    <section class="profile-table-section" id="publicAvailabilitySection">
       <div class="section-title-row">
         <p class="eyebrow">My availability</p>
         <h2>Booking windows.</h2>
       </div>
 
-      <div class="profile-table">
+      <div class="profile-table" id="publicAvailabilityTable">
         <div class="table-row table-head">
           <span>Day</span>
           <span>Availability</span>
@@ -433,15 +433,15 @@
           <dl>
             <div>
               <dt>1 hour</dt>
-              <dd>$000</dd>
+              <dd id="publicRateIncall1h">$000</dd>
             </div>
             <div>
               <dt>2 hours</dt>
-              <dd>$000</dd>
+              <dd id="publicRateIncall2h">$000</dd>
             </div>
             <div>
               <dt>Overnight</dt>
-              <dd>On request</dd>
+              <dd id="publicRateIncallOvn">On request</dd>
             </div>
           </dl>
         </article>
@@ -452,15 +452,15 @@
           <dl>
             <div>
               <dt>1 hour</dt>
-              <dd>$000</dd>
+              <dd id="publicRateOutcall1h">$000</dd>
             </div>
             <div>
               <dt>2 hours</dt>
-              <dd>$000</dd>
+              <dd id="publicRateOutcall2h">$000</dd>
             </div>
             <div>
               <dt>Overnight stays</dt>
-              <dd>On request</dd>
+              <dd id="publicRateOutcallOvn">On request</dd>
             </div>
           </dl>
         </article>
@@ -500,6 +500,6 @@
   </footer>
 
   <script src="script.js?v=20260627-07"></script>
-  <script src="profile-public.js?v=20260624-6"></script>
+  <script src="profile-public.js?v=20260702-01"></script>
 </body>
 </html>
