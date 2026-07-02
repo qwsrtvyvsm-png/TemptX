@@ -35,15 +35,46 @@ if (!fs.existsSync(usersFile)) {
 if (!fs.existsSync(reportsFile)) {
   fs.writeFileSync(reportsFile, "[]\n");
 }
-if (!fs.existsSync(serverSecretFile)) {
-  fs.writeFileSync(serverSecretFile, crypto.randomBytes(32).toString("hex"), { mode: 0o600 });
+
+let serverSecret;
+if (process.env.SERVER_SECRET) {
+  serverSecret = process.env.SERVER_SECRET.trim();
+} else if (fs.existsSync(serverSecretFile)) {
+  console.warn("[WARN] SERVER_SECRET env var not set — falling back to data/server-secret file. Set SERVER_SECRET in production.");
+  serverSecret = fs.readFileSync(serverSecretFile, "utf8").trim();
+} else {
+  serverSecret = crypto.randomBytes(32).toString("hex");
+  fs.writeFileSync(serverSecretFile, serverSecret, { mode: 0o600 });
+  console.warn("[WARN] No SERVER_SECRET env var or secret file found. Generated a new secret and saved to data/server-secret. Set SERVER_SECRET env var before deploying to production.");
 }
-const serverSecret = fs.readFileSync(serverSecretFile, "utf8").trim();
+
+// Write to a .tmp file then rename — rename(2) is atomic on POSIX, preventing
+// readers from ever seeing a half-written file if the process crashes mid-write.
+const atomicWrite = (filePath, data) => {
+  const tmp = `${filePath}.tmp`;
+  fs.writeFileSync(tmp, data);
+  fs.renameSync(tmp, filePath);
+};
+
+// Serial write queue — guarantees that only one read-modify-write runs at a time,
+// eliminating the last-writer-wins race that occurs when two concurrent requests
+// each read the same snapshot, modify it independently, then both flush.
+const makeQueue = () => {
+  let tail = Promise.resolve();
+  return (task) => {
+    const result = tail.then(task);
+    tail = result.catch(() => {});
+    return result;
+  };
+};
 
 const readUsers = () => JSON.parse(fs.readFileSync(usersFile, "utf8"));
-const writeUsers = (users) => fs.writeFileSync(usersFile, `${JSON.stringify(users, null, 2)}\n`);
+const writeUsers = (users) => atomicWrite(usersFile, `${JSON.stringify(users, null, 2)}\n`);
 const readReports = () => JSON.parse(fs.readFileSync(reportsFile, "utf8"));
-const writeReports = (reports) => fs.writeFileSync(reportsFile, `${JSON.stringify(reports, null, 2)}\n`);
+const writeReports = (reports) => atomicWrite(reportsFile, `${JSON.stringify(reports, null, 2)}\n`);
+
+const usersQueue = makeQueue();
+const reportsQueue = makeQueue();
 
 const json = (response, status, payload, headers = {}) => {
   response.writeHead(status, {
@@ -296,6 +327,52 @@ const cleanDirectorySelections = (values, allowedValues) => {
   return [...new Set(values.filter((value) => allowedValues.includes(value)))].slice(0, 80);
 };
 
+const cleanProfile = (body) => {
+  const details = body.details || {};
+  return {
+    details: {
+      location:       cleanText(details.location,       100),
+      age:            cleanText(details.age,             20),
+      height:         cleanText(details.height,          20),
+      orientation:    cleanText(details.orientation,     40),
+      hairColour:     cleanText(details.hairColour,      40),
+      eyeColour:      cleanText(details.eyeColour,       40),
+      bodyType:       cleanText(details.bodyType,        40),
+      placeOfService: cleanText(details.placeOfService, 100),
+    },
+    profileNote: cleanText(body.profileNote, 500),
+    rates: {
+      incall: {
+        oneHour:   cleanText(body.rates?.incall?.oneHour,   40),
+        twoHours:  cleanText(body.rates?.incall?.twoHours,  40),
+        overnight: cleanText(body.rates?.incall?.overnight, 40),
+      },
+      outcall: {
+        oneHour:   cleanText(body.rates?.outcall?.oneHour,   40),
+        twoHours:  cleanText(body.rates?.outcall?.twoHours,  40),
+        overnight: cleanText(body.rates?.outcall?.overnight, 40),
+      },
+    },
+    availability: Array.isArray(body.availability)
+      ? body.availability.slice(0, 14).map((row) => ({
+          day:          cleanText(row?.day,          40),
+          availability: cleanText(row?.availability, 100),
+          notes:        cleanText(row?.notes,        200),
+        })).filter((row) => row.day || row.availability)
+      : [],
+    tours: Array.isArray(body.tours)
+      ? body.tours.slice(0, 20).map((row) => ({
+          to:    cleanText(row?.to,    80),
+          from:  cleanText(row?.from,  20),
+          until: cleanText(row?.until, 20),
+        })).filter((row) => row.to || row.from)
+      : [],
+    photoNames: Array.isArray(body.photoNames)
+      ? body.photoNames.slice(0, 8).map((n) => cleanText(n, 200)).filter(Boolean)
+      : [],
+  };
+};
+
 const publicUser = (user) => ({
   id: user.id,
   role: user.role,
@@ -396,23 +473,25 @@ const handleApi = async (request, response, pathname) => {
           : category === "privacy" || category === "scam"
           ? "high"
           : "standard";
-      const reports = readReports();
-      reports.push({
-        id: crypto.randomUUID(),
-        reference,
-        type,
-        category,
-        subjectReference: cleanText(body.reference, 120),
-        details,
-        contact: contact || null,
-        reporterIpHash: clientKey,
-        accessCodeHash: hashPrivateValue(accessCode),
-        priority,
-        status: "received",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+      await reportsQueue(() => {
+        const reports = readReports();
+        reports.push({
+          id: crypto.randomUUID(),
+          reference,
+          type,
+          category,
+          subjectReference: cleanText(body.reference, 120),
+          details,
+          contact: contact || null,
+          reporterIpHash: clientKey,
+          accessCodeHash: hashPrivateValue(accessCode),
+          priority,
+          status: "received",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+        writeReports(reports);
       });
-      writeReports(reports);
       recentReports.push(now);
       reportRateLimits.set(clientKey, recentReports);
 
@@ -452,7 +531,6 @@ const handleApi = async (request, response, pathname) => {
       const body = await readJsonBody(request);
       const role = accountRole(body.role);
       const password = String(body.password || "");
-      const users = readUsers();
 
       if (!requireAuthRateLimit(request, response, "signup", role || "unknown")) return;
       if (!role) return json(response, 400, { error: "Choose a client, creator, or provider account." });
@@ -465,67 +543,85 @@ const handleApi = async (request, response, pathname) => {
         });
       }
 
-      const credentials = hashPassword(password);
-      const recoveryCode = makeRecoveryCode();
-      const user = {
-        id: crypto.randomUUID(),
-        role,
-        passwordHash: credentials.hash,
-        salt: credentials.salt,
-        recoveryCodeHash: hashPrivateValue(recoveryCode),
-        policiesAcceptedAt: new Date().toISOString(),
-        createdAt: new Date().toISOString()
-      };
-
+      // Validate email-account fields before the expensive scrypt call.
+      let email, workingName, gender, accountCategory;
       if (isEmailAccount(role)) {
-        const email = normaliseEmail(body.email);
-        const workingName = cleanText(body.workingName, 80);
-        const gender = cleanText(body.gender, 60);
-        const accountCategory = cleanText(body.accountCategory, 40).toLowerCase();
+        email = normaliseEmail(body.email);
+        workingName = cleanText(body.workingName, 80);
+        gender = cleanText(body.gender, 60);
+        accountCategory = cleanText(body.accountCategory, 40).toLowerCase();
         if (!validEmail(email)) return json(response, 400, { error: "Enter a valid email address." });
         if (!workingName) return json(response, 400, { error: "Enter your working name." });
         if (!gender) return json(response, 400, { error: "Enter your gender." });
         if (!workerCategories.has(accountCategory)) {
           return json(response, 400, { error: "Choose a valid provider or creator category." });
         }
-        if (users.some((item) => item.email === email)) {
-          return json(response, 409, { error: "A TEMPTX account already uses that email." });
-        }
-        user.email = email;
-        user.workingName = workingName;
-        user.gender = gender;
-        user.accountCategory = accountCategory;
-      } else {
-        user.clientId = makeClientId(users);
-        user.safetyStatus = "active";
-        user.riskScore = 0;
-        user.reportsCount = 0;
-        const deviceToken = crypto.randomBytes(32).toString("hex");
-        user.deviceTokenHash = hashPrivateValue(deviceToken);
-        user.signupIpHash = hashPrivateValue(getClientIp(request));
-        user.lastIpHash = user.signupIpHash;
-        user.lastIpChangedAt = null;
-        user.pendingDeviceToken = deviceToken;
       }
 
-      const pendingDeviceToken = user.pendingDeviceToken;
-      delete user.pendingDeviceToken;
-      users.push(user);
-      writeUsers(users);
-      const token = createSession(user);
+      // Hash password outside the queue — scrypt takes ~100 ms and must not hold the write lock.
+      const credentials = hashPassword(password);
+      const recoveryCode = makeRecoveryCode();
+
+      // Atomic read-check-write: duplicate detection, unique-ID generation, and persist are
+      // serialised so two concurrent signups cannot both pass the duplicate check or collide on clientId.
+      const signup = await usersQueue(() => {
+        const users = readUsers();
+
+        if (isEmailAccount(role) && users.some((item) => item.email === email)) {
+          return { status: 409, error: "A TEMPTX account already uses that email." };
+        }
+
+        const user = {
+          id: crypto.randomUUID(),
+          role,
+          passwordHash: credentials.hash,
+          salt: credentials.salt,
+          recoveryCodeHash: hashPrivateValue(recoveryCode),
+          policiesAcceptedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString()
+        };
+
+        if (isEmailAccount(role)) {
+          user.email = email;
+          user.workingName = workingName;
+          user.gender = gender;
+          user.accountCategory = accountCategory;
+        } else {
+          user.clientId = makeClientId(users);
+          user.safetyStatus = "active";
+          user.riskScore = 0;
+          user.reportsCount = 0;
+          const deviceToken = crypto.randomBytes(32).toString("hex");
+          user.deviceTokenHash = hashPrivateValue(deviceToken);
+          user.signupIpHash = hashPrivateValue(getClientIp(request));
+          user.lastIpHash = user.signupIpHash;
+          user.lastIpChangedAt = null;
+          user.pendingDeviceToken = deviceToken;
+        }
+
+        const pendingDeviceToken = user.pendingDeviceToken;
+        delete user.pendingDeviceToken;
+        users.push(user);
+        writeUsers(users);
+        return { user, pendingDeviceToken };
+      });
+
+      if (signup.error) return json(response, signup.status, { error: signup.error });
+
+      const token = createSession(signup.user);
       return json(
         response,
         201,
         {
           message: "Account created.",
-          user: publicUser(user),
-          clientId: user.clientId || null,
+          user: publicUser(signup.user),
+          clientId: signup.user.clientId || null,
           recoveryCode
         },
         {
           "Set-Cookie":
             role === "client"
-              ? [sessionCookie(token), deviceCookie(pendingDeviceToken)]
+              ? [sessionCookie(token), deviceCookie(signup.pendingDeviceToken)]
               : sessionCookie(token)
         }
       );
@@ -566,17 +662,24 @@ const handleApi = async (request, response, pathname) => {
 
         const currentIpHash = hashPrivateValue(getClientIp(request));
         ipChanged = currentIpHash !== user.lastIpHash;
-        if (ipChanged) {
-          user.lastIpHash = currentIpHash;
-          user.lastIpChangedAt = new Date().toISOString();
-          writeUsers(users);
-        }
       }
 
-      if (wasDeactivated) {
-        user.deactivatedAt = null;
-        user.reactivatedAt = new Date().toISOString();
-        writeUsers(users);
+      // Only enter the queue if a write is actually needed; re-read inside for freshness.
+      if (ipChanged || wasDeactivated) {
+        await usersQueue(() => {
+          const freshUsers = readUsers();
+          const freshUser = freshUsers.find((u) => u.id === user.id);
+          if (!freshUser) return;
+          if (ipChanged) {
+            freshUser.lastIpHash = hashPrivateValue(getClientIp(request));
+            freshUser.lastIpChangedAt = new Date().toISOString();
+          }
+          if (wasDeactivated) {
+            freshUser.deactivatedAt = null;
+            freshUser.reactivatedAt = new Date().toISOString();
+          }
+          writeUsers(freshUsers);
+        });
       }
 
       const token = createSession(user);
@@ -639,17 +742,23 @@ const handleApi = async (request, response, pathname) => {
         });
       }
 
-      const users = readUsers();
-      const user = users.find((item) => item.id === record.userId);
-      if (!user) return json(response, 404, { error: "Account not found." });
-
+      // Hash outside the queue — scrypt must not hold the write lock.
       const credentials = hashPassword(body.password);
-      user.passwordHash = credentials.hash;
-      user.salt = credentials.salt;
-      user.passwordUpdatedAt = new Date().toISOString();
-      writeUsers(users);
+
+      const reset = await usersQueue(() => {
+        const users = readUsers();
+        const user = users.find((item) => item.id === record.userId);
+        if (!user) return { notFound: true };
+        user.passwordHash = credentials.hash;
+        user.salt = credentials.salt;
+        user.passwordUpdatedAt = new Date().toISOString();
+        writeUsers(users);
+        return { userId: user.id };
+      });
+
+      if (reset.notFound) return json(response, 404, { error: "Account not found." });
       resetTokens.delete(body.resetToken);
-      clearUserSessions(user.id);
+      clearUserSessions(reset.userId);
       return json(response, 200, { message: "Password updated. You can now log in." });
     }
 
@@ -687,37 +796,42 @@ const handleApi = async (request, response, pathname) => {
       if (!authenticatedUser) return json(response, 401, { error: "Sign in to change settings." });
 
       const body = await readJsonBody(request);
-      const users = readUsers();
-      const user = users.find((item) => item.id === authenticatedUser.id);
-      if (!user) return json(response, 404, { error: "Account not found." });
 
-      user.settings = {
-        displayName: String(body.displayName || "").trim().slice(0, 50),
-        directMessages: body.directMessages !== false,
-        groupInvites: body.groupInvites !== false,
-        messagePreviews: body.messagePreviews !== false,
-        activityStatus: body.activityStatus !== false,
-        emailNotifications: Boolean(body.emailNotifications),
-        profileVisible: user.role === "provider" ? body.profileVisible !== false : true,
-        locations:
-          user.role === "provider"
-            ? cleanDirectorySelections(body.locations, DIRECTORY_OPTIONS.locations)
-            : [],
-        services:
-          user.role === "provider"
-            ? cleanDirectorySelections(body.services, DIRECTORY_OPTIONS.services)
-            : [],
-        attributes:
-          user.role === "provider"
-            ? cleanDirectorySelections(body.attributes, DIRECTORY_OPTIONS.attributes)
-            : []
-      };
-      user.settingsUpdatedAt = new Date().toISOString();
-      writeUsers(users);
+      const saved = await usersQueue(() => {
+        const users = readUsers();
+        const user = users.find((item) => item.id === authenticatedUser.id);
+        if (!user) return { notFound: true };
 
+        user.settings = {
+          displayName: String(body.displayName || "").trim().slice(0, 50),
+          directMessages: body.directMessages !== false,
+          groupInvites: body.groupInvites !== false,
+          messagePreviews: body.messagePreviews !== false,
+          activityStatus: body.activityStatus !== false,
+          emailNotifications: Boolean(body.emailNotifications),
+          profileVisible: user.role === "provider" ? body.profileVisible !== false : true,
+          locations:
+            user.role === "provider"
+              ? cleanDirectorySelections(body.locations, DIRECTORY_OPTIONS.locations)
+              : [],
+          services:
+            user.role === "provider"
+              ? cleanDirectorySelections(body.services, DIRECTORY_OPTIONS.services)
+              : [],
+          attributes:
+            user.role === "provider"
+              ? cleanDirectorySelections(body.attributes, DIRECTORY_OPTIONS.attributes)
+              : []
+        };
+        user.settingsUpdatedAt = new Date().toISOString();
+        writeUsers(users);
+        return { user };
+      });
+
+      if (saved.notFound) return json(response, 404, { error: "Account not found." });
       return json(response, 200, {
         message: "Settings saved.",
-        user: publicUser(user)
+        user: publicUser(saved.user)
       });
     }
 
@@ -726,16 +840,20 @@ const handleApi = async (request, response, pathname) => {
       if (!authenticatedUser) return json(response, 401, { error: "Sign in to deactivate your account." });
 
       const body = await readJsonBody(request);
-      const users = readUsers();
-      const user = users.find((item) => item.id === authenticatedUser.id);
-      if (!user || !verifyPassword(String(body.password || ""), user)) {
-        return json(response, 401, { error: "Your password is incorrect." });
-      }
+      const password = String(body.password || "");
 
-      user.deactivatedAt = new Date().toISOString();
-      writeUsers(users);
-      clearUserSessions(user.id);
-      clearUserResetTokens(user.id);
+      const deactivate = await usersQueue(() => {
+        const users = readUsers();
+        const user = users.find((item) => item.id === authenticatedUser.id);
+        if (!user || !verifyPassword(password, user)) return { unauthorized: true };
+        user.deactivatedAt = new Date().toISOString();
+        writeUsers(users);
+        return { userId: user.id };
+      });
+
+      if (deactivate.unauthorized) return json(response, 401, { error: "Your password is incorrect." });
+      clearUserSessions(deactivate.userId);
+      clearUserResetTokens(deactivate.userId);
 
       return json(response, 200, {
         message: "Account deactivated. Logging in again will reactivate it."
@@ -749,18 +867,23 @@ const handleApi = async (request, response, pathname) => {
       if (!authenticatedUser) return json(response, 401, { error: "Sign in to delete your account." });
 
       const body = await readJsonBody(request);
-      const users = readUsers();
-      const user = users.find((item) => item.id === authenticatedUser.id);
-      if (!user || !verifyPassword(String(body.password || ""), user)) {
-        return json(response, 401, { error: "Your password is incorrect." });
-      }
+      const password = String(body.password || "");
+
       if (String(body.confirmation || "").trim().toUpperCase() !== "DELETE") {
         return json(response, 400, { error: "Type DELETE to confirm permanent account removal." });
       }
 
-      writeUsers(users.filter((item) => item.id !== user.id));
-      clearUserSessions(user.id);
-      clearUserResetTokens(user.id);
+      const deletion = await usersQueue(() => {
+        const users = readUsers();
+        const user = users.find((item) => item.id === authenticatedUser.id);
+        if (!user || !verifyPassword(password, user)) return { unauthorized: true };
+        writeUsers(users.filter((item) => item.id !== user.id));
+        return { userId: user.id };
+      });
+
+      if (deletion.unauthorized) return json(response, 401, { error: "Your password is incorrect." });
+      clearUserSessions(deletion.userId);
+      clearUserResetTokens(deletion.userId);
 
       return json(response, 200, { message: "Account permanently deleted." }, {
         "Set-Cookie": [
@@ -775,6 +898,58 @@ const handleApi = async (request, response, pathname) => {
       if (token) sessions.delete(token);
       return json(response, 200, { message: "Logged out." }, {
         "Set-Cookie": `temptx_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${secureCookie}`
+      });
+    }
+
+    if (pathname === "/api/profile" && request.method === "GET") {
+      const user = getAuthenticatedUser(request);
+      if (!user) return json(response, 401, { error: "Sign in to view your profile." });
+      if (user.role !== "provider") return json(response, 403, { error: "Only providers have a profile." });
+      return json(response, 200, { profile: user.profile || {} });
+    }
+
+    if (pathname === "/api/profile" && request.method === "PATCH") {
+      const authenticatedUser = getAuthenticatedUser(request);
+      if (!authenticatedUser) return json(response, 401, { error: "Sign in to save your profile." });
+      if (authenticatedUser.role !== "provider") return json(response, 403, { error: "Only providers can save a profile." });
+
+      const body = await readJsonBody(request);
+
+      const saved = await usersQueue(() => {
+        const users = readUsers();
+        const user = users.find((item) => item.id === authenticatedUser.id);
+        if (!user) return { notFound: true };
+        user.profile = cleanProfile(body);
+        user.profileUpdatedAt = new Date().toISOString();
+        writeUsers(users);
+        return { profile: user.profile };
+      });
+
+      if (saved.notFound) return json(response, 404, { error: "Account not found." });
+      return json(response, 200, { message: "Profile saved.", profile: saved.profile });
+    }
+
+    const providerProfileMatch = pathname.match(/^\/api\/providers\/([^/]+)\/profile$/);
+    if (providerProfileMatch && request.method === "GET") {
+      const targetId = providerProfileMatch[1];
+      const user = readUsers().find(
+        (u) =>
+          u.id === targetId &&
+          u.role === "provider" &&
+          !u.deactivatedAt &&
+          u.settings?.profileVisible !== false &&
+          String(u.settings?.displayName || "").trim()
+      );
+      if (!user) return json(response, 404, { error: "Provider not found." });
+      return json(response, 200, {
+        profile: user.profile || {},
+        provider: {
+          id: user.id,
+          name: String(user.settings.displayName).trim().slice(0, 50),
+          locations: cleanDirectorySelections(user.settings?.locations, DIRECTORY_OPTIONS.locations),
+          services: cleanDirectorySelections(user.settings?.services, DIRECTORY_OPTIONS.services),
+          attributes: cleanDirectorySelections(user.settings?.attributes, DIRECTORY_OPTIONS.attributes),
+        },
       });
     }
 
@@ -801,8 +976,11 @@ const serveStatic = (request, response, pathname) => {
       return response.end("Not found");
     }
 
+    const ext = path.extname(filePath).toLowerCase();
+    const isVersioned = url.searchParams.has("v");
     response.writeHead(200, {
-      "Content-Type": mimeTypes[path.extname(filePath).toLowerCase()] || "application/octet-stream",
+      "Content-Type": mimeTypes[ext] || "application/octet-stream",
+      "Cache-Control": isVersioned ? "public, max-age=31536000, immutable" : "no-store",
       "X-Content-Type-Options": "nosniff",
       "Referrer-Policy": "same-origin",
       "X-Frame-Options": "DENY",

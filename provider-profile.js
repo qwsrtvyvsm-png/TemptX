@@ -14,7 +14,7 @@ if (profileEditForm) {
   const serviceCheckboxes = [...document.querySelectorAll('[name="editService"]')];
 
   let currentUser = null;
-  // Photo previews live only in the current session; names are persisted in localStorage.
+  // Photo previews live only in the current session; names are persisted on the server.
   let sessionPhotos = []; // { name, dataUrl }
 
   // ── Status ──────────────────────────────────────────────────────────────────
@@ -23,7 +23,7 @@ if (profileEditForm) {
     statusEl.className = type ? `is-${type}` : "";
   };
 
-  // ── localStorage helpers ─────────────────────────────────────────────────────
+  // ── localStorage helpers (migration fallback only) ───────────────────────────
   const loadLocal = () => {
     try {
       return JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY)) || {};
@@ -32,12 +32,23 @@ if (profileEditForm) {
     }
   };
 
-  const saveLocal = (data) => {
-    try {
-      localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(data));
-    } catch {
-      // Silently ignore quota errors; in-session state is still intact.
-    }
+  // ── API helpers ──────────────────────────────────────────────────────────────
+  const fetchProfile = async () => {
+    const response = await fetch("/api/profile");
+    if (!response.ok) return null;
+    const { profile } = await response.json();
+    return profile;
+  };
+
+  const saveProfileApi = async (data) => {
+    const response = await fetch("/api/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Profile could not be saved.");
+    return result.profile;
   };
 
   // ── Photo management ─────────────────────────────────────────────────────────
@@ -180,9 +191,8 @@ if (profileEditForm) {
     detailPlaceOfService: "placeOfService",
   };
 
-  // ── Populate from saved data ─────────────────────────────────────────────────
-  const populateLocal = (data) => {
-    // Profile details
+  // ── Populate form from profile data ──────────────────────────────────────────
+  const populateForm = (data) => {
     const details = data.details || {};
     Object.entries(DETAIL_FIELDS).forEach(([elId, key]) => {
       const el = document.querySelector(`#${elId}`);
@@ -197,9 +207,9 @@ if (profileEditForm) {
     }
 
     const rateMap = {
-      rateIncall1h:  data.rates?.incall?.oneHour    || "",
-      rateIncall2h:  data.rates?.incall?.twoHours   || "",
-      rateIncallOvn: data.rates?.incall?.overnight  || "",
+      rateIncall1h:   data.rates?.incall?.oneHour    || "",
+      rateIncall2h:   data.rates?.incall?.twoHours   || "",
+      rateIncallOvn:  data.rates?.incall?.overnight  || "",
       rateOutcall1h:  data.rates?.outcall?.oneHour   || "",
       rateOutcall2h:  data.rates?.outcall?.twoHours  || "",
       rateOutcallOvn: data.rates?.outcall?.overnight || "",
@@ -220,12 +230,12 @@ if (profileEditForm) {
   // ── Load page ────────────────────────────────────────────────────────────────
   const loadPage = async () => {
     try {
-      const response = await fetch("/api/auth/me");
-      if (!response.ok) {
+      const meResponse = await fetch("/api/auth/me");
+      if (!meResponse.ok) {
         window.location.href = "provider-login.html";
         return;
       }
-      const { user } = await response.json();
+      const { user } = await meResponse.json();
       currentUser = user;
 
       if (user.role !== "provider") {
@@ -254,9 +264,21 @@ if (profileEditForm) {
       });
     } catch {
       setStatus("Unable to load profile data.", "error");
+      return;
     }
 
-    populateLocal(loadLocal());
+    // Load rich profile content from the server; fall back to localStorage for
+    // providers who saved data before server persistence was introduced.
+    try {
+      const serverProfile = await fetchProfile();
+      const hasServerData =
+        serverProfile &&
+        Object.values(serverProfile.details || {}).some(Boolean);
+      const profileData = hasServerData ? serverProfile : loadLocal();
+      populateForm(profileData);
+    } catch {
+      populateForm(loadLocal());
+    }
   };
 
   // ── Add-row buttons ──────────────────────────────────────────────────────────
@@ -270,14 +292,13 @@ if (profileEditForm) {
     setStatus("Saving…");
 
     try {
-      // 1. Persist all non-API content to localStorage.
       const details = {};
       Object.entries(DETAIL_FIELDS).forEach(([elId, key]) => {
         const el = document.querySelector(`#${elId}`);
         details[key] = el ? el.value.trim() : "";
       });
 
-      const localData = {
+      const profileData = {
         details,
         profileNote: profileNoteEl?.value.trim() || "",
         rates: {
@@ -294,10 +315,11 @@ if (profileEditForm) {
         },
         availability: getAvailabilityData(),
         tours: getTourData(),
-        // Store only file names — actual images are session-only.
         photoNames: sessionPhotos.map((p) => p.name),
       };
-      saveLocal(localData);
+
+      // 1. Persist profile content to the server.
+      await saveProfileApi(profileData);
 
       // 2. Persist selected services via the existing settings API.
       if (currentUser) {
@@ -306,11 +328,11 @@ if (profileEditForm) {
           .map((cb) => cb.value);
 
         const s = currentUser.settings || {};
-        const response = await fetch("/api/auth/settings", {
+        const settingsResponse = await fetch("/api/auth/settings", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            displayName:        s.displayName        || "",
+            displayName:        s.displayName        || currentUser.workingName || "",
             directMessages:     s.directMessages     !== false,
             groupInvites:       s.groupInvites       !== false,
             messagePreviews:    s.messagePreviews    !== false,
@@ -323,8 +345,8 @@ if (profileEditForm) {
           }),
         });
 
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || "Services could not be saved.");
+        const result = await settingsResponse.json();
+        if (!settingsResponse.ok) throw new Error(result.error || "Services could not be saved.");
         currentUser = result.user;
       }
 

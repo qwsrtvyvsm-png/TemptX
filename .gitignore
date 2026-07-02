@@ -1,4 +1,2 @@
-data/users.json
-data/server-secret
+data/
 .DS_Store
-data/server-secret
