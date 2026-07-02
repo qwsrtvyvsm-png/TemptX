@@ -9774,30 +9774,47 @@ body.creator-dashboard-body {
 .home-hero-overlay {
   position: static;
   transform: none;
-  gap: 0;
-  padding: 80px 24px;
+  gap: 22px;
+  padding: 88px 24px;
 }
 
-.home-hero-title {
-  margin: 18px 0 0;
+.home-hero-eyebrow {
+  margin: 0 0 8px;
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(var(--gold-rgb), 0.28);
+}
+
+.home-hero-heading {
+  margin: 0;
+  max-width: 18ch;
   color: var(--cream);
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(4rem, 11vw, 9rem);
+  font-size: clamp(2.2rem, 4.8vw, 4.4rem);
   font-weight: 400;
-  letter-spacing: 0.08em;
-  line-height: 1;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.18;
+  text-transform: none;
   text-shadow:
-    0 0 60px rgba(var(--gold-rgb), 0.18),
-    0 24px 64px rgba(0, 0, 0, 0.5);
+    0 0 48px rgba(var(--gold-rgb), 0.14),
+    0 20px 56px rgba(0, 0, 0, 0.5);
 }
 
-.home-hero-title::after {
+.home-hero-heading::after {
   display: none;
 }
 
-.home-hero-x {
-  color: var(--gold);
+.home-hero-mission {
+  max-width: 48ch;
+  margin: 0 auto;
+  color: rgba(var(--cream-rgb), 0.54);
+  font-size: clamp(0.84rem, 1.2vw, 0.98rem);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.72;
 }
 
 .home-hero-rule {
