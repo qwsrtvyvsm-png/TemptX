@@ -10346,21 +10346,22 @@ body.creator-dashboard-body {
 
 .join-select-panel {
   width: min(1060px, 100%);
-  padding: clamp(40px, 6vw, 72px) clamp(28px, 6vw, 72px) clamp(36px, 5vw, 56px);
+  padding: clamp(44px, 6vw, 76px) clamp(28px, 6vw, 72px) clamp(40px, 5vw, 60px);
   text-align: center;
-  border-radius: 18px;
-  border: 1px solid rgba(var(--champagne-rgb), 0.2);
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
   background:
-    radial-gradient(ellipse at 30% 0%, rgba(var(--gold-rgb), 0.07), transparent 18rem),
-    radial-gradient(ellipse at 76% 100%, rgba(var(--champagne-rgb), 0.05), transparent 16rem),
-    linear-gradient(155deg, rgba(22, 16, 10, 0.96) 0%, rgba(10, 8, 6, 0.98) 60%, rgba(6, 5, 4, 0.99) 100%);
+    radial-gradient(ellipse at 22% 0%, rgba(255, 255, 255, 0.1), transparent 22rem),
+    radial-gradient(ellipse at 80% 96%, rgba(var(--gold-rgb), 0.06), transparent 18rem),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.01) 55%),
+    rgba(6, 7, 9, 0.32);
   box-shadow:
-    0 40px 100px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(0, 0, 0, 0.72),
-    inset 0 1px rgba(255, 244, 220, 0.1),
-    inset 0 -1px rgba(0, 0, 0, 0.3);
-  -webkit-backdrop-filter: blur(20px) saturate(110%);
-  backdrop-filter: blur(20px) saturate(110%);
+    0 48px 110px rgba(0, 0, 0, 0.58),
+    0 16px 44px rgba(var(--gold-rgb), 0.06),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.22),
+    inset 0 -1px rgba(0, 0, 0, 0.2);
+  -webkit-backdrop-filter: blur(52px) saturate(160%);
+  backdrop-filter: blur(52px) saturate(160%);
 }
 
 .join-select-eyebrow {
@@ -10416,30 +10417,36 @@ body.creator-dashboard-body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 36px 28px 32px;
-  border-radius: 12px;
-  border: 1px solid rgba(var(--champagne-rgb), 0.14);
-  background: linear-gradient(160deg, rgba(18, 13, 9, 0.9) 0%, rgba(8, 6, 4, 0.95) 100%);
+  padding: 38px 28px 34px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%),
+    rgba(4, 5, 7, 0.4);
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: border-color 240ms ease, background 240ms ease, transform 240ms ease, box-shadow 240ms ease;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transition: border-color 260ms ease, background 260ms ease, transform 260ms ease, box-shadow 260ms ease;
 }
 
 .join-select-card:hover {
-  border-color: rgba(var(--gold-rgb), 0.42);
+  border-color: rgba(var(--gold-rgb), 0.38);
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(var(--gold-rgb), 0.07), transparent 12rem),
-    linear-gradient(160deg, rgba(26, 18, 11, 0.95) 0%, rgba(10, 7, 5, 0.98) 100%);
-  transform: translateY(-3px);
+    radial-gradient(ellipse at 50% 0%, rgba(var(--gold-rgb), 0.06), transparent 14rem),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.015) 100%),
+    rgba(4, 5, 7, 0.36);
+  transform: translateY(-4px);
   box-shadow:
-    0 20px 52px rgba(0, 0, 0, 0.38),
-    0 0 0 1px rgba(var(--gold-rgb), 0.18);
+    0 22px 56px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(var(--gold-rgb), 0.14);
 }
 
 .join-select-card:hover .join-select-cta {
   color: var(--gold);
-  border-color: rgba(var(--gold-rgb), 0.44);
+  border-color: rgba(var(--gold-rgb), 0.38);
+  background: rgba(var(--gold-rgb), 0.05);
 }
 
 .join-select-icon {
@@ -10477,17 +10484,17 @@ body.creator-dashboard-body {
 .join-select-cta {
   display: inline-block;
   margin-top: auto;
-  padding: 10px 20px;
-  border: 1px solid rgba(var(--champagne-rgb), 0.26);
-  border-radius: 6px;
-  background: linear-gradient(180deg, rgba(var(--gold-rgb), 0.08), rgba(var(--gold-rgb), 0.03));
-  color: rgba(var(--cream-rgb), 0.7);
-  font-size: 0.71rem;
+  padding: 9px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(var(--cream-rgb), 0.6);
+  font-size: 0.68rem;
   font-weight: 500;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
   white-space: nowrap;
-  transition: color 240ms ease, border-color 240ms ease, background 240ms ease;
+  transition: color 260ms ease, border-color 260ms ease, background 260ms ease;
 }
 
 .join-select-note {
@@ -10510,6 +10517,219 @@ body.creator-dashboard-body {
   .join-select-card {
     padding: 28px 24px 24px;
   }
+}
+
+/* ══════════════════════════════════════════════════
+   AUTH — Minimal underline form style
+   ══════════════════════════════════════════════════ */
+
+/* ─── Heading — left-aligned, clean ─── */
+
+.auth-body .auth-heading {
+  text-align: left;
+  margin-bottom: 32px;
+}
+
+.auth-body .auth-heading .eyebrow {
+  letter-spacing: 0.22em;
+  font-size: 0.6rem;
+  color: rgba(var(--gold-rgb), 0.7);
+  margin: 0 0 10px;
+}
+
+.auth-body .auth-heading h1 {
+  font-size: clamp(1.9rem, 6vw, 2.9rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin: 0 0 6px;
+}
+
+.auth-body .auth-heading > p:last-child {
+  font-size: 0.76rem;
+  color: rgba(var(--cream-rgb), 0.42);
+}
+
+/* ─── Inputs — underline only ─── */
+
+.auth-body .auth-field > span:first-child,
+.auth-body .auth-field > label:first-child {
+  padding-left: 0;
+  font-size: 0.57rem;
+  letter-spacing: 0.14em;
+  color: rgba(var(--cream-rgb), 0.4);
+}
+
+.auth-body .auth-field input,
+.auth-body .auth-field select {
+  min-height: 44px;
+  padding: 10px 0;
+  border: none;
+  border-bottom: 1px solid rgba(var(--cream-rgb), 0.18);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--cream);
+  font-size: 0.9rem;
+}
+
+.auth-body .auth-field input::placeholder {
+  color: rgba(var(--cream-rgb), 0.28);
+}
+
+.auth-body .auth-field input:focus,
+.auth-body .auth-field select:focus {
+  border-bottom-color: rgba(var(--gold-rgb), 0.75);
+  box-shadow: 0 1px 0 rgba(var(--gold-rgb), 0.22);
+  outline: none;
+}
+
+/* ─── Select arrow repositioned for underline ─── */
+
+.auth-body .auth-field select {
+  appearance: none;
+  padding-right: 28px;
+  background:
+    linear-gradient(45deg, transparent 50%, rgba(var(--gold-rgb), 0.8) 50%) calc(100% - 14px) 54% / 6px 6px no-repeat,
+    linear-gradient(135deg, rgba(var(--gold-rgb), 0.8) 50%, transparent 50%) calc(100% - 9px) 54% / 6px 6px no-repeat,
+    transparent;
+  cursor: pointer;
+}
+
+/* ─── Password show/hide ─── */
+
+.auth-body .password-control input {
+  padding-right: 52px;
+}
+
+.auth-body .password-toggle {
+  right: 0;
+  color: rgba(var(--gold-rgb), 0.7);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+}
+
+.auth-body .password-toggle:hover {
+  color: var(--gold);
+}
+
+/* ─── Form gap & row ─── */
+
+.auth-body .auth-form {
+  gap: 20px;
+}
+
+.auth-body .auth-form-row {
+  padding: 4px 0 0;
+}
+
+/* ─── Forgot / auth-link ─── */
+
+.auth-body .auth-link {
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: rgba(var(--gold-rgb), 0.65);
+}
+
+.auth-body .auth-link:hover {
+  color: var(--gold);
+}
+
+/* ─── Remember me ─── */
+
+.auth-body .remember-option {
+  gap: 7px;
+  color: rgba(var(--cream-rgb), 0.42);
+  font-size: 0.62rem;
+}
+
+/* ─── Submit button — full-width pill ─── */
+
+.auth-body .auth-submit {
+  margin-top: 10px;
+  min-height: 50px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+}
+
+/* ─── Privacy note / nav hint ─── */
+
+.auth-body .auth-privacy-note {
+  font-size: 0.62rem;
+  color: rgba(var(--cream-rgb), 0.26);
+  border-top: 1px solid rgba(var(--cream-rgb), 0.07);
+  padding-top: 16px;
+  margin-top: 20px;
+  text-align: left;
+}
+
+.auth-body .auth-nav-hint {
+  text-align: left;
+  font-size: 0.69rem;
+  margin-top: 10px;
+  color: rgba(var(--cream-rgb), 0.38);
+}
+
+/* ─── Policy consent checkbox row ─── */
+
+.auth-body .policy-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-top: 4px;
+  color: rgba(var(--cream-rgb), 0.4);
+  font-size: 0.68rem;
+  line-height: 1.55;
+  cursor: pointer;
+}
+
+.auth-body .policy-consent input[type="checkbox"] {
+  min-height: unset;
+  width: 15px;
+  height: 15px;
+  border: 1px solid rgba(var(--champagne-rgb), 0.3);
+  border-radius: 3px;
+  background: transparent;
+  accent-color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 2px;
+  padding: 0;
+}
+
+.auth-body .policy-consent a {
+  color: var(--gold);
+  text-decoration: none;
+}
+
+.auth-body .policy-consent a:hover {
+  color: var(--cream);
+}
+
+/* ─── Requirements hint ─── */
+
+.auth-body .password-requirements {
+  color: rgba(var(--cream-rgb), 0.32);
+  font-size: 0.6rem;
+  line-height: 1.5;
+  padding-left: 0;
+}
+
+/* ─── Auth card — enhanced glass ─── */
+
+.auth-body .auth-card {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background:
+    radial-gradient(circle at 18% 5%, rgba(255, 255, 255, 0.14), transparent 24%),
+    radial-gradient(circle at 82% 88%, rgba(var(--gold-rgb), 0.08), transparent 28%),
+    linear-gradient(150deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.012) 52%),
+    rgba(6, 7, 9, 0.28);
+  -webkit-backdrop-filter: blur(48px) saturate(160%);
+  backdrop-filter: blur(48px) saturate(160%);
+  box-shadow:
+    0 48px 120px rgba(0, 0, 0, 0.6),
+    0 14px 42px rgba(var(--gold-rgb), 0.08),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.26),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
 }
 
 
