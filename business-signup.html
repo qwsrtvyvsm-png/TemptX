@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Business Sign Up | TEMPTX</title>
+  <meta name="description" content="Register your adult business or agency on TEMPTX — Australia's adult industry network." />
+  <link rel="stylesheet" href="style.css?v=20260703-04" />
+</head>
+
+<body class="auth-body cinematic-background" data-auth-mode="signup" data-auth-role="business">
+  <div class="auth-announcement">Private &middot; Premium &middot; Australian Industry Network</div>
+  <main class="auth-page">
+    <div class="auth-logo-block">
+      <a class="auth-logo" href="index.html" aria-label="TEMPTX home">
+        <span>TEMPT</span><strong>X</strong>
+      </a>
+      <p class="auth-logo-tagline">Australia's Adult Industry Network</p>
+    </div>
+
+    <section class="auth-card" aria-labelledby="authTitle">
+      <div class="auth-card-glow" aria-hidden="true"></div>
+
+      <div class="auth-heading">
+        <p class="eyebrow">Business registration</p>
+        <h1 id="authTitle">Create a business account.</h1>
+        <p id="authSubtitle">Register your business on TEMPTX</p>
+      </div>
+
+      <form class="auth-form" id="authForm">
+        <label class="auth-field" id="workingNameField">
+          <span>Business name</span>
+          <input id="authWorkingName" type="text" autocomplete="organization" placeholder="Your business or agency name" />
+        </label>
+
+        <label class="auth-field" id="emailField">
+          <span>Email address</span>
+          <input id="authEmail" type="email" autocomplete="email" placeholder="contact@yourbusiness.com.au" />
+        </label>
+
+        <label class="auth-field" id="accountCategoryField">
+          <span>Business type</span>
+          <select id="authAccountCategory">
+            <option value="">Choose a business type</option>
+            <option value="brothel">Brothel</option>
+            <option value="escort agency">Escort Agency</option>
+            <option value="adult venue">Adult Venue</option>
+            <option value="adult business">Adult Business</option>
+            <option value="photography">Photography / Media</option>
+            <option value="support services">Support Services</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+
+        <label class="auth-field" id="clientIdField" hidden>
+          <span>TEMPTX client ID</span>
+          <input id="authClientId" type="text" autocomplete="username" placeholder="TX-8F2A1C" />
+        </label>
+
+        <div class="auth-field">
+          <label for="authPassword">Password</label>
+          <span class="password-control">
+            <input id="authPassword" type="password" autocomplete="new-password" placeholder="Password" required />
+            <button type="button" class="password-toggle" data-password-target="authPassword">Show</button>
+          </span>
+          <small class="password-requirements" id="passwordRequirements">
+            At least 12 characters with upper and lowercase letters and a number.
+          </small>
+        </div>
+
+        <label class="policy-consent" id="policyConsentRow">
+          <input type="checkbox" id="acceptedPolicies" />
+          <span>
+            I am 18+ and agree to the <a href="terms.html">Terms</a>,
+            <a href="privacy.html">Privacy Notice</a>, and
+            <a href="community-standards.html">Community Standards</a>.
+          </span>
+        </label>
+
+        <div class="auth-form-row" id="loginOptions" hidden>
+          <label class="remember-option">
+            <input type="checkbox" id="rememberSession" />
+            <span>Remember me</span>
+          </label>
+          <button type="button" class="auth-link" id="forgotPasswordButton">Forgot password?</button>
+        </div>
+
+        <button class="auth-submit" id="authSubmit" type="submit">Create business account</button>
+      </form>
+
+      <div class="auth-status" id="authStatus" aria-live="polite"></div>
+      <section class="recovery-key-card" id="recoveryKeyCard" hidden>
+        <p class="eyebrow">Save this once</p>
+        <h2>Your recovery key</h2>
+        <code id="recoveryKeyValue"></code>
+        <p>Store this somewhere private. TemptX cannot display it again.</p>
+        <button class="outline-btn" id="copyRecoveryKey" type="button">Copy recovery key</button>
+      </section>
+
+      <p class="auth-privacy-note" id="authPrivacyNote">18+ only · Private by design · Your contact details stay protected</p>
+      <p class="auth-policy-links" id="authPolicyLinks">
+        By creating an account you confirm you are 18+ and agree to the
+        <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Notice</a>.
+      </p>
+      <p class="auth-nav-hint">Already have an account? <a href="creator-login.html">Log in</a></p>
+    </section>
+
+    <a class="auth-back-link" href="join.html">← Back to role selection</a>
+  </main>
+
+  <div class="auth-modal" id="forgotModal" hidden>
+    <section class="auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+      <button class="auth-modal-close" type="button" id="closeForgotModal">Close</button>
+      <p class="eyebrow">Account recovery</p>
+      <h2 id="forgotTitle">Reset your password.</h2>
+      <p id="forgotDescription">Enter your account details and the recovery key saved during signup.</p>
+
+      <form id="forgotForm" class="auth-form">
+        <label class="auth-field" id="forgotEmailField" hidden>
+          <span>Email address</span>
+          <input id="forgotEmail" type="email" placeholder="contact@yourbusiness.com.au" />
+        </label>
+        <label class="auth-field" id="forgotClientIdField">
+          <span>TEMPTX client ID</span>
+          <input id="forgotClientId" type="text" placeholder="TX-8F2A1C" />
+        </label>
+        <label class="auth-field">
+          <span>Recovery key</span>
+          <input id="forgotRecoveryCode" type="text" autocomplete="off" placeholder="TXK-XXXXXX-XXXXXX-XXXXXX" required />
+        </label>
+        <button class="auth-submit" type="submit">Verify recovery key</button>
+        <a class="auth-help-link" href="report.html?type=account">I no longer have my recovery key</a>
+      </form>
+
+      <form id="resetForm" class="auth-form" hidden>
+        <label class="auth-field" hidden>
+          <span>Temporary reset code</span>
+          <input id="resetToken" type="text" required />
+        </label>
+        <div class="auth-field">
+          <label for="resetPassword">New password</label>
+          <span class="password-control">
+            <input id="resetPassword" type="password" required placeholder="New password" />
+            <button type="button" class="password-toggle" data-password-target="resetPassword">Show</button>
+          </span>
+          <small class="password-requirements">
+            At least 12 characters with upper and lowercase letters and a number.
+          </small>
+        </div>
+        <button class="auth-submit" type="submit">Update password</button>
+      </form>
+
+      <div class="auth-status" id="recoveryStatus" aria-live="polite"></div>
+    </section>
+  </div>
+
+  <script src="auth.js?v=20260629-02"></script>
+</body>
+</html>

@@ -10328,6 +10328,192 @@ body.creator-dashboard-body {
 
 
 /* ══════════════════════════════════════════════════
+   JOIN — Role Selection Page
+   ══════════════════════════════════════════════════ */
+
+.join-select-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.join-select-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(48px, 8vh, 96px) clamp(18px, 5vw, 48px);
+}
+
+.join-select-panel {
+  width: min(1060px, 100%);
+  padding: clamp(40px, 6vw, 72px) clamp(28px, 6vw, 72px) clamp(36px, 5vw, 56px);
+  text-align: center;
+  border-radius: 18px;
+  border: 1px solid rgba(var(--champagne-rgb), 0.2);
+  background:
+    radial-gradient(ellipse at 30% 0%, rgba(var(--gold-rgb), 0.07), transparent 18rem),
+    radial-gradient(ellipse at 76% 100%, rgba(var(--champagne-rgb), 0.05), transparent 16rem),
+    linear-gradient(155deg, rgba(22, 16, 10, 0.96) 0%, rgba(10, 8, 6, 0.98) 60%, rgba(6, 5, 4, 0.99) 100%);
+  box-shadow:
+    0 40px 100px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(0, 0, 0, 0.72),
+    inset 0 1px rgba(255, 244, 220, 0.1),
+    inset 0 -1px rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(20px) saturate(110%);
+  backdrop-filter: blur(20px) saturate(110%);
+}
+
+.join-select-eyebrow {
+  margin: 0 0 14px;
+  color: var(--gold);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.join-select-title {
+  margin: 0;
+  color: var(--cream);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.7rem, 3.4vw, 2.8rem);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 1.18;
+  text-transform: none;
+}
+
+.join-select-rule {
+  display: block;
+  width: 48px;
+  height: 1px;
+  margin: 22px auto 20px;
+  background: linear-gradient(90deg, transparent, rgba(var(--gold-rgb), 0.7), transparent);
+}
+
+.join-select-subtitle {
+  margin: 0 0 44px;
+  color: rgba(var(--cream-rgb), 0.46);
+  font-size: 0.88rem;
+  letter-spacing: 0.06em;
+  line-height: 1.6;
+}
+
+/* ─── Role Cards Grid ─── */
+
+.join-select-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.join-select-grid-4 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.join-select-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 36px 28px 32px;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--champagne-rgb), 0.14);
+  background: linear-gradient(160deg, rgba(18, 13, 9, 0.9) 0%, rgba(8, 6, 4, 0.95) 100%);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 240ms ease, background 240ms ease, transform 240ms ease, box-shadow 240ms ease;
+}
+
+.join-select-card:hover {
+  border-color: rgba(var(--gold-rgb), 0.42);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(var(--gold-rgb), 0.07), transparent 12rem),
+    linear-gradient(160deg, rgba(26, 18, 11, 0.95) 0%, rgba(10, 7, 5, 0.98) 100%);
+  transform: translateY(-3px);
+  box-shadow:
+    0 20px 52px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(var(--gold-rgb), 0.18);
+}
+
+.join-select-card:hover .join-select-cta {
+  color: var(--gold);
+  border-color: rgba(var(--gold-rgb), 0.44);
+}
+
+.join-select-icon {
+  display: block;
+  margin-bottom: 18px;
+  color: rgba(var(--gold-rgb), 0.7);
+  font-size: 1.5rem;
+  line-height: 1;
+  transition: color 240ms ease;
+}
+
+.join-select-card:hover .join-select-icon {
+  color: var(--gold);
+}
+
+.join-select-role {
+  margin: 0 0 12px;
+  color: var(--cream);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-transform: none;
+}
+
+.join-select-desc {
+  margin: 0 0 24px;
+  color: rgba(var(--cream-rgb), 0.46);
+  font-size: 0.8rem;
+  line-height: 1.65;
+  flex: 1;
+}
+
+.join-select-cta {
+  display: inline-block;
+  margin-top: auto;
+  padding: 10px 20px;
+  border: 1px solid rgba(var(--champagne-rgb), 0.26);
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(var(--gold-rgb), 0.08), rgba(var(--gold-rgb), 0.03));
+  color: rgba(var(--cream-rgb), 0.7);
+  font-size: 0.71rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: color 240ms ease, border-color 240ms ease, background 240ms ease;
+}
+
+.join-select-note {
+  max-width: 54ch;
+  margin: 0 auto;
+  color: rgba(var(--cream-rgb), 0.26);
+  font-size: 0.71rem;
+  letter-spacing: 0.04em;
+  line-height: 1.65;
+}
+
+/* ─── Join Select — Responsive ─── */
+
+@media (max-width: 760px) {
+  .join-select-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .join-select-card {
+    padding: 28px 24px 24px;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════
    SITE HEADER — Compact horizontal nav bar
    ══════════════════════════════════════════════════ */
 
