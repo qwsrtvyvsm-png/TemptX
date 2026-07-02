@@ -977,6 +977,7 @@ const serveStatic = (request, response, pathname) => {
     }
 
     const ext = path.extname(filePath).toLowerCase();
+    const url = new URL(request.url, `http://${request.headers.host || "localhost"}`);
     const isVersioned = url.searchParams.has("v");
     response.writeHead(200, {
       "Content-Type": mimeTypes[ext] || "application/octet-stream",
