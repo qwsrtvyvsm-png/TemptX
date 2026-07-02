@@ -10399,17 +10399,84 @@ body.creator-dashboard-body {
   line-height: 1.6;
 }
 
+/* ─── Account Type Sections ─── */
+
+.join-select-section {
+  margin-bottom: 12px;
+}
+
+.join-select-section-biz {
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+.join-select-section-label {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.join-select-section-heading {
+  flex-shrink: 0;
+  margin: 0;
+  color: rgba(var(--cream-rgb), 0.44);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.join-select-section-rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--champagne-rgb), 0.18), transparent);
+}
+
 /* ─── Role Cards Grid ─── */
 
 .join-select-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 36px;
+  gap: 14px;
+  margin-bottom: 28px;
 }
 
-.join-select-grid-4 {
-  grid-template-columns: repeat(2, 1fr);
+.join-select-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.join-select-grid-1 {
+  grid-template-columns: 1fr;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Business card — slightly wider centered treatment */
+.join-select-card-biz {
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+  gap: 20px;
+  padding: 28px 36px;
+}
+
+.join-select-card-biz .join-select-icon {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.join-select-card-biz .join-select-desc {
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.join-select-card-biz .join-select-cta {
+  flex-shrink: 0;
+  margin-top: 0;
 }
 
 .join-select-card {
@@ -10507,14 +10574,51 @@ body.creator-dashboard-body {
 
 /* ─── Join Select — Responsive ─── */
 
-@media (max-width: 760px) {
-  .join-select-grid {
+/* ─── Tablet: 3-col → 2-col ─── */
+@media (max-width: 860px) {
+  .join-select-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ─── Mobile: all → 1-col ─── */
+@media (max-width: 600px) {
+  .join-select-grid,
+  .join-select-grid-3,
+  .join-select-grid-1 {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
+  }
+
+  .join-select-grid-1 {
+    max-width: 100%;
   }
 
   .join-select-card {
-    padding: 28px 24px 24px;
+    padding: 26px 22px 22px;
+  }
+
+  .join-select-card-biz {
+    flex-direction: column;
+    text-align: center;
+    padding: 26px 22px 22px;
+    gap: 0;
+  }
+
+  .join-select-card-biz .join-select-icon {
+    margin-bottom: 14px;
+  }
+
+  .join-select-card-biz .join-select-desc {
+    margin-bottom: 20px;
+  }
+
+  .join-select-card-biz .join-select-cta {
+    margin-top: 0;
+  }
+
+  .join-select-section-label {
+    gap: 10px;
   }
 }
 
