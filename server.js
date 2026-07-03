@@ -130,8 +130,8 @@ const validPassword = (password) =>
 const normaliseEmail = (email) => String(email || "").trim().toLowerCase();
 const normaliseClientId = (clientId) => String(clientId || "").trim().toUpperCase();
 const validEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-const accountRole = (role) => (["client", "creator", "provider"].includes(role) ? role : null);
-const isEmailAccount = (role) => role === "provider" || role === "creator";
+const accountRole = (role) => (["client", "creator", "provider", "business"].includes(role) ? role : null);
+const isEmailAccount = (role) => role === "provider" || role === "creator" || role === "business";
 const workerCategories = new Set([
   "escorts",
   "fetisher",
@@ -140,6 +140,16 @@ const workerCategories = new Set([
   "content creators",
   "companions"
 ]);
+const businessCategories = new Set([
+  "brothel",
+  "escort agency",
+  "adult venue",
+  "adult business",
+  "photography",
+  "support services",
+  "other"
+]);
+const normaliseAbn = (abn) => String(abn || "").replace(/\D/g, "");
 const hashPrivateValue = (value) =>
   crypto.createHmac("sha256", serverSecret).update(String(value)).digest("hex");
 
@@ -381,6 +391,8 @@ const publicUser = (user) => ({
   workingName: user.workingName || null,
   gender: user.gender || null,
   accountCategory: user.accountCategory || null,
+  applicationStatus: user.applicationStatus || null,
+  businessProfile: user.businessProfile || null,
   settings: {
     displayName: user.settings?.displayName || "",
     directMessages: user.settings?.directMessages !== false,
@@ -533,7 +545,7 @@ const handleApi = async (request, response, pathname) => {
       const password = String(body.password || "");
 
       if (!requireAuthRateLimit(request, response, "signup", role || "unknown")) return;
-      if (!role) return json(response, 400, { error: "Choose a client, creator, or provider account." });
+      if (!role) return json(response, 400, { error: "Choose a client, creator, provider, or business account." });
       if (body.acceptedPolicies !== true) {
         return json(response, 400, { error: "Confirm the adult-only Terms and Privacy Notice to create an account." });
       }
@@ -544,17 +556,46 @@ const handleApi = async (request, response, pathname) => {
       }
 
       // Validate email-account fields before the expensive scrypt call.
-      let email, workingName, gender, accountCategory;
+      let email, workingName, gender, accountCategory, businessAbn;
+      let businessWebsite = "";
+      let businessPhone = "";
+      let businessDescription = "";
+      let servicesOffered = "";
+      let businessLocation = "";
+      let openingHours = "";
+      let priceRange = "";
+      let logoDataUrl = "";
       if (isEmailAccount(role)) {
         email = normaliseEmail(body.email);
         workingName = cleanText(body.workingName, 80);
-        gender = cleanText(body.gender, 60);
         accountCategory = cleanText(body.accountCategory, 40).toLowerCase();
         if (!validEmail(email)) return json(response, 400, { error: "Enter a valid email address." });
-        if (!workingName) return json(response, 400, { error: "Enter your working name." });
-        if (!gender) return json(response, 400, { error: "Enter your gender." });
-        if (!workerCategories.has(accountCategory)) {
-          return json(response, 400, { error: "Choose a valid provider or creator category." });
+        if (!workingName) {
+          return json(response, 400, {
+            error: role === "business" ? "Enter your business name." : "Enter your working name."
+          });
+        }
+
+        if (role === "business") {
+          businessAbn = normaliseAbn(body.businessAbn);
+          if (businessAbn.length !== 11) return json(response, 400, { error: "Enter a valid 11 digit ABN." });
+          if (!businessCategories.has(accountCategory)) {
+            return json(response, 400, { error: "Choose a valid business category." });
+          }
+          businessWebsite = cleanText(body.website, 300);
+          businessPhone = cleanText(body.businessPhone, 40);
+          businessDescription = cleanText(body.businessDescription, 2000);
+          servicesOffered = cleanText(body.services, 2000);
+          businessLocation = cleanText(body.businessLocation, 200);
+          openingHours = cleanText(body.openingHours, 200);
+          priceRange = cleanText(body.priceRange, 200);
+          logoDataUrl = cleanText(body.logoDataUrl, 5000);
+        } else {
+          gender = cleanText(body.gender, 60);
+          if (!gender) return json(response, 400, { error: "Enter your gender." });
+          if (!workerCategories.has(accountCategory)) {
+            return json(response, 400, { error: "Choose a valid provider or creator category." });
+          }
         }
       }
 
@@ -584,8 +625,23 @@ const handleApi = async (request, response, pathname) => {
         if (isEmailAccount(role)) {
           user.email = email;
           user.workingName = workingName;
-          user.gender = gender;
           user.accountCategory = accountCategory;
+          if (role === "business") {
+            user.businessAbn = businessAbn;
+            user.applicationStatus = "pending_review";
+            user.businessProfile = {
+              website: businessWebsite,
+              contactPhone: businessPhone,
+              description: businessDescription,
+              services: servicesOffered,
+              location: businessLocation,
+              openingHours,
+              priceRange,
+              logoDataUrl
+            };
+          } else {
+            user.gender = gender;
+          }
         } else {
           user.clientId = makeClientId(users);
           user.safetyStatus = "active";

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Business Sign Up | TEMPTX</title>
   <meta name="description" content="Register your adult business or agency on TEMPTX — Australia's adult industry network." />
-  <link rel="stylesheet" href="style.css?v=20260703-04" />
+  <link rel="stylesheet" href="style.css?v=20260703-07" />
 </head>
 
 <body class="auth-body cinematic-background" data-auth-mode="signup" data-auth-role="business">
@@ -33,15 +33,20 @@
           <input id="authWorkingName" type="text" autocomplete="organization" placeholder="Your business or agency name" />
         </label>
 
+        <label class="auth-field" id="businessAbnField">
+          <span>ABN</span>
+          <input id="authBusinessAbn" type="text" inputmode="numeric" autocomplete="off" maxlength="14" placeholder="11 digit Australian Business Number" />
+        </label>
+
         <label class="auth-field" id="emailField">
           <span>Email address</span>
           <input id="authEmail" type="email" autocomplete="email" placeholder="contact@yourbusiness.com.au" />
         </label>
 
         <label class="auth-field" id="accountCategoryField">
-          <span>Business type</span>
+          <span>Business category</span>
           <select id="authAccountCategory">
-            <option value="">Choose a business type</option>
+            <option value="">Choose a business category</option>
             <option value="brothel">Brothel</option>
             <option value="escort agency">Escort Agency</option>
             <option value="adult venue">Adult Venue</option>
@@ -50,6 +55,46 @@
             <option value="support services">Support Services</option>
             <option value="other">Other</option>
           </select>
+        </label>
+
+        <label class="auth-field" id="websiteField" hidden>
+          <span>Website or social links</span>
+          <input id="authWebsite" type="text" autocomplete="url" placeholder="https://yourbusiness.com.au / Instagram / Facebook" />
+        </label>
+
+        <label class="auth-field" id="phoneField" hidden>
+          <span>Business contact phone</span>
+          <input id="authBusinessPhone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+61 400 000 000" />
+        </label>
+
+        <label class="auth-field" id="businessDescriptionField" hidden>
+          <span>Business description</span>
+          <textarea id="authBusinessDescription" rows="3" placeholder="Tell customers what makes your business unique"></textarea>
+        </label>
+
+        <label class="auth-field" id="servicesField" hidden>
+          <span>Services offered</span>
+          <textarea id="authServices" rows="3" placeholder="Services, packages, and specialties"></textarea>
+        </label>
+
+        <label class="auth-field" id="locationField" hidden>
+          <span>Business location</span>
+          <input id="authBusinessLocation" type="text" placeholder="City, suburb or service area" />
+        </label>
+
+        <label class="auth-field" id="hoursField" hidden>
+          <span>Opening hours</span>
+          <input id="authOpeningHours" type="text" placeholder="Mon–Fri 10am to 10pm" />
+        </label>
+
+        <label class="auth-field" id="priceRangeField" hidden>
+          <span>Price range / starting from</span>
+          <input id="authPriceRange" type="text" placeholder="$150+ / Starting from $200" />
+        </label>
+
+        <label class="auth-field" id="logoField" hidden>
+          <span>Upload logo</span>
+          <input id="authLogoInput" type="file" accept="image/*" />
         </label>
 
         <label class="auth-field" id="clientIdField" hidden>
@@ -102,7 +147,7 @@
         By creating an account you confirm you are 18+ and agree to the
         <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Notice</a>.
       </p>
-      <p class="auth-nav-hint">Already have an account? <a href="creator-login.html">Log in</a></p>
+      <p class="auth-nav-hint">Already have an account? <a href="auth.html?mode=login&amp;role=business">Log in</a></p>
     </section>
 
     <a class="auth-back-link" href="join.html">← Back to role selection</a>
@@ -154,6 +199,6 @@
     </section>
   </div>
 
-  <script src="auth.js?v=20260629-02"></script>
+  <script src="auth.js?v=20260703-06"></script>
 </body>
 </html>
