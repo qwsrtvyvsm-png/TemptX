@@ -10752,7 +10752,7 @@ body.creator-dashboard-body {
 
 @media (max-width: 860px) {
   .join-select-panel {
-    min-height: auto;
+    min-height: 0;
   }
 }
 
