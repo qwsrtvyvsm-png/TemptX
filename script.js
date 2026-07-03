@@ -15,7 +15,37 @@ const directoryLinks = document.querySelectorAll('.dropdown-menu a[href*="#direc
 const loginLinks = document.querySelectorAll("[data-login]");
 const logoutLinks = document.querySelectorAll("[data-logout]");
 const favouriteProviderButtons = document.querySelectorAll("[data-favourite-provider]");
+const headerInteractiveItems = document.querySelectorAll(".site-header .store-nav a, .site-header .header-tool");
 const favouritesStorageKey = "temptxFavouriteProviders";
+
+const normalisePath = (path) => {
+  const cleanPath = String(path || "").replace(/\/+$/, "");
+  return cleanPath.endsWith("/index.html") || cleanPath === "" ? "/" : cleanPath;
+};
+
+document.querySelectorAll(".site-header .store-nav a[href]").forEach((link) => {
+  const linkPath = normalisePath(new URL(link.href, window.location.href).pathname);
+  const currentPath = normalisePath(window.location.pathname);
+  const isCurrent = linkPath === currentPath;
+
+  link.classList.toggle("nav-current", isCurrent);
+  if (isCurrent) {
+    link.setAttribute("aria-current", "page");
+  } else if (link.getAttribute("aria-current") === "page") {
+    link.removeAttribute("aria-current");
+  }
+});
+
+headerInteractiveItems.forEach((item) => {
+  const clearPressed = () => item.classList.remove("is-pressed");
+
+  item.addEventListener("pointerdown", () => {
+    item.classList.add("is-pressed");
+  });
+  item.addEventListener("pointerup", clearPressed);
+  item.addEventListener("pointerleave", clearPressed);
+  item.addEventListener("blur", clearPressed);
+});
 
 const getFavouriteProviders = () => {
   try {
