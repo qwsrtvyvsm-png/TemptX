@@ -189,9 +189,25 @@
     align-items: start;
   }
 
+  .dir-content {
+    grid-column: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .directory-results {
+    overflow: visible;
+    min-height: 0;
+  }
+
+  .directory-cards {
+    min-height: 0;
+    align-content: start;
+  }
+
   /* sidebar is first in HTML (for tablet/mobile top-stack), but grid-column
      overrides visual placement: content → left column, sidebar → right column */
-  .dir-content { grid-column: 1; }
   .dir-sidebar { grid-column: 2; }
 }
 

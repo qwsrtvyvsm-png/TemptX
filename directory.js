@@ -403,13 +403,48 @@ const createProviderCard = (provider) => {
 const loadProviders = async () => {
   try {
     const response = await fetch("/api/directory/providers");
-    if (!response.ok) return;
+    if (!response.ok) throw new Error("Directory API unavailable");
     const result = await response.json();
-    result.providers.forEach((provider) => cardsContainer.prepend(createProviderCard(provider)));
-    cards = [...document.querySelectorAll(".directory-card")];
+    const providers = Array.isArray(result?.providers) ? result.providers : [];
+
+    if (providers.length) {
+      providers.forEach((provider) => cardsContainer.prepend(createProviderCard(provider)));
+      cards = [...document.querySelectorAll(".directory-card")];
+      return;
+    }
   } catch {
-    // Static sample cards remain available when the local account server is offline.
+    // Fall back to demo providers when the local account server is offline or returns no data.
   }
+
+  const fallbackProviders = [
+    {
+      id: "demo-1",
+      name: "Luna Wellness",
+      locations: ["London"],
+      services: ["Massage", "Reflexology"],
+      attributes: ["Verified", "In-person"],
+      photo: ""
+    },
+    {
+      id: "demo-2",
+      name: "Aurora Studio",
+      locations: ["Manchester", "Birmingham"],
+      services: ["Facial", "Bodywork"],
+      attributes: ["Luxury", "Mobile"],
+      photo: ""
+    },
+    {
+      id: "demo-3",
+      name: "Solstice Retreat",
+      locations: ["Brighton"],
+      services: ["Sauna", "Private Sessions"],
+      attributes: ["Couples", "Evening"],
+      photo: ""
+    }
+  ];
+
+  fallbackProviders.forEach((provider) => cardsContainer.prepend(createProviderCard(provider)));
+  cards = [...document.querySelectorAll(".directory-card")];
 };
 
 const initialiseDirectory = async () => {
