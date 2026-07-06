@@ -1,3 +1,4 @@
+require("dotenv").config();
 const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -9,6 +10,9 @@ const root = __dirname;
 const dataDirectory = path.join(root, "data");
 const usersFile = path.join(dataDirectory, "users.json");
 const reportsFile = path.join(dataDirectory, "reports.json");
+const membershipsFile = path.join(dataDirectory, "memberships.json");
+const subscriptionsFile = path.join(dataDirectory, "subscriptions.json");
+const transactionsFile = path.join(dataDirectory, "transactions.json");
 const serverSecretFile = path.join(dataDirectory, "server-secret");
 const sessions = new Map();
 const resetTokens = new Map();
@@ -35,7 +39,17 @@ if (!fs.existsSync(usersFile)) {
 if (!fs.existsSync(reportsFile)) {
   fs.writeFileSync(reportsFile, "[]\n");
 }
+if (!fs.existsSync(membershipsFile)) {
+  fs.writeFileSync(membershipsFile, "[]\n");
+}
 
+if (!fs.existsSync(subscriptionsFile)) {
+  fs.writeFileSync(subscriptionsFile, "[]\n");
+}
+
+if (!fs.existsSync(transactionsFile)) {
+  fs.writeFileSync(transactionsFile, "[]\n");
+}
 let serverSecret;
 if (process.env.SERVER_SECRET) {
   serverSecret = process.env.SERVER_SECRET.trim();
@@ -72,7 +86,77 @@ const readUsers = () => JSON.parse(fs.readFileSync(usersFile, "utf8"));
 const writeUsers = (users) => atomicWrite(usersFile, `${JSON.stringify(users, null, 2)}\n`);
 const readReports = () => JSON.parse(fs.readFileSync(reportsFile, "utf8"));
 const writeReports = (reports) => atomicWrite(reportsFile, `${JSON.stringify(reports, null, 2)}\n`);
+const readMemberships = () =>
+  JSON.parse(fs.readFileSync(membershipsFile, "utf8"));
 
+const writeMemberships = (memberships) =>
+  atomicWrite(
+    membershipsFile,
+    `${JSON.stringify(memberships, null, 2)}\n`
+  );
+
+const readSubscriptions = () =>
+  JSON.parse(fs.readFileSync(subscriptionsFile, "utf8"));
+
+const writeSubscriptions = (subscriptions) =>
+  atomicWrite(
+    subscriptionsFile,
+    `${JSON.stringify(subscriptions, null, 2)}\n`
+  );
+const getMembership = (userId) => {
+  const memberships = readMemberships();
+
+  return (
+    memberships.find(
+      (membership) =>
+        membership.userId === userId &&
+        membership.status === "active"
+    ) || null
+  );
+};
+
+const setMembership = (userId, tier, extra = {}) =>
+  usersQueue(async () => {
+    const memberships = readMemberships();
+    const now = new Date().toISOString();
+
+    const existingIndex = memberships.findIndex(
+      (membership) => membership.userId === userId
+    );
+
+    const membership = {
+      userId,
+      tier,
+      status: "active",
+      startedAt: extra.startedAt || now,
+      updatedAt: now,
+      expiresAt: extra.expiresAt || null,
+      source: extra.source || "manual"
+    };
+
+    if (existingIndex >= 0) {
+      memberships[existingIndex] = {
+        ...memberships[existingIndex],
+        ...membership,
+        startedAt:
+          memberships[existingIndex].startedAt || membership.startedAt
+      };
+    } else {
+      memberships.push(membership);
+    }
+
+    writeMemberships(memberships);
+    return membership;
+  });
+
+const readTransactions = () =>
+  JSON.parse(fs.readFileSync(transactionsFile, "utf8"));
+
+const writeTransactions = (transactions) =>
+  atomicWrite(
+    transactionsFile,
+    `${JSON.stringify(transactions, null, 2)}\n`
+  );
 const usersQueue = makeQueue();
 const reportsQueue = makeQueue();
 
@@ -537,8 +621,32 @@ const handleApi = async (request, response, pathname) => {
           updatedAt: report.updatedAt
         }
       });
-    }
 
+} // <-- route ends here
+
+// PASTE NEW BLOCK HERE
+if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
+  if (process.env.PAYMENT_PROVIDER !== "dev") {
+    return json(response, 403, { error: "Dev membership grant disabled." });
+  }
+
+  const body = await readJsonBody(request);
+  const userId = String(body.userId || "").trim();
+  const tier = String(body.tier || "premium").trim();
+
+  if (!userId) {
+    return json(response, 400, { error: "Missing userId." });
+  }
+
+  const membership = await setMembership(userId, tier, {
+    source: "dev"
+  });
+
+  return json(response, 200, {
+    message: "Membership granted.",
+    membership
+  });
+}
     if (pathname === "/api/auth/signup" && request.method === "POST") {
       const body = await readJsonBody(request);
       const role = accountRole(body.role);
