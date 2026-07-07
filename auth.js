@@ -277,18 +277,18 @@ if (authForm) {
             : role === "creator"
             ? "Open dashboard"
             : role === "business"
-            ? "Return to TEMPTX"
+            ? "Open dashboard"
             : "Open profile";
         authSubmit.type = "button";
         authSubmit.onclick = () => {
-          window.location.href = safeNext || (role === "client" ? "chat.html" : role === "creator" ? "creator-dashboard.html" : role === "business" ? "index.html" : "profile.html");
+          window.location.href = safeNext || (role === "client" ? "chat.html" : role === "creator" ? "creator-dashboard.html" : role === "business" ? "business-dashboard.html" : "profile.html");
         };
         return;
       }
 
       setStatus(authStatus, result.message, "success");
       window.setTimeout(() => {
-        window.location.href = safeNext || (role === "client" ? "chat.html" : role === "creator" ? "creator-dashboard.html" : role === "business" ? "index.html" : "profile.html");
+        window.location.href = safeNext || (role === "client" ? "chat.html" : role === "creator" ? "creator-dashboard.html" : role === "business" ? "business-dashboard.html" : "profile.html");
       }, 650);
     } catch (error) {
       setStatus(authStatus, error.message, "error");
