@@ -467,6 +467,38 @@ const cleanProfile = (body) => {
   };
 };
 
+const cleanBusinessProfilePatch = (body) => {
+  const source = body && typeof body === "object" ? body : {};
+  const updates = {};
+
+  if (Object.prototype.hasOwnProperty.call(source, "website")) {
+    updates.website = cleanText(source.website, 300);
+  }
+  if (Object.prototype.hasOwnProperty.call(source, "contactPhone")) {
+    updates.contactPhone = cleanText(source.contactPhone, 40);
+  }
+  if (Object.prototype.hasOwnProperty.call(source, "description")) {
+    updates.description = cleanText(source.description, 2000);
+  }
+  if (Object.prototype.hasOwnProperty.call(source, "services")) {
+    updates.services = cleanText(source.services, 2000);
+  }
+  if (Object.prototype.hasOwnProperty.call(source, "location")) {
+    updates.location = cleanText(source.location, 200);
+  }
+  if (Object.prototype.hasOwnProperty.call(source, "openingHours")) {
+    updates.openingHours = cleanText(source.openingHours, 200);
+  }
+  if (Object.prototype.hasOwnProperty.call(source, "priceRange")) {
+    updates.priceRange = cleanText(source.priceRange, 200);
+  }
+  if (Object.prototype.hasOwnProperty.call(source, "logoDataUrl")) {
+    updates.logoDataUrl = cleanText(source.logoDataUrl, 5000);
+  }
+
+  return updates;
+};
+
 const publicUser = (user) => ({
   id: user.id,
   role: user.role,
@@ -930,6 +962,78 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
       const user = getAuthenticatedUser(request);
       if (!user) return json(response, 401, { error: "Not signed in." });
       return json(response, 200, { user: publicUser(user) });
+    }
+
+    if (pathname === "/api/business/profile" && request.method === "GET") {
+      const user = getAuthenticatedUser(request);
+      if (!user) return json(response, 401, { error: "Sign in to view your business profile." });
+      if (user.role !== "business") return json(response, 403, { error: "Only business accounts can view this profile." });
+
+      return json(response, 200, {
+        user: publicUser(user),
+        businessProfile: user.businessProfile || {},
+        applicationStatus: user.applicationStatus || "pending_review"
+      });
+    }
+
+    if (pathname === "/api/business/profile" && request.method === "PATCH") {
+      const authenticatedUser = getAuthenticatedUser(request);
+      if (!authenticatedUser) return json(response, 401, { error: "Sign in to update your business profile." });
+      if (authenticatedUser.role !== "business") {
+        return json(response, 403, { error: "Only business accounts can update this profile." });
+      }
+
+      const body = await readJsonBody(request);
+      const businessProfileSource =
+        body?.businessProfile && typeof body.businessProfile === "object" ? body.businessProfile : body;
+      const profileUpdates = cleanBusinessProfilePatch(businessProfileSource);
+      const hasDisplayNameUpdate =
+        body?.settings &&
+        typeof body.settings === "object" &&
+        Object.prototype.hasOwnProperty.call(body.settings, "displayName");
+      const nextDisplayName = hasDisplayNameUpdate ? cleanText(body.settings.displayName, 50) : "";
+
+      if (!Object.keys(profileUpdates).length && !hasDisplayNameUpdate) {
+        return json(response, 400, {
+          error:
+            "No supported business profile fields were provided. You can update website, contactPhone, description, services, location, openingHours, priceRange, logoDataUrl, or settings.displayName."
+        });
+      }
+
+      const saved = await usersQueue(() => {
+        const users = readUsers();
+        const user = users.find((item) => item.id === authenticatedUser.id);
+        if (!user) return { notFound: true };
+        if (user.role !== "business") return { forbidden: true };
+
+        user.businessProfile = {
+          ...(user.businessProfile && typeof user.businessProfile === "object" ? user.businessProfile : {}),
+          ...profileUpdates
+        };
+        user.businessProfileUpdatedAt = new Date().toISOString();
+
+        if (hasDisplayNameUpdate) {
+          user.settings = {
+            ...(user.settings && typeof user.settings === "object" ? user.settings : {}),
+            displayName: nextDisplayName
+          };
+          user.settingsUpdatedAt = new Date().toISOString();
+        }
+
+        writeUsers(users);
+        return { user };
+      });
+
+      if (saved.notFound) return json(response, 404, { error: "Account not found." });
+      if (saved.forbidden) {
+        return json(response, 403, { error: "Only business accounts can update this profile." });
+      }
+      return json(response, 200, {
+        message: "Business profile saved.",
+        user: publicUser(saved.user),
+        businessProfile: saved.user.businessProfile || {},
+        applicationStatus: saved.user.applicationStatus || "pending_review"
+      });
     }
 
     if (pathname === "/api/directory/providers" && request.method === "GET") {
