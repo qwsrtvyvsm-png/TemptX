@@ -1,3 +1,5 @@
 {
-    "js/ts.experimental.useTsgo": false
+    "js/ts.experimental.useTsgo": false,
+    "chat.planAgent.defaultModel": "Auto (copilot)",
+    "chat.editor.defaultProvider": "copilotAh"
 }
