@@ -68,3 +68,11 @@ These areas are protected — propose changes and wait for confirmation:
 See [`TEMPTX_CONTEXT.md`](TEMPTX_CONTEXT.md) for current stage, focus areas, and high-level feature list.
 
 See [`audit/2026-06-23/temptx-full-website-audit.md`](audit/2026-06-23/temptx-full-website-audit.md) for the latest full-site audit.
+
+## Cursor Cloud specific instructions
+
+- `npm start` runs `node server.js`; the app binds to `127.0.0.1:5510` only by default, and `PORT` overrides the port.
+- There is no dev/watch server or hot reload. Restart Node after editing `server.js`; static `.html`, `.js`, and `.css` changes load on refresh.
+- The gitignored `data/` directory is auto-created on first boot. It also stores `server-secret`; deleting `data/` resets local accounts and reports.
+- There is no automated test suite or build step. The only routine check is `npm run check`.
+- End-to-end signup testing must handle the first-load 18+ modal. Signup requires `acceptedPolicies: true`, and state-changing `/api/*` requests need `Origin: http://127.0.0.1:5510` for CSRF validation.
