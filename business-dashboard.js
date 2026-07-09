@@ -10,13 +10,6 @@ if (dashboard) {
   const statusPill = document.querySelector("#businessStatusPill");
   const viewPublicProfileLink = document.querySelector("#viewPublicProfileLink");
 
-  const formatStatus = (value) =>
-    String(value || "")
-      .split("_")
-      .filter(Boolean)
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ");
-
   const formatLabel = (value) =>
     String(value || "")
       .split(" ")
@@ -62,8 +55,8 @@ if (dashboard) {
       const displayName = user.settings?.displayName || user.workingName || "your business";
       const accountCategory = formatLabel(user.accountCategory || "adult business");
       const businessLocation = user.businessProfile?.location || "Location pending";
-      const businessStatus = formatStatus(user.applicationStatus || "pending_review");
-      const statusDetails = getApplicationStatusDetails(user.applicationStatus || "pending_review");
+      const storedApplicationStatus = user.applicationStatus || "pending_review";
+      const statusDetails = getApplicationStatusDetails(storedApplicationStatus);
 
       if (title) {
         title.textContent = `Welcome, ${displayName}.`;
@@ -82,7 +75,7 @@ if (dashboard) {
       }
 
       if (applicationState) {
-        applicationState.textContent = businessStatus;
+        applicationState.textContent = storedApplicationStatus;
       }
 
       if (applicationDetails) {
@@ -90,7 +83,7 @@ if (dashboard) {
       }
 
       if (statusPill) {
-        statusPill.textContent = businessStatus;
+        statusPill.textContent = storedApplicationStatus;
       }
 
       // Wire up public profile link
