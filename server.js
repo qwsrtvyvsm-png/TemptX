@@ -1,3 +1,4 @@
+require("dotenv").config();
 const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -9,6 +10,9 @@ const root = __dirname;
 const dataDirectory = path.join(root, "data");
 const usersFile = path.join(dataDirectory, "users.json");
 const reportsFile = path.join(dataDirectory, "reports.json");
+const membershipsFile = path.join(dataDirectory, "memberships.json");
+const subscriptionsFile = path.join(dataDirectory, "subscriptions.json");
+const transactionsFile = path.join(dataDirectory, "transactions.json");
 const serverSecretFile = path.join(dataDirectory, "server-secret");
 const sessions = new Map();
 const resetTokens = new Map();
@@ -35,7 +39,17 @@ if (!fs.existsSync(usersFile)) {
 if (!fs.existsSync(reportsFile)) {
   fs.writeFileSync(reportsFile, "[]\n");
 }
+if (!fs.existsSync(membershipsFile)) {
+  fs.writeFileSync(membershipsFile, "[]\n");
+}
 
+if (!fs.existsSync(subscriptionsFile)) {
+  fs.writeFileSync(subscriptionsFile, "[]\n");
+}
+
+if (!fs.existsSync(transactionsFile)) {
+  fs.writeFileSync(transactionsFile, "[]\n");
+}
 let serverSecret;
 if (process.env.SERVER_SECRET) {
   serverSecret = process.env.SERVER_SECRET.trim();
@@ -72,7 +86,77 @@ const readUsers = () => JSON.parse(fs.readFileSync(usersFile, "utf8"));
 const writeUsers = (users) => atomicWrite(usersFile, `${JSON.stringify(users, null, 2)}\n`);
 const readReports = () => JSON.parse(fs.readFileSync(reportsFile, "utf8"));
 const writeReports = (reports) => atomicWrite(reportsFile, `${JSON.stringify(reports, null, 2)}\n`);
+const readMemberships = () =>
+  JSON.parse(fs.readFileSync(membershipsFile, "utf8"));
 
+const writeMemberships = (memberships) =>
+  atomicWrite(
+    membershipsFile,
+    `${JSON.stringify(memberships, null, 2)}\n`
+  );
+
+const readSubscriptions = () =>
+  JSON.parse(fs.readFileSync(subscriptionsFile, "utf8"));
+
+const writeSubscriptions = (subscriptions) =>
+  atomicWrite(
+    subscriptionsFile,
+    `${JSON.stringify(subscriptions, null, 2)}\n`
+  );
+const getMembership = (userId) => {
+  const memberships = readMemberships();
+
+  return (
+    memberships.find(
+      (membership) =>
+        membership.userId === userId &&
+        membership.status === "active"
+    ) || null
+  );
+};
+
+const setMembership = (userId, tier, extra = {}) =>
+  usersQueue(async () => {
+    const memberships = readMemberships();
+    const now = new Date().toISOString();
+
+    const existingIndex = memberships.findIndex(
+      (membership) => membership.userId === userId
+    );
+
+    const membership = {
+      userId,
+      tier,
+      status: "active",
+      startedAt: extra.startedAt || now,
+      updatedAt: now,
+      expiresAt: extra.expiresAt || null,
+      source: extra.source || "manual"
+    };
+
+    if (existingIndex >= 0) {
+      memberships[existingIndex] = {
+        ...memberships[existingIndex],
+        ...membership,
+        startedAt:
+          memberships[existingIndex].startedAt || membership.startedAt
+      };
+    } else {
+      memberships.push(membership);
+    }
+
+    writeMemberships(memberships);
+    return membership;
+  });
+
+const readTransactions = () =>
+  JSON.parse(fs.readFileSync(transactionsFile, "utf8"));
+
+const writeTransactions = (transactions) =>
+  atomicWrite(
+    transactionsFile,
+    `${JSON.stringify(transactions, null, 2)}\n`
+  );
 const usersQueue = makeQueue();
 const reportsQueue = makeQueue();
 
@@ -130,8 +214,8 @@ const validPassword = (password) =>
 const normaliseEmail = (email) => String(email || "").trim().toLowerCase();
 const normaliseClientId = (clientId) => String(clientId || "").trim().toUpperCase();
 const validEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-const accountRole = (role) => (["client", "creator", "provider"].includes(role) ? role : null);
-const isEmailAccount = (role) => role === "provider" || role === "creator";
+const accountRole = (role) => (["client", "creator", "provider", "business"].includes(role) ? role : null);
+const isEmailAccount = (role) => role === "provider" || role === "creator" || role === "business";
 const workerCategories = new Set([
   "escorts",
   "fetisher",
@@ -140,6 +224,16 @@ const workerCategories = new Set([
   "content creators",
   "companions"
 ]);
+const businessCategories = new Set([
+  "brothel",
+  "escort agency",
+  "adult venue",
+  "adult business",
+  "photography",
+  "support services",
+  "other"
+]);
+const normaliseAbn = (abn) => String(abn || "").replace(/\D/g, "");
 const hashPrivateValue = (value) =>
   crypto.createHmac("sha256", serverSecret).update(String(value)).digest("hex");
 
@@ -373,6 +467,38 @@ const cleanProfile = (body) => {
   };
 };
 
+const cleanBusinessProfilePatch = (body) => {
+  const source = body && typeof body === "object" ? body : {};
+  const updates = {};
+
+  if (Object.prototype.hasOwnProperty.call(source, "website")) {
+    updates.website = cleanText(source.website, 300);
+  }
+  if (Object.prototype.hasOwnProperty.call(source, "contactPhone")) {
+    updates.contactPhone = cleanText(source.contactPhone, 40);
+  }
+  if (Object.prototype.hasOwnProperty.call(source, "description")) {
+    updates.description = cleanText(source.description, 2000);
+  }
+  if (Object.prototype.hasOwnProperty.call(source, "services")) {
+    updates.services = cleanText(source.services, 2000);
+  }
+  if (Object.prototype.hasOwnProperty.call(source, "location")) {
+    updates.location = cleanText(source.location, 200);
+  }
+  if (Object.prototype.hasOwnProperty.call(source, "openingHours")) {
+    updates.openingHours = cleanText(source.openingHours, 200);
+  }
+  if (Object.prototype.hasOwnProperty.call(source, "priceRange")) {
+    updates.priceRange = cleanText(source.priceRange, 200);
+  }
+  if (Object.prototype.hasOwnProperty.call(source, "logoDataUrl")) {
+    updates.logoDataUrl = cleanText(source.logoDataUrl, 5000);
+  }
+
+  return updates;
+};
+
 const publicUser = (user) => ({
   id: user.id,
   role: user.role,
@@ -381,6 +507,8 @@ const publicUser = (user) => ({
   workingName: user.workingName || null,
   gender: user.gender || null,
   accountCategory: user.accountCategory || null,
+  applicationStatus: user.applicationStatus || null,
+  businessProfile: user.businessProfile || null,
   settings: {
     displayName: user.settings?.displayName || "",
     directMessages: user.settings?.directMessages !== false,
@@ -525,15 +653,39 @@ const handleApi = async (request, response, pathname) => {
           updatedAt: report.updatedAt
         }
       });
-    }
 
+} // <-- route ends here
+
+// PASTE NEW BLOCK HERE
+if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
+  if (process.env.PAYMENT_PROVIDER !== "dev") {
+    return json(response, 403, { error: "Dev membership grant disabled." });
+  }
+
+  const body = await readJsonBody(request);
+  const userId = String(body.userId || "").trim();
+  const tier = String(body.tier || "premium").trim();
+
+  if (!userId) {
+    return json(response, 400, { error: "Missing userId." });
+  }
+
+  const membership = await setMembership(userId, tier, {
+    source: "dev"
+  });
+
+  return json(response, 200, {
+    message: "Membership granted.",
+    membership
+  });
+}
     if (pathname === "/api/auth/signup" && request.method === "POST") {
       const body = await readJsonBody(request);
       const role = accountRole(body.role);
       const password = String(body.password || "");
 
       if (!requireAuthRateLimit(request, response, "signup", role || "unknown")) return;
-      if (!role) return json(response, 400, { error: "Choose a client, creator, or provider account." });
+      if (!role) return json(response, 400, { error: "Choose a client, creator, provider, or business account." });
       if (body.acceptedPolicies !== true) {
         return json(response, 400, { error: "Confirm the adult-only Terms and Privacy Notice to create an account." });
       }
@@ -544,17 +696,46 @@ const handleApi = async (request, response, pathname) => {
       }
 
       // Validate email-account fields before the expensive scrypt call.
-      let email, workingName, gender, accountCategory;
+      let email, workingName, gender, accountCategory, businessAbn;
+      let businessWebsite = "";
+      let businessPhone = "";
+      let businessDescription = "";
+      let servicesOffered = "";
+      let businessLocation = "";
+      let openingHours = "";
+      let priceRange = "";
+      let logoDataUrl = "";
       if (isEmailAccount(role)) {
         email = normaliseEmail(body.email);
         workingName = cleanText(body.workingName, 80);
-        gender = cleanText(body.gender, 60);
         accountCategory = cleanText(body.accountCategory, 40).toLowerCase();
         if (!validEmail(email)) return json(response, 400, { error: "Enter a valid email address." });
-        if (!workingName) return json(response, 400, { error: "Enter your working name." });
-        if (!gender) return json(response, 400, { error: "Enter your gender." });
-        if (!workerCategories.has(accountCategory)) {
-          return json(response, 400, { error: "Choose a valid provider or creator category." });
+        if (!workingName) {
+          return json(response, 400, {
+            error: role === "business" ? "Enter your business name." : "Enter your working name."
+          });
+        }
+
+        if (role === "business") {
+          businessAbn = normaliseAbn(body.businessAbn);
+          if (businessAbn.length !== 11) return json(response, 400, { error: "Enter a valid 11 digit ABN." });
+          if (!businessCategories.has(accountCategory)) {
+            return json(response, 400, { error: "Choose a valid business category." });
+          }
+          businessWebsite = cleanText(body.website, 300);
+          businessPhone = cleanText(body.businessPhone, 40);
+          businessDescription = cleanText(body.businessDescription, 2000);
+          servicesOffered = cleanText(body.services, 2000);
+          businessLocation = cleanText(body.businessLocation, 200);
+          openingHours = cleanText(body.openingHours, 200);
+          priceRange = cleanText(body.priceRange, 200);
+          logoDataUrl = cleanText(body.logoDataUrl, 5000);
+        } else {
+          gender = cleanText(body.gender, 60);
+          if (!gender) return json(response, 400, { error: "Enter your gender." });
+          if (!workerCategories.has(accountCategory)) {
+            return json(response, 400, { error: "Choose a valid provider or creator category." });
+          }
         }
       }
 
@@ -584,8 +765,23 @@ const handleApi = async (request, response, pathname) => {
         if (isEmailAccount(role)) {
           user.email = email;
           user.workingName = workingName;
-          user.gender = gender;
           user.accountCategory = accountCategory;
+          if (role === "business") {
+            user.businessAbn = businessAbn;
+            user.applicationStatus = "pending_review";
+            user.businessProfile = {
+              website: businessWebsite,
+              contactPhone: businessPhone,
+              description: businessDescription,
+              services: servicesOffered,
+              location: businessLocation,
+              openingHours,
+              priceRange,
+              logoDataUrl
+            };
+          } else {
+            user.gender = gender;
+          }
         } else {
           user.clientId = makeClientId(users);
           user.safetyStatus = "active";
@@ -766,6 +962,78 @@ const handleApi = async (request, response, pathname) => {
       const user = getAuthenticatedUser(request);
       if (!user) return json(response, 401, { error: "Not signed in." });
       return json(response, 200, { user: publicUser(user) });
+    }
+
+    if (pathname === "/api/business/profile" && request.method === "GET") {
+      const user = getAuthenticatedUser(request);
+      if (!user) return json(response, 401, { error: "Sign in to view your business profile." });
+      if (user.role !== "business") return json(response, 403, { error: "Only business accounts can view this profile." });
+
+      return json(response, 200, {
+        user: publicUser(user),
+        businessProfile: user.businessProfile || {},
+        applicationStatus: user.applicationStatus || "pending_review"
+      });
+    }
+
+    if (pathname === "/api/business/profile" && request.method === "PATCH") {
+      const authenticatedUser = getAuthenticatedUser(request);
+      if (!authenticatedUser) return json(response, 401, { error: "Sign in to update your business profile." });
+      if (authenticatedUser.role !== "business") {
+        return json(response, 403, { error: "Only business accounts can update this profile." });
+      }
+
+      const body = await readJsonBody(request);
+      const businessProfileSource =
+        body?.businessProfile && typeof body.businessProfile === "object" ? body.businessProfile : body;
+      const profileUpdates = cleanBusinessProfilePatch(businessProfileSource);
+      const hasDisplayNameUpdate =
+        body?.settings &&
+        typeof body.settings === "object" &&
+        Object.prototype.hasOwnProperty.call(body.settings, "displayName");
+      const nextDisplayName = hasDisplayNameUpdate ? cleanText(body.settings.displayName, 50) : "";
+
+      if (!Object.keys(profileUpdates).length && !hasDisplayNameUpdate) {
+        return json(response, 400, {
+          error:
+            "No supported business profile fields were provided. You can update website, contactPhone, description, services, location, openingHours, priceRange, logoDataUrl, or settings.displayName."
+        });
+      }
+
+      const saved = await usersQueue(() => {
+        const users = readUsers();
+        const user = users.find((item) => item.id === authenticatedUser.id);
+        if (!user) return { notFound: true };
+        if (user.role !== "business") return { forbidden: true };
+
+        user.businessProfile = {
+          ...(user.businessProfile && typeof user.businessProfile === "object" ? user.businessProfile : {}),
+          ...profileUpdates
+        };
+        user.businessProfileUpdatedAt = new Date().toISOString();
+
+        if (hasDisplayNameUpdate) {
+          user.settings = {
+            ...(user.settings && typeof user.settings === "object" ? user.settings : {}),
+            displayName: nextDisplayName
+          };
+          user.settingsUpdatedAt = new Date().toISOString();
+        }
+
+        writeUsers(users);
+        return { user };
+      });
+
+      if (saved.notFound) return json(response, 404, { error: "Account not found." });
+      if (saved.forbidden) {
+        return json(response, 403, { error: "Only business accounts can update this profile." });
+      }
+      return json(response, 200, {
+        message: "Business profile saved.",
+        user: publicUser(saved.user),
+        businessProfile: saved.user.businessProfile || {},
+        applicationStatus: saved.user.applicationStatus || "pending_review"
+      });
     }
 
     if (pathname === "/api/directory/providers" && request.method === "GET") {

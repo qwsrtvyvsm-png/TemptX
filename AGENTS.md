@@ -1,41 +1,78 @@
-# AGENTS.md
+# TEMPTX — Agent Instructions
+
+Australia's premium adult industry network. Vanilla HTML/CSS/JS frontend served by a custom Node.js HTTP server. No build step. No framework.
+
+## Dev Commands
+
+```bash
+npm start          # Start local server at http://127.0.0.1:5510
+npm run check      # Syntax-check all JS files (node --check)
+```
+
+Node ≥ 18 required. No build or compile step — changes to HTML/CSS/JS are live on next request.
+
+## Architecture
+
+| Layer | Details |
+|---|---|
+| Frontend | Plain HTML pages + vanilla JS. No bundler, no framework. |
+| Backend | Single-file custom HTTP server: [`server.js`](server.js) |
+| Data | JSON flat files in [`data/`](data/) — `users.json`, `memberships.json`, `subscriptions.json`, `transactions.json`, `reports.json` |
+| Auth | Session tokens in a server-side in-memory `Map`. Cookie: `temptx_session`. |
+| PWA | [`pwa.js`](pwa.js) + [`sw.js`](sw.js) + [`manifest.webmanifest`](manifest.webmanifest) |
+
+## User Roles
+
+- **Client** — books/messages providers
+- **Provider / Creator** — lists services, manages profile
+- **Business** — friendly businesses listing
+- **Admin** — moderation and platform management
+
+Role is stored on the user record and checked server-side on every protected API call.
+
+## Key Conventions
+
+### Server (`server.js`)
+- **Atomic writes**: always write to `<file>.tmp` then `fs.renameSync` — never write directly.
+- **Serial queue** (`makeQueue()`): all read-modify-write operations on a data file must go through that file's queue to prevent race conditions. Do not bypass.
+- New API routes follow the existing `if (pathname === "/api/..." && request.method === "...")` pattern inside the main request handler.
+- Rate limiting is applied in-memory (`authRateLimits`, `reportRateLimits`, `clientIdFailures`). Add rate limiting to any new auth or submission endpoints.
+
+### Frontend JS
+- Each HTML page loads its own companion `.js` file (e.g. `auth.html` → `auth.js`).
+- Shared utilities live in [`script.js`](script.js).
+- Auth pages read `data-auth-mode` and `data-auth-role` from `document.body` to configure behaviour without URL params.
+- All API calls use `fetch` against `/api/*` endpoints.
+- Currency: always format as AUD using `new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" })`.
+
+### CSS / Design
+- Design language: **dark luxury** — near-black backgrounds, champagne/cream text, gold accents.
+- CSS custom properties are defined in [`style.css`](style.css) `:root`. Always use them; never hardcode colour values.
+- Key tokens: `--black`, `--cream`, `--gold`, `--muted`, `--champagne`, `--panel`, `--line`, `--luxury-border`, `--luxury-shadow`.
+- Page-specific overrides live in dedicated CSS files (e.g. [`creator-dashboard.css`](creator-dashboard.css), [`membership.css`](membership.css), [`pricing.css`](pricing.css)).
+
+### Membership Tiers
+Defined in [`membershipData.ts`](membershipData.ts): **Network** ($39/mo), **Select** ($79/mo), **Icon** ($149/mo) + Campaign Credit system.
+
+## ⚠️ Do Not Change Without Explicit Approval
+
+These areas are protected — propose changes and wait for confirmation:
+
+1. **Authentication** — signup, login, session, password reset flows
+2. **Verification** — identity/age verification logic
+3. **Billing / subscriptions** — Stripe integration, membership tier logic, transaction records
+4. **User data schema** — field names and structure in `users.json`
+
+## Project Context
+
+See [`TEMPTX_CONTEXT.md`](TEMPTX_CONTEXT.md) for current stage, focus areas, and high-level feature list.
+
+See [`audit/2026-06-23/temptx-full-website-audit.md`](audit/2026-06-23/temptx-full-website-audit.md) for the latest full-site audit.
 
 ## Cursor Cloud specific instructions
 
-TEMPTX is a single self-contained Node.js app: `server.js` serves both the static
-multi-page frontend (`*.html`/`*.js`/`*.css`) and the `/api/*` backend (auth,
-directory, profiles, reports, settings). There is no framework, no build step, and
-no external database. Node `>=18` is required (see `package.json` `engines`).
-
-### Running
-
-- Start the app with `npm start` (i.e. `node server.js`). It binds to
-  `127.0.0.1:5510` only (localhost, not `0.0.0.0`); override the port with the
-  `PORT` env var. The homepage is at `http://127.0.0.1:5510/`.
-- There is no dev/watch server and no hot reload. After editing `server.js` you
-  must restart the process for changes to take effect (static `.html/.js/.css`
-  changes are picked up on browser refresh without a restart).
-
-### Data / persistence
-
-- State is persisted to flat JSON files under `data/` (`users.json`,
-  `reports.json`, `server-secret`). This directory is gitignored and auto-created
-  on first boot — you do not need to seed it. To reset all accounts/reports,
-  delete `data/` and restart.
-
-### Lint / test / build
-
-- Lint (syntax gate): `npm run check` runs `node --check` over the JS files.
-- There is no automated test suite and no build step.
-- The only dependency is `puppeteer` (devDependency), used for optional design-QA
-  screenshots (see `design-qa.md`); it is not needed to run the app.
-
-### Testing the app end-to-end
-
-- Core flow is account creation. The frontend shows an 18+ age-verification modal
-  on first load that must be dismissed before the homepage is usable.
-- Account roles: `client` (logs in with a generated `TX-XXXX` id + device cookie)
-  and email-based `provider`/`creator`. Passwords need >=12 chars with upper,
-  lower, and a number. Signup requires `acceptedPolicies: true`.
-- `/api/*` POST/PATCH/DELETE endpoints enforce a same-origin CSRF check, so send
-  an `Origin: http://127.0.0.1:5510` header when testing writes with curl.
+- `npm start` runs `node server.js`; the app binds to `127.0.0.1:5510` only by default, and `PORT` overrides the port.
+- There is no dev/watch server or hot reload. Restart Node after editing `server.js`; static `.html`, `.js`, and `.css` changes load on refresh.
+- The gitignored `data/` directory is auto-created on first boot. It also stores `server-secret`; deleting `data/` resets local accounts and reports.
+- There is no automated test suite or build step. The only routine check is `npm run check`.
+- End-to-end signup testing must handle the first-load 18+ modal. Signup requires `acceptedPolicies: true`, and state-changing `/api/*` requests need `Origin: http://127.0.0.1:5510` for CSRF validation.

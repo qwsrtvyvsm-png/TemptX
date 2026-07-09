@@ -94,6 +94,20 @@
   text-align: center;
 }
 
+.mem-section-spaced {
+  margin-bottom: 56px;
+}
+
+.mem-btn-centered {
+  display: flex;
+  width: min(100%, 260px);
+  margin: 8px auto 0;
+}
+
+.mem-btn-centered--wide {
+  width: min(100%, 280px);
+}
+
 /* ─── Tier cards ──────────────────────────────────────────── */
 .mem-tiers {
   display: grid;

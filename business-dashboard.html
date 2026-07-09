@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Business Dashboard | TEMPTX</title>
+  <meta
+    name="description"
+    content="TEMPTX business dashboard for brothels and adult-friendly businesses to track enquiries, roster readiness, campaigns, and listing performance."
+  />
+  <script>
+    if (window.location.protocol === "file:") {
+      window.location.replace("auth.html?mode=login&role=business&next=%2Fbusiness-dashboard.html");
+    }
+  </script>
+  <link rel="stylesheet" href="style.css?v=20260703-07" />
+  <link rel="stylesheet" href="creator-dashboard.css?v=20260629-02" />
+</head>
+
+<body class="creator-dashboard-body cinematic-background">
+  <div id="ageGate" class="age-gate">
+    <div class="age-box">
+      <h1>Tempt<span>X</span></h1>
+      <p>This website is intended for adults aged 18+ only.</p>
+      <p class="small-text">By entering, you confirm you are at least 18 years old.</p>
+      <p class="age-policy-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="safety-hub.html">Safety</a>
+      </p>
+      <div class="age-buttons">
+        <button id="enterSite">I am 18+</button>
+        <button id="leaveSite" class="outline-btn">Leave</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="chat-header dashboard-header">
+    <a class="brand-mark chat-brand" href="index.html">
+      <span class="chat-brand-wordmark">
+        <span class="brand-word">TEMPT</span>
+        <span class="brand-x">X</span>
+      </span>
+      <small>Business operations</small>
+    </a>
+
+    <nav class="chat-top-nav" aria-label="Business dashboard navigation">
+      <a href="business-dashboard.html" aria-current="page">Dashboard</a>
+      <a href="friendly-businesses.html">Directory</a>
+      <a href="settings.html">Settings</a>
+    </nav>
+
+    <div class="account-dropdown hover-dropdown">
+      <a href="settings.html" class="header-tool profile-tool" aria-label="Account settings">
+        <span></span>
+      </a>
+      <div class="dropdown-menu account-menu">
+        <a href="business-dashboard.html">Business Dashboard</a>
+        <a href="friendly-businesses.html">Friendly Businesses</a>
+        <a href="settings.html">Settings</a>
+        <a href="auth.html?mode=login&amp;role=business" data-login>Business Log In</a>
+        <a href="auth.html" data-logout hidden>Log Out</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="creator-dashboard-shell">
+    <section class="dashboard-hero" aria-labelledby="dashboardTitle">
+      <div>
+        <p class="eyebrow">Business dashboard</p>
+        <h1 id="dashboardTitle">Run your venue with clarity.</h1>
+        <p id="dashboardWelcome">
+          Bookings, roster visibility, campaign momentum, and listing health in one private workspace for brothels and adult-friendly businesses.
+        </p>
+      </div>
+      <div class="dashboard-actions" aria-label="Dashboard actions">
+        <a class="outline-btn" href="business-profile.html">Edit Business Profile</a>
+        <a class="light-btn" id="viewPublicProfileLink" href="#" style="display:none;">View Public Profile</a>
+        <a class="outline-btn" href="friendly-businesses.html">View Directory</a>
+      </div>
+    </section>
+
+    <section class="dashboard-kpis" aria-label="Business operations summary">
+      <article class="dashboard-kpi">
+        <span>Tonight's bookings <span class="preview-label">(Preview)</span></span>
+        <strong id="bookingsTonight">—</strong>
+        <small id="bookingsChange">Coming soon: Connect your booking system</small>
+      </article>
+      <article class="dashboard-kpi">
+        <span>Roster coverage <span class="preview-label">(Preview)</span></span>
+        <strong id="rosterCoverage">—</strong>
+        <small id="rosterNote">Coming soon: Roster management tools</small>
+      </article>
+      <article class="dashboard-kpi">
+        <span>New enquiries <span class="preview-label">(Preview)</span></span>
+        <strong id="newEnquiries">—</strong>
+        <small id="enquiryChange">Coming soon: Enquiry tracking system</small>
+      </article>
+      <article class="dashboard-kpi">
+        <span>Campaign reach <span class="preview-label">(Preview)</span></span>
+        <strong id="campaignReach">—</strong>
+        <small id="campaignNote">Coming soon: Campaign analytics</small>
+      </article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="dashboard-panel revenue-panel">
+        <div class="dashboard-panel-heading">
+          <div>
+            <p class="eyebrow">Floor activity <span class="preview-label">(Preview)</span></p>
+            <h2>Six-day venue pace</h2>
+          </div>
+          <span id="chartTotal">Coming soon: Booking integration</span>
+        </div>
+        <div class="earnings-chart coming-soon" id="occupancyChart" aria-label="Six day business activity chart">
+          <p style="text-align: center; padding: 40px 20px; color: var(--muted);">Connect your booking system to see analytics here</p>
+        </div>
+      </article>
+
+      <article class="dashboard-panel payout-panel">
+        <div class="dashboard-panel-heading">
+          <div>
+            <p class="eyebrow">Application</p>
+            <h2>Business status</h2>
+          </div>
+          <span class="status-pill" id="businessStatusPill">Pending review</span>
+        </div>
+        <dl class="payout-list">
+          <div>
+            <dt>Account type</dt>
+            <dd id="businessCategory">Adult business</dd>
+          </div>
+          <div>
+            <dt>Primary market</dt>
+            <dd id="businessLocation">Metro listing</dd>
+          </div>
+          <div>
+            <dt>Application state</dt>
+            <dd id="businessApplicationState">Pending review</dd>
+          </div>
+          <div>
+            <dt>Status details</dt>
+            <dd id="businessApplicationDetails">We're reviewing your application. This typically takes 1-2 business days.</dd>
+          </div>
+        </dl>
+        <div class="dashboard-action-buttons">
+          <a class="outline-btn dashboard-full-button" href="business-profile.html">Edit profile</a>
+          <a class="outline-btn dashboard-full-button" href="community-standards.html">Review standards</a>
+        </div>
+      </article>
+
+      <article class="dashboard-panel content-panel">
+        <div class="dashboard-panel-heading">
+          <div>
+            <p class="eyebrow">Listings <span class="preview-label">(Preview)</span></p>
+            <h2>Top traffic drivers</h2>
+          </div>
+          <a href="friendly-businesses.html">Open directory</a>
+        </div>
+        <div class="creator-table" role="table" aria-label="Top business traffic drivers">
+          <div role="row" style="opacity: 0.5;">
+            <span role="columnheader">Placement</span>
+            <span role="columnheader">Leads</span>
+            <span role="columnheader">Spend</span>
+          </div>
+          <div role="row" style="opacity: 0.5;">
+            <span role="cell"><em>Dashboard analytics coming soon</em></span>
+            <span role="cell">—</span>
+            <span role="cell">—</span>
+          </div>
+        </div>
+        <p style="text-align: center; padding: 20px; color: var(--muted); font-size: 0.9em;">Analytics will be available after your first listing is published</p>
+      </article>
+
+      <article class="dashboard-panel tasks-panel">
+        <div class="dashboard-panel-heading">
+          <div>
+            <p class="eyebrow">Today</p>
+            <h2>Operations queue</h2>
+          </div>
+          <span>4 open</span>
+        </div>
+        <ul class="dashboard-task-list">
+          <li><strong>Complete your business profile</strong><span>Add details so clients can find you in the directory</span></li>
+          <li><strong>Review the community standards</strong><span>Understand our policies before your profile goes live</span></li>
+          <li><strong>Connect your booking system</strong><span>Enable analytics and roster management tools</span></li>
+          <li><strong>Set up your campaigns</strong><span>Promote special offers and features to attract clients</span></li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="dashboard-lower-grid">
+      <article class="dashboard-panel">
+        <div class="dashboard-panel-heading">
+          <div>
+            <p class="eyebrow">Channels <span class="preview-label">(Preview)</span></p>
+            <h2>Lead sources</h2>
+          </div>
+        </div>
+        <p style="text-align: center; padding: 40px 20px; color: var(--muted);">Analytics will show once your listing receives traffic</p>
+      </article>
+
+      <article class="dashboard-panel">
+        <div class="dashboard-panel-heading">
+          <div>
+            <p class="eyebrow">House readiness</p>
+            <h2>Next steps</h2>
+          </div>
+          <span class="status-pill">Getting started</span>
+        </div>
+        <ul class="dashboard-task-list">
+          <li><strong>Create your business profile</strong><span>Add venue details, services, and opening hours</span></li>
+          <li><strong>Upload a business logo</strong><span>Help clients recognize your venue</span></li>
+          <li><strong>Publish your listing</strong><span>Your profile will appear in the friendly businesses directory</span></li>
+        </ul>
+      </article>
+    </section>
+  </main>
+
+  <script src="script.js?v=20260703-08"></script>
+  <script src="business-dashboard.js?v=20260709-02"></script>
+</body>
+</html>
