@@ -478,10 +478,10 @@ const cleanBusinessProfilePatch = (body) => {
     updates.contactPhone = cleanText(source.contactPhone, 40);
   }
   if (Object.prototype.hasOwnProperty.call(source, "description")) {
-    updates.description = cleanText(source.description, 2000);
+    updates.description = cleanText(source.description, 1200);
   }
   if (Object.prototype.hasOwnProperty.call(source, "services")) {
-    updates.services = cleanText(source.services, 2000);
+    updates.services = cleanText(source.services, 600);
   }
   if (Object.prototype.hasOwnProperty.call(source, "location")) {
     updates.location = cleanText(source.location, 200);
@@ -493,7 +493,7 @@ const cleanBusinessProfilePatch = (body) => {
     updates.priceRange = cleanText(source.priceRange, 200);
   }
   if (Object.prototype.hasOwnProperty.call(source, "logoDataUrl")) {
-    updates.logoDataUrl = cleanText(source.logoDataUrl, 5000);
+    updates.logoDataUrl = cleanText(source.logoDataUrl, 50000);
   }
 
   return updates;

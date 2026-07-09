@@ -1,1 +1,164 @@
-<!DOCTYPE html><html lang="en-AU"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sex Work Friendly Businesses | TEMPTX</title><link rel="stylesheet" href="style.css?v=20260703-07"></head><body class="cinematic-background content-body" data-info-page="friendly-businesses"><div id="contentHeader"></div><main class="content-shell"><section class="content-hero"><p class="eyebrow" id="contentEyebrow"></p><h1 id="contentTitle"></h1><p id="contentIntro"></p><div id="contentAction"></div></section><section class="content-grid" id="contentCards"></section></main><script src="info-page.js?v=20260629-01"></script><script src="script.js?v=20260703-08"></script></body></html>
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Friendly Businesses | TEMPTX</title>
+  <meta name="description" content="Browse TEMPTX-approved sex-worker-friendly businesses across Australia — venues, agencies, photography, and support services." />
+  <link rel="stylesheet" href="style.css?v=20260703-07" />
+</head>
+
+<body class="directory-body">
+  <div id="ageGate" class="age-gate">
+    <div class="age-box">
+      <h1>Tempt<span>X</span></h1>
+      <p>This website is intended for adults aged 18+ only.</p>
+      <p class="small-text">By entering, you confirm you are at least 18 years old and agree to view adult industry related content.</p>
+      <p class="age-policy-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="safety-hub.html">Safety</a>
+      </p>
+      <div class="age-buttons">
+        <button id="enterSite">I am 18+</button>
+        <button id="leaveSite" class="outline-btn">Leave</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="announcement">Safety First &nbsp;·&nbsp; Verified Profiles &nbsp;·&nbsp; Community Focused &nbsp;·&nbsp; Australian Owned</div>
+    <div class="site-header-bar">
+      <a class="brand-mark" href="index.html">
+        <span class="brand-word">TEMPT</span>
+        <span class="brand-x">X</span>
+      </a>
+      <nav class="store-nav home-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="directory.html">Directory</a>
+        <a href="friendly-businesses.html" aria-current="page">Friendly Businesses</a>
+        <a href="safety-hub.html">Support</a>
+      </nav>
+      <div class="account-dropdown hover-dropdown">
+        <a href="settings.html" class="header-tool profile-tool" aria-label="Profile">
+          <span></span>
+        </a>
+        <div class="dropdown-menu account-menu">
+          <a href="auth.html?mode=login&amp;role=client" data-login>Client Log In</a>
+          <a href="auth.html?mode=login&amp;role=business" data-login>Business Log In</a>
+          <a href="auth.html" data-logout hidden>Log Out</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="directory-main">
+
+    <section class="dir-hero">
+      <p class="dir-hero-eyebrow">Australia's Adult Network</p>
+      <h1 class="dir-hero-title">FRIENDLY BUSINESSES</h1>
+      <div class="dir-hero-rule" aria-hidden="true">
+        <span class="dir-hero-rule-line"></span>
+        <span class="dir-hero-diamond">✦</span>
+        <span class="dir-hero-rule-line"></span>
+      </div>
+      <p class="dir-hero-subtitle">TEMPTX-approved venues, agencies, and services that welcome and support the industry</p>
+    </section>
+
+    <div class="dir-layout">
+
+      <!-- ── Filters sidebar ── -->
+      <aside class="dir-sidebar">
+        <form class="directory-filters" id="bizFilters" novalidate>
+
+          <div class="dir-sidebar-heading">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M1 2.5h12M3 7h8M5 11.5h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span>Filters</span>
+            <button id="resetBizFilters" class="dir-reset-btn" type="button">Reset</button>
+          </div>
+
+          <div class="dir-filter-primary">
+
+            <div class="dir-filter-group">
+              <label for="bizSearch">Search</label>
+              <div class="dir-filter-search-wrap">
+                <svg class="dir-filter-search-icon" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="m11 11 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <input id="bizSearch" type="search" placeholder="Name or keyword…" autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="dir-filter-group">
+              <label for="bizCategory">Category</label>
+              <div class="dir-filter-select-wrap">
+                <select id="bizCategory">
+                  <option value="">All categories</option>
+                  <option value="brothel">Brothel</option>
+                  <option value="escort agency">Escort Agency</option>
+                  <option value="adult venue">Adult Venue</option>
+                  <option value="adult business">Adult Business</option>
+                  <option value="photography">Photography</option>
+                  <option value="support services">Support Services</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="dir-filter-group">
+              <label for="bizLocation">Location</label>
+              <div class="dir-filter-search-wrap">
+                <svg class="dir-filter-search-icon" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="m11 11 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <input id="bizLocation" type="search" placeholder="e.g. Sydney, Melbourne…" autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="dir-filter-group">
+              <label for="bizServices">Services</label>
+              <div class="dir-filter-search-wrap">
+                <svg class="dir-filter-search-icon" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="m11 11 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <input id="bizServices" type="search" placeholder="e.g. Venue hire, Massage…" autocomplete="off" />
+              </div>
+            </div>
+
+          </div>
+        </form>
+      </aside>
+
+      <!-- ── Results ── -->
+      <div class="dir-content">
+
+        <div class="dir-results-bar">
+          <p class="dir-results-count" id="bizCount" aria-live="polite">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <rect x="1" y="1" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+              <rect x="8" y="1" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+              <rect x="1" y="8" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+              <rect x="8" y="8" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+            </svg>
+            Loading…
+          </p>
+        </div>
+
+        <div class="directory-results">
+          <div class="directory-cards" id="bizCards"></div>
+          <p class="directory-empty" id="bizEmpty" hidden>No approved businesses listed yet.</p>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js?v=20260703-08"></script>
+  <script src="friendly-businesses.js?v=20260710-01"></script>
+</body>
+</html>

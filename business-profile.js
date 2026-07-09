@@ -80,7 +80,7 @@ if (businessProfileForm || authErrorContainer) {
   if (formFields.description && descriptionCount) {
     formFields.description.addEventListener("input", () => {
       const count = formFields.description.value.length;
-      descriptionCount.textContent = `${count} / 500 characters`;
+      descriptionCount.textContent = `${count} / 1200 characters`;
     });
   }
 
@@ -155,7 +155,7 @@ if (businessProfileForm || authErrorContainer) {
 
     const count = formFields.description.value.length;
     if (descriptionCount) {
-      descriptionCount.textContent = `${count} / 500 characters`;
+      descriptionCount.textContent = `${count} / 1200 characters`;
     }
 
     updateLogoPreview();
