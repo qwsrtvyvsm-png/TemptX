@@ -74,31 +74,32 @@
         </p>
       </div>
       <div class="dashboard-actions" aria-label="Dashboard actions">
-        <a class="outline-btn" href="friendly-businesses.html">View directory</a>
-        <a class="light-btn" href="settings.html">Open settings</a>
+        <a class="outline-btn" href="business-profile.html">Edit Business Profile</a>
+        <a class="light-btn" id="viewPublicProfileLink" href="#" style="display:none;">View Public Profile</a>
+        <a class="outline-btn" href="friendly-businesses.html">View Directory</a>
       </div>
     </section>
 
     <section class="dashboard-kpis" aria-label="Business operations summary">
       <article class="dashboard-kpi">
-        <span>Tonight's bookings</span>
-        <strong id="bookingsTonight">24</strong>
-        <small class="is-positive" id="bookingsChange">+6 confirmed since yesterday</small>
+        <span>Tonight's bookings <span class="preview-label">(Preview)</span></span>
+        <strong id="bookingsTonight">—</strong>
+        <small id="bookingsChange">Coming soon: Connect your booking system</small>
       </article>
       <article class="dashboard-kpi">
-        <span>Roster coverage</span>
-        <strong id="rosterCoverage">92%</strong>
-        <small id="rosterNote">2 open shifts still need coverage</small>
+        <span>Roster coverage <span class="preview-label">(Preview)</span></span>
+        <strong id="rosterCoverage">—</strong>
+        <small id="rosterNote">Coming soon: Roster management tools</small>
       </article>
       <article class="dashboard-kpi">
-        <span>New enquiries</span>
-        <strong id="newEnquiries">18</strong>
-        <small class="is-positive" id="enquiryChange">Avg response time 22 min</small>
+        <span>New enquiries <span class="preview-label">(Preview)</span></span>
+        <strong id="newEnquiries">—</strong>
+        <small id="enquiryChange">Coming soon: Enquiry tracking system</small>
       </article>
       <article class="dashboard-kpi">
-        <span>Campaign reach</span>
-        <strong id="campaignReach">14.2k</strong>
-        <small id="campaignNote">3 active promotions this week</small>
+        <span>Campaign reach <span class="preview-label">(Preview)</span></span>
+        <strong id="campaignReach">—</strong>
+        <small id="campaignNote">Coming soon: Campaign analytics</small>
       </article>
     </section>
 
@@ -106,12 +107,14 @@
       <article class="dashboard-panel revenue-panel">
         <div class="dashboard-panel-heading">
           <div>
-            <p class="eyebrow">Floor activity</p>
+            <p class="eyebrow">Floor activity <span class="preview-label">(Preview)</span></p>
             <h2>Six-day venue pace</h2>
           </div>
-          <span id="chartTotal">126 bookings forecast this week</span>
+          <span id="chartTotal">Coming soon: Booking integration</span>
         </div>
-        <div class="earnings-chart" id="occupancyChart" aria-label="Six day business activity chart"></div>
+        <div class="earnings-chart coming-soon" id="occupancyChart" aria-label="Six day business activity chart">
+          <p style="text-align: center; padding: 40px 20px; color: var(--muted);">Connect your booking system to see analytics here</p>
+        </div>
       </article>
 
       <article class="dashboard-panel payout-panel">
@@ -120,7 +123,7 @@
             <p class="eyebrow">Application</p>
             <h2>Business status</h2>
           </div>
-          <span class="status-pill" id="businessStatusPill">Phase 1</span>
+          <span class="status-pill" id="businessStatusPill">Pending review</span>
         </div>
         <dl class="payout-list">
           <div>
@@ -135,40 +138,38 @@
             <dt>Application state</dt>
             <dd id="businessApplicationState">Pending review</dd>
           </div>
+          <div>
+            <dt>Status details</dt>
+            <dd id="businessApplicationDetails">We're reviewing your application. This typically takes 1-2 business days.</dd>
+          </div>
         </dl>
-        <a class="outline-btn dashboard-full-button" href="community-standards.html">Review business standards</a>
+        <div class="dashboard-action-buttons">
+          <a class="outline-btn dashboard-full-button" href="business-profile.html">Edit profile</a>
+          <a class="outline-btn dashboard-full-button" href="community-standards.html">Review standards</a>
+        </div>
       </article>
 
       <article class="dashboard-panel content-panel">
         <div class="dashboard-panel-heading">
           <div>
-            <p class="eyebrow">Listings</p>
+            <p class="eyebrow">Listings <span class="preview-label">(Preview)</span></p>
             <h2>Top traffic drivers</h2>
           </div>
           <a href="friendly-businesses.html">Open directory</a>
         </div>
         <div class="creator-table" role="table" aria-label="Top business traffic drivers">
-          <div role="row">
+          <div role="row" style="opacity: 0.5;">
             <span role="columnheader">Placement</span>
             <span role="columnheader">Leads</span>
             <span role="columnheader">Spend</span>
           </div>
-          <div role="row">
-            <span role="cell">Homepage feature</span>
-            <span role="cell">41</span>
-            <span role="cell">$620</span>
-          </div>
-          <div role="row">
-            <span role="cell">Venue listing</span>
-            <span role="cell">33</span>
-            <span role="cell">$0</span>
-          </div>
-          <div role="row">
-            <span role="cell">Weekend spotlight</span>
-            <span role="cell">19</span>
-            <span role="cell">$310</span>
+          <div role="row" style="opacity: 0.5;">
+            <span role="cell"><em>Dashboard analytics coming soon</em></span>
+            <span role="cell">—</span>
+            <span role="cell">—</span>
           </div>
         </div>
+        <p style="text-align: center; padding: 20px; color: var(--muted); font-size: 0.9em;">Analytics will be available after your first listing is published</p>
       </article>
 
       <article class="dashboard-panel tasks-panel">
@@ -180,10 +181,10 @@
           <span>4 open</span>
         </div>
         <ul class="dashboard-task-list">
-          <li><strong>Confirm tonight's arrivals</strong><span>Review bookings and arrival windows before 6pm</span></li>
-          <li><strong>Fill remaining roster gaps</strong><span>Two late shifts still need coverage</span></li>
-          <li><strong>Reply to new venue enquiries</strong><span>Keep response times inside your service target</span></li>
-          <li><strong>Refresh active promotions</strong><span>Swap campaign copy before the weekend rush</span></li>
+          <li><strong>Complete your business profile</strong><span>Add details so clients can find you in the directory</span></li>
+          <li><strong>Review the community standards</strong><span>Understand our policies before your profile goes live</span></li>
+          <li><strong>Connect your booking system</strong><span>Enable analytics and roster management tools</span></li>
+          <li><strong>Set up your campaigns</strong><span>Promote special offers and features to attract clients</span></li>
         </ul>
       </article>
     </section>
@@ -192,36 +193,31 @@
       <article class="dashboard-panel">
         <div class="dashboard-panel-heading">
           <div>
-            <p class="eyebrow">Channels</p>
+            <p class="eyebrow">Channels <span class="preview-label">(Preview)</span></p>
             <h2>Lead sources</h2>
           </div>
         </div>
-        <div class="channel-list">
-          <div><span>Directory discovery</span><strong>44%</strong></div>
-          <div><span>Direct returning clients</span><strong>26%</strong></div>
-          <div><span>Campaign placements</span><strong>18%</strong></div>
-          <div><span>Referrals and partners</span><strong>12%</strong></div>
-        </div>
+        <p style="text-align: center; padding: 40px 20px; color: var(--muted);">Analytics will show once your listing receives traffic</p>
       </article>
 
       <article class="dashboard-panel">
         <div class="dashboard-panel-heading">
           <div>
             <p class="eyebrow">House readiness</p>
-            <h2>Compliance watch</h2>
+            <h2>Next steps</h2>
           </div>
-          <span class="status-pill">On track</span>
+          <span class="status-pill">Getting started</span>
         </div>
         <ul class="dashboard-task-list">
-          <li><strong>Venue standards</strong><span>Policies acknowledged and stored</span></li>
-          <li><strong>Team briefing</strong><span>Safety notes ready for the next shift change</span></li>
-          <li><strong>Contact handling</strong><span>Business responses are routed through approved channels</span></li>
+          <li><strong>Create your business profile</strong><span>Add venue details, services, and opening hours</span></li>
+          <li><strong>Upload a business logo</strong><span>Help clients recognize your venue</span></li>
+          <li><strong>Publish your listing</strong><span>Your profile will appear in the friendly businesses directory</span></li>
         </ul>
       </article>
     </section>
   </main>
 
   <script src="script.js?v=20260703-08"></script>
-  <script src="business-dashboard.js?v=20260708-01"></script>
+  <script src="business-dashboard.js?v=20260709-02"></script>
 </body>
 </html>

@@ -459,3 +459,38 @@
     border-radius: 0;
   }
 }
+
+/* Preview and coming-soon labels */
+.preview-label {
+  font-size: 0.75em;
+  opacity: 0.7;
+  font-weight: normal;
+  color: var(--muted);
+  margin-left: 0.35em;
+}
+
+.coming-soon {
+  opacity: 0.6;
+  text-align: center;
+}
+
+/* Dashboard action buttons container */
+.dashboard-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.dashboard-action-buttons .outline-btn,
+.dashboard-action-buttons .light-btn {
+  width: 100%;
+  text-align: center;
+}
+
+@media (max-width: 680px) {
+  .dashboard-action-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

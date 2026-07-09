@@ -1,21 +1,14 @@
 const dashboard = document.querySelector(".creator-dashboard-shell");
 
 if (dashboard) {
-  const sampleActivity = [
-    { label: "Mon", amount: 16 },
-    { label: "Tue", amount: 18 },
-    { label: "Wed", amount: 19 },
-    { label: "Thu", amount: 21 },
-    { label: "Fri", amount: 25 },
-    { label: "Sat", amount: 27 }
-  ];
-
   const title = document.querySelector("#dashboardTitle");
   const welcome = document.querySelector("#dashboardWelcome");
   const category = document.querySelector("#businessCategory");
   const location = document.querySelector("#businessLocation");
   const applicationState = document.querySelector("#businessApplicationState");
+  const applicationDetails = document.querySelector("#businessApplicationDetails");
   const statusPill = document.querySelector("#businessStatusPill");
+  const viewPublicProfileLink = document.querySelector("#viewPublicProfileLink");
 
   const formatStatus = (value) =>
     String(value || "")
@@ -31,23 +24,14 @@ if (dashboard) {
       .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
       .join(" ");
 
-  const renderChart = () => {
-    const chart = document.querySelector("#occupancyChart");
-    if (!chart) {
-      return;
-    }
-
-    const max = Math.max(...sampleActivity.map((item) => item.amount));
-    chart.innerHTML = sampleActivity
-      .map((item) => {
-        const height = Math.max(12, Math.round((item.amount / max) * 100));
-        return `
-          <div class="earnings-bar">
-            <span style="height: ${height}%" title="${item.label}: ${item.amount} bookings"></span>
-            <small>${item.label}</small>
-          </div>`;
-      })
-      .join("");
+  const getApplicationStatusDetails = (status) => {
+    const details = {
+      pending_review: "We're reviewing your application. This typically takes 1-2 business days.",
+      approved: "Your business account is active and your profile is visible in the directory.",
+      rejected: "Your application was not approved. Review the community standards and reapply.",
+      suspended: "Your account has been temporarily suspended. Contact support for details."
+    };
+    return details[status] || "Check back soon for your application status.";
   };
 
   const applyPreviewMode = (message) => {
@@ -55,7 +39,7 @@ if (dashboard) {
       welcome.textContent = message;
     }
     if (statusPill) {
-      statusPill.textContent = "Preview";
+      statusPill.textContent = "Sign in required";
     }
   };
 
@@ -74,17 +58,19 @@ if (dashboard) {
         return;
       }
 
+      const userId = user.id;
       const displayName = user.settings?.displayName || user.workingName || "your business";
       const accountCategory = formatLabel(user.accountCategory || "adult business");
       const businessLocation = user.businessProfile?.location || "Location pending";
       const businessStatus = formatStatus(user.applicationStatus || "pending_review");
+      const statusDetails = getApplicationStatusDetails(user.applicationStatus || "pending_review");
 
       if (title) {
         title.textContent = `Welcome, ${displayName}.`;
       }
 
       if (welcome) {
-        welcome.textContent = `${accountCategory} dashboard for ${businessLocation}. Use this Phase 1 workspace to monitor enquiries, roster readiness, and listing momentum.`;
+        welcome.textContent = `${accountCategory} dashboard for ${businessLocation}. Use this workspace to manage your profile and view your directory listing.`;
       }
 
       if (category) {
@@ -99,14 +85,23 @@ if (dashboard) {
         applicationState.textContent = businessStatus;
       }
 
+      if (applicationDetails) {
+        applicationDetails.textContent = statusDetails;
+      }
+
       if (statusPill) {
         statusPill.textContent = businessStatus;
+      }
+
+      // Wire up public profile link
+      if (viewPublicProfileLink && userId) {
+        viewPublicProfileLink.href = `business-public.html?id=${encodeURIComponent(userId)}`;
+        viewPublicProfileLink.style.display = "inline-block";
       }
     } catch (error) {
       applyPreviewMode(`Preview mode only. We couldn't load your business account details right now: ${error.message}`);
     }
   };
 
-  renderChart();
   personaliseDashboard();
 }
