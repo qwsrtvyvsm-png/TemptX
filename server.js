@@ -523,6 +523,22 @@ const publicUser = (user) => ({
   }
 });
 
+const publicDirectoryBusiness = (user) => ({
+  id: user.id,
+  workingName: user.workingName || null,
+  accountCategory: user.accountCategory || null,
+  applicationStatus: user.applicationStatus || null,
+  businessProfile: {
+    website: user.businessProfile?.website || "",
+    description: user.businessProfile?.description || "",
+    services: user.businessProfile?.services || "",
+    location: user.businessProfile?.location || "",
+    openingHours: user.businessProfile?.openingHours || "",
+    priceRange: user.businessProfile?.priceRange || "",
+    logoDataUrl: user.businessProfile?.logoDataUrl || ""
+  }
+});
+
 const createSession = (user) => {
   const token = crypto.randomBytes(32).toString("hex");
   sessions.set(token, {
@@ -1057,6 +1073,21 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
         providers,
         options: DIRECTORY_OPTIONS
       });
+    }
+
+    if (pathname === "/api/directory/businesses" && request.method === "GET") {
+      const businesses = readUsers()
+        .filter(
+          (user) =>
+            user.role === "business" &&
+            user.applicationStatus === "approved" &&
+            !user.deactivatedAt &&
+            user.businessProfile &&
+            typeof user.businessProfile === "object"
+        )
+        .map((user) => publicDirectoryBusiness(user));
+
+      return json(response, 200, { businesses });
     }
 
     if (pathname === "/api/auth/settings" && request.method === "PATCH") {
