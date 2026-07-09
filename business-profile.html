@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Business Profile | TEMPTX</title>
+  <meta name="description" content="Manage your TEMPTX business profile — display name, website, contact information, services, location, and more." />
+  <link rel="stylesheet" href="style.css?v=20260703-07" />
+</head>
+
+<body class="settings-body cinematic-background">
+  <div id="ageGate" class="age-gate">
+    <div class="age-box">
+      <h1>Tempt<span>X</span></h1>
+      <p>This website is intended for adults aged 18+ only.</p>
+      <p class="small-text">By entering, you confirm you are at least 18 years old.</p>
+      <p class="age-policy-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="safety-hub.html">Safety</a>
+      </p>
+      <div class="age-buttons">
+        <button id="enterSite">I am 18+</button>
+        <button id="leaveSite" class="outline-btn">Leave</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="chat-header settings-header">
+    <a class="brand-mark chat-brand" href="index.html">
+      <span class="brand-word">TEMPT</span>
+      <span class="brand-x">X</span>
+    </a>
+
+    <nav class="chat-top-nav" aria-label="Business profile navigation">
+      <a href="business-dashboard.html">Dashboard</a>
+      <a href="business-profile.html" aria-current="page">Business Profile</a>
+      <a href="friendly-businesses.html">Directory</a>
+    </nav>
+
+    <div class="account-dropdown hover-dropdown">
+      <a href="business-profile.html" class="header-tool profile-tool" aria-label="Business profile">
+        <span></span>
+      </a>
+      <div class="dropdown-menu account-menu">
+        <a href="business-dashboard.html">Business Dashboard</a>
+        <a href="business-profile.html">Business Profile</a>
+        <a href="friendly-businesses.html">Directory</a>
+        <a href="auth.html?mode=login&amp;role=business" data-login>Business Log In</a>
+        <a href="auth.html" data-logout hidden>Log Out</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="settings-shell">
+    <aside class="settings-intro">
+      <p class="eyebrow">Profile management</p>
+      <h1>Business Profile.</h1>
+      <p>Manage your public business information — display name, website, services, location, and availability.</p>
+
+      <div class="settings-identity">
+        <span class="settings-avatar" id="businessProfileAvatar">BZ</span>
+        <div>
+          <strong id="businessProfileName">Your Business</strong>
+          <small id="businessProfileMeta">Business account</small>
+        </div>
+      </div>
+
+      <div id="applicationStatusSection" class="settings-status-section" hidden>
+        <p class="eyebrow">Application status</p>
+        <span class="status-pill" id="applicationStatusPill">Pending review</span>
+      </div>
+
+      <a class="outline-btn settings-back" href="business-dashboard.html">Back to dashboard</a>
+    </aside>
+
+    <div id="authErrorContainer" hidden>
+      <div class="settings-form">
+        <section class="settings-section">
+          <p id="authErrorMessage" class="error-message"></p>
+        </section>
+      </div>
+    </div>
+
+    <form class="settings-form" id="businessProfileForm" novalidate hidden>
+      <!-- 1. Basic Information -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Basic information</p>
+            <h2>Business details</h2>
+          </div>
+          <p>Core information displayed in your business profile and directory listing.</p>
+        </div>
+
+        <label class="settings-text-field">
+          <span>Business display name</span>
+          <input type="text" id="displayName" placeholder="Your business name" maxlength="60" />
+        </label>
+
+        <label class="settings-text-field">
+          <span>Website</span>
+          <input type="url" id="website" placeholder="https://yourbusiness.com.au" />
+        </label>
+
+        <label class="settings-text-field">
+          <span>Contact phone</span>
+          <input type="tel" id="contactPhone" placeholder="+61 2 1234 5678" />
+        </label>
+
+        <label class="settings-text-field">
+          <span>Location</span>
+          <input type="text" id="location" placeholder="Sydney, NSW" maxlength="100" />
+        </label>
+      </section>
+
+      <!-- 2. Description & Services -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">About your business</p>
+            <h2>Description</h2>
+          </div>
+          <p>Tell potential clients about your venue, atmosphere, and what sets you apart.</p>
+        </div>
+
+        <label class="settings-text-field">
+          <span>Business description</span>
+          <textarea
+            id="description"
+            rows="4"
+            maxlength="500"
+            placeholder="Describe your venue, specialties, and what clients can expect when visiting."
+          ></textarea>
+        </label>
+
+        <p class="directory-choice-note" id="descriptionCount">0 / 500 characters</p>
+      </section>
+
+      <!-- 3. Services -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Offerings</p>
+            <h2>Services</h2>
+          </div>
+          <p>Select the services or specialties your business offers.</p>
+        </div>
+
+        <fieldset class="directory-choice-group">
+          <legend class="visually-hidden">Services</legend>
+          <div class="directory-choice-grid">
+            <label><input type="checkbox" name="businessService" value="Escort services" /> Escort services</label>
+            <label><input type="checkbox" name="businessService" value="Adult entertainment" /> Adult entertainment</label>
+            <label><input type="checkbox" name="businessService" value="Massage therapy" /> Massage therapy</label>
+            <label><input type="checkbox" name="businessService" value="Consulting" /> Consulting</label>
+            <label><input type="checkbox" name="businessService" value="Venue hire" /> Venue hire</label>
+            <label><input type="checkbox" name="businessService" value="Event hosting" /> Event hosting</label>
+            <label><input type="checkbox" name="businessService" value="Staff placement" /> Staff placement</label>
+            <label><input type="checkbox" name="businessService" value="Training programs" /> Training programs</label>
+          </div>
+        </fieldset>
+
+        <p class="directory-choice-note">Selected services appear in your directory listing and profile.</p>
+      </section>
+
+      <!-- 4. Operating Information -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Operations</p>
+            <h2>Hours and pricing</h2>
+          </div>
+          <p>Tell clients when you're open and your general price range.</p>
+        </div>
+
+        <label class="settings-text-field">
+          <span>Opening hours</span>
+          <input type="text" id="openingHours" placeholder="e.g. Monday–Friday 10am–10pm, Saturday–Sunday 12pm–midnight" maxlength="200" />
+        </label>
+
+        <label class="settings-text-field">
+          <span>Price range</span>
+          <input type="text" id="priceRange" placeholder="e.g. $200–$800" maxlength="100" />
+        </label>
+      </section>
+
+      <!-- 5. Logo / Branding -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Branding</p>
+            <h2>Logo or image</h2>
+          </div>
+          <p>Upload a logo or representative image for your business (data URLs and URLs supported).</p>
+        </div>
+
+        <label class="settings-text-field">
+          <span>Logo URL or data URL</span>
+          <input type="text" id="logoDataUrl" placeholder="https://example.com/logo.png or data:image/png;base64,..." />
+        </label>
+
+        <div id="logoPreview" class="logo-preview" hidden>
+          <img id="logoPreviewImg" alt="Logo preview" />
+        </div>
+
+        <p class="directory-choice-note">Paste a public image URL or a data URL. Logo will appear in your profile and directory listings.</p>
+      </section>
+
+      <div class="settings-save-bar">
+        <p id="businessProfileStatus" aria-live="polite"></p>
+        <button type="submit">Save profile</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="script.js?v=20260703-08"></script>
+  <script src="business-profile.js?v=20260709-01"></script>
+</body>
+</html>

@@ -6991,6 +6991,48 @@ body[data-auth-role] .account-type-switch {
   opacity: 0.58;
 }
 
+.settings-status-section {
+  margin-bottom: 28px;
+}
+
+.settings-status-section > .eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.logo-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  padding: 12px;
+  margin: 14px 0;
+  border: 1px dashed rgba(var(--gold-rgb), 0.3);
+  border-radius: 8px;
+  background: rgba(var(--black-rgb), 0.3);
+  overflow: hidden;
+}
+
+.logo-preview img {
+  max-width: 100%;
+  max-height: 80px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.error-message {
+  color: #ff6b6b;
+  padding: 12px;
+  border-left: 3px solid #ff6b6b;
+  background: rgba(255, 107, 107, 0.08);
+  border-radius: 4px;
+}
+
 .danger-zone {
   background: rgba(56, 10, 10, 0.11);
 }
