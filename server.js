@@ -577,6 +577,13 @@ const getAuthenticatedUser = (request) => {
   return readUsers().find((user) => user.id === session.userId) || null;
 };
 
+const requireSession = (request) => getAuthenticatedUser(request);
+
+const requireRole = (request, role, user = null) => {
+  const authenticatedUser = user || requireSession(request);
+  return Boolean(authenticatedUser && authenticatedUser.role === role);
+};
+
 const handleApi = async (request, response, pathname) => {
   try {
     if (pathname === "/api/reports" && request.method === "POST") {
@@ -981,9 +988,11 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
     }
 
     if (pathname === "/api/business/profile" && request.method === "GET") {
-      const user = getAuthenticatedUser(request);
+      const user = requireSession(request);
       if (!user) return json(response, 401, { error: "Sign in to view your business profile." });
-      if (user.role !== "business") return json(response, 403, { error: "Only business accounts can view this profile." });
+      if (!requireRole(request, "business", user)) {
+        return json(response, 403, { error: "Only business accounts can view this profile." });
+      }
 
       return json(response, 200, {
         user: publicUser(user),
@@ -993,9 +1002,9 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
     }
 
     if (pathname === "/api/business/profile" && request.method === "PATCH") {
-      const authenticatedUser = getAuthenticatedUser(request);
+      const authenticatedUser = requireSession(request);
       if (!authenticatedUser) return json(response, 401, { error: "Sign in to update your business profile." });
-      if (authenticatedUser.role !== "business") {
+      if (!requireRole(request, "business", authenticatedUser)) {
         return json(response, 403, { error: "Only business accounts can update this profile." });
       }
 
