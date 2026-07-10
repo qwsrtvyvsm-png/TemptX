@@ -4,6 +4,10 @@
     radial-gradient(circle at top, rgba(196, 164, 92, 0.14), transparent 35%),
     var(--black);
   color: var(--cream);
+  --xync-subtle-border: rgba(255, 255, 255, 0.12);
+  --xync-soft-surface: rgba(255, 255, 255, 0.03);
+  --xync-active-surface: rgba(196, 164, 92, 0.12);
+  --xync-gold-deep: #9f7a2e;
 }
 
 .site-header {
@@ -115,6 +119,41 @@
 
 .questionnaire-card__progress-wrap {
   min-width: min(280px, 100%);
+}
+
+.questionnaire-card__type-switch {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: end;
+}
+
+.questionnaire-card__type-switch-label {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.74rem;
+  color: var(--gold);
+}
+
+.questionnaire-card__type-switch-buttons {
+  display: inline-flex;
+  gap: 0.5rem;
+  padding: 0.25rem;
+  border: 1px solid var(--xync-subtle-border);
+  border-radius: 999px;
+  background: var(--xync-soft-surface);
+}
+
+.questionnaire-card__type-switch-buttons .button {
+  min-width: 8.5rem;
+  padding: 0.7rem 1rem;
+}
+
+.questionnaire-card__type-switch-buttons .button.is-active {
+  background: linear-gradient(180deg, var(--gold), var(--xync-gold-deep));
+  color: var(--black);
+  border-color: transparent;
+  box-shadow: 0 0 18px rgba(196, 164, 92, 0.16);
 }
 
 .questionnaire-card__progress {
@@ -277,6 +316,19 @@
   .questionnaire-card__nav {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .questionnaire-card__type-switch {
+    justify-items: start;
+  }
+
+  .questionnaire-card__type-switch-buttons {
+    width: 100%;
+  }
+
+  .questionnaire-card__type-switch-buttons .button {
+    flex: 1 1 0;
+    min-width: 0;
   }
 
   .questionnaire-card__progress-wrap {
