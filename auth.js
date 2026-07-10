@@ -29,28 +29,14 @@ if (authForm) {
   const genderField = document.querySelector("#genderField");
   const accountCategoryField = document.querySelector("#accountCategoryField");
   const businessAbnField = document.querySelector("#businessAbnField");
-  const websiteField = document.querySelector("#websiteField");
   const phoneField = document.querySelector("#phoneField");
-  const businessDescriptionField = document.querySelector("#businessDescriptionField");
-  const servicesField = document.querySelector("#servicesField");
-  const locationField = document.querySelector("#locationField");
-  const hoursField = document.querySelector("#hoursField");
-  const priceRangeField = document.querySelector("#priceRangeField");
-  const logoField = document.querySelector("#logoField");
   const authWorkingName = document.querySelector("#authWorkingName");
   const clientIdField = document.querySelector("#clientIdField");
   const authEmail = document.querySelector("#authEmail");
   const authGender = document.querySelector("#authGender");
   const authAccountCategory = document.querySelector("#authAccountCategory");
   const authBusinessAbn = document.querySelector("#authBusinessAbn");
-  const authWebsite = document.querySelector("#authWebsite");
   const authBusinessPhone = document.querySelector("#authBusinessPhone");
-  const authBusinessDescription = document.querySelector("#authBusinessDescription");
-  const authServices = document.querySelector("#authServices");
-  const authBusinessLocation = document.querySelector("#authBusinessLocation");
-  const authOpeningHours = document.querySelector("#authOpeningHours");
-  const authPriceRange = document.querySelector("#authPriceRange");
-  const authLogoInput = document.querySelector("#authLogoInput");
   const authClientId = document.querySelector("#authClientId");
   const authPassword = document.querySelector("#authPassword");
   const loginOptions = document.querySelector("#loginOptions");
@@ -110,20 +96,14 @@ if (authForm) {
     if (genderField) genderField.hidden = !isWorkerSignup;
     accountCategoryField.hidden = !(isWorkerSignup || isBusinessSignup);
     if (businessAbnField) businessAbnField.hidden = !isBusinessSignup;
-    if (websiteField) websiteField.hidden = !isBusinessSignup;
     if (phoneField) phoneField.hidden = !isBusinessSignup;
-    if (businessDescriptionField) businessDescriptionField.hidden = !isBusinessSignup;
-    if (servicesField) servicesField.hidden = !isBusinessSignup;
-    if (locationField) locationField.hidden = !isBusinessSignup;
-    if (hoursField) hoursField.hidden = !isBusinessSignup;
-    if (priceRangeField) priceRangeField.hidden = !isBusinessSignup;
-    if (logoField) logoField.hidden = !isBusinessSignup;
     clientIdField.hidden = isEmailAccount || isSignup;
     authWorkingName.required = isWorkerSignup || isBusinessSignup;
     authEmail.required = isEmailAccount;
     if (authGender) authGender.required = isWorkerSignup;
     authAccountCategory.required = isWorkerSignup || isBusinessSignup;
     if (authBusinessAbn) authBusinessAbn.required = isBusinessSignup;
+    if (authBusinessPhone) authBusinessPhone.required = isBusinessSignup;
     authEmail.placeholder =
       role === "creator"
         ? "creator@example.com"
@@ -206,16 +186,6 @@ if (authForm) {
     });
   });
 
-  const readLogoFile = async (input) => {
-    if (!input?.files?.[0]) return "";
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
-      reader.onerror = () => reject(new Error("Unable to read the uploaded logo."));
-      reader.readAsDataURL(input.files[0]);
-    });
-  };
-
   authForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     setStatus(authStatus, "Checking your details…");
@@ -237,14 +207,7 @@ if (authForm) {
       payload.workingName = authWorkingName.value;
       payload.businessAbn = authBusinessAbn.value;
       payload.accountCategory = authAccountCategory.value;
-      payload.website = authWebsite?.value || "";
       payload.businessPhone = authBusinessPhone?.value || "";
-      payload.businessDescription = authBusinessDescription?.value || "";
-      payload.services = authServices?.value || "";
-      payload.businessLocation = authBusinessLocation?.value || "";
-      payload.openingHours = authOpeningHours?.value || "";
-      payload.priceRange = authPriceRange?.value || "";
-      payload.logoDataUrl = await readLogoFile(authLogoInput);
     }
     if (role === "client" && mode === "login") payload.clientId = authClientId.value;
 

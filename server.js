@@ -226,7 +226,6 @@ const workerCategories = new Set([
 ]);
 const businessCategories = new Set([
   "brothel",
-  "escort agency",
   "adult venue",
   "adult business",
   "photography",
@@ -720,14 +719,7 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
 
       // Validate email-account fields before the expensive scrypt call.
       let email, workingName, gender, accountCategory, businessAbn;
-      let businessWebsite = "";
       let businessPhone = "";
-      let businessDescription = "";
-      let servicesOffered = "";
-      let businessLocation = "";
-      let openingHours = "";
-      let priceRange = "";
-      let logoDataUrl = "";
       if (isEmailAccount(role)) {
         email = normaliseEmail(body.email);
         workingName = cleanText(body.workingName, 80);
@@ -745,14 +737,10 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
           if (!businessCategories.has(accountCategory)) {
             return json(response, 400, { error: "Choose a valid business category." });
           }
-          businessWebsite = cleanText(body.website, 300);
           businessPhone = cleanText(body.businessPhone, 40);
-          businessDescription = cleanText(body.businessDescription, 2000);
-          servicesOffered = cleanText(body.services, 2000);
-          businessLocation = cleanText(body.businessLocation, 200);
-          openingHours = cleanText(body.openingHours, 200);
-          priceRange = cleanText(body.priceRange, 200);
-          logoDataUrl = cleanText(body.logoDataUrl, 5000);
+          if (!businessPhone) {
+            return json(response, 400, { error: "Enter your business contact phone." });
+          }
         } else {
           gender = cleanText(body.gender, 60);
           if (!gender) return json(response, 400, { error: "Enter your gender." });
@@ -793,14 +781,14 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
             user.businessAbn = businessAbn;
             user.applicationStatus = "pending_review";
             user.businessProfile = {
-              website: businessWebsite,
+              website: "",
               contactPhone: businessPhone,
-              description: businessDescription,
-              services: servicesOffered,
-              location: businessLocation,
-              openingHours,
-              priceRange,
-              logoDataUrl
+              description: "",
+              services: "",
+              location: "",
+              openingHours: "",
+              priceRange: "",
+              logoDataUrl: ""
             };
           } else {
             user.gender = gender;
