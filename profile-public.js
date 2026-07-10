@@ -3,6 +3,51 @@ const messageCtas = document.querySelectorAll("[data-message-cta]");
 const editProfileLinks = document.querySelectorAll("[data-edit-profile]");
 const favouriteButtons = document.querySelectorAll("[data-favourite-provider]");
 
+const formatXyncLabel = (key) => key
+  .replace(/([a-z])([A-Z])/g, "$1 $2")
+  .replace(/[_-]+/g, " ")
+  .replace(/^./, (character) => character.toUpperCase());
+
+const formatXyncValue = (value) => {
+  if (Array.isArray(value)) return value.join(", ");
+  if (value && typeof value === "object") {
+    return Object.entries(value)
+      .map(([key, item]) => `${formatXyncLabel(key)}: ${formatXyncValue(item)}`)
+      .join(" · ");
+  }
+  return String(value);
+};
+
+const renderProviderXyncResults = (xyncResults) => {
+  const section = document.querySelector("#providerXyncSection");
+  const resultsContainer = document.querySelector("#providerXyncResults");
+  if (!section || !resultsContainer || !xyncResults) return;
+
+  const entries = Array.isArray(xyncResults)
+    ? xyncResults.map((item, index) => {
+      const result = item && typeof item === "object" ? item : {};
+      return [result.question || result.label || `Result ${index + 1}`, result.answer || result.value || item];
+    })
+    : Object.entries(xyncResults.answers || xyncResults.responses || xyncResults.results || xyncResults);
+  const visibleEntries = entries.filter(([, value]) => value !== null && value !== undefined && value !== "");
+
+  if (!visibleEntries.length) return;
+
+  resultsContainer.replaceChildren(
+    ...visibleEntries.map(([key, value]) => {
+      const article = document.createElement("article");
+      article.className = "provider-xync-result";
+      const heading = document.createElement("h3");
+      heading.textContent = formatXyncLabel(String(key));
+      const answer = document.createElement("p");
+      answer.textContent = formatXyncValue(value);
+      article.append(heading, answer);
+      return article;
+    })
+  );
+  section.hidden = false;
+};
+
 const renderPublicProvider = (provider) => {
   const name = document.querySelector("#publicProviderName");
   const locations = document.querySelector("#publicProviderLocations");
@@ -177,6 +222,7 @@ const loadPublicProvider = async () => {
     let dirResponse = null;
     let sessionResponse = null;
     let profileResponse = null;
+    let publicProfile = null;
 
     if (providerId) {
       [dirResponse, sessionResponse, profileResponse] = responses;
@@ -198,12 +244,16 @@ const loadPublicProvider = async () => {
     // Apply server-persisted profile content for all visitors
     if (profileResponse && profileResponse.ok) {
       const { profile } = await profileResponse.json();
+      publicProfile = profile;
       applyProfileDetails(profile);
     }
 
     if (sessionResponse.ok) {
       const { user } = await sessionResponse.json();
       applyOwnerControls(user.role, user.id, profileIsProvider);
+      if (user.role === "client" && profileIsProvider) {
+        renderProviderXyncResults(publicProfile?.xyncResults || publicProfile?.xync);
+      }
     }
   } catch {
     // The sample profile remains visible when the local account server is offline.
