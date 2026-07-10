@@ -206,10 +206,8 @@ const verifyPassword = (password, user) => {
 
 const validPassword = (password) =>
   typeof password === "string" &&
-  password.length >= 12 &&
-  /[a-z]/.test(password) &&
-  /[A-Z]/.test(password) &&
-  /\d/.test(password);
+  password.length >= 6 &&
+  (/\d/.test(password) || /[^A-Za-z0-9\s]/.test(password));
 
 const normaliseEmail = (email) => String(email || "").trim().toLowerCase();
 const normaliseClientId = (clientId) => String(clientId || "").trim().toUpperCase();
@@ -1009,7 +1007,7 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
       }
       if (!validPassword(password)) {
         return json(response, 400, {
-          error: "Use at least 12 characters with upper and lowercase letters and a number."
+          error: "Use at least 6 characters with a number or special character."
         });
       }
 
@@ -1240,7 +1238,7 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
       }
       if (!validPassword(String(body.password || ""))) {
         return json(response, 400, {
-          error: "Use at least 12 characters with upper and lowercase letters and a number."
+          error: "Use at least 6 characters with a number or special character."
         });
       }
 
