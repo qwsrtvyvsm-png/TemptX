@@ -350,7 +350,16 @@
     for (const question of currentQuestions(type, role)) {
       const value = input[question.key];
       if (question.type === "multi") {
-        output[question.key] = Array.isArray(value) ? normalizeMultiAnswer(value) : [];
+        if (Array.isArray(value)) {
+          const validValues = new Set(question.options.map(([, optionValue]) => optionValue));
+          output[question.key] = normalizeMultiAnswer(
+            value.filter((entry) => validValues.has(String(entry)))
+          );
+        } else if (value === "prefer_not_to_answer") {
+          output[question.key] = ["prefer_not_to_answer"];
+        } else {
+          output[question.key] = [];
+        }
       } else if (typeof value === "string" && value) {
         output[question.key] = value;
       }
