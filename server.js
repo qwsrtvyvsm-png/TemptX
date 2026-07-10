@@ -498,6 +498,297 @@ const cleanBusinessProfilePatch = (body) => {
   return updates;
 };
 
+const XYNC_TYPES = new Set(["provider", "creator"]);
+const XYNC_MULTI_SELECT_KEYS = new Set([
+  "bedroomPreferences",
+  "kinkPreferences",
+  "contentInterests",
+  "creatorSpecialties"
+]);
+const XYNC_WARNING_KEYS = new Set([
+  "boundaries",
+  "consentCommunication",
+  "bedroomPreferences",
+  "kinkPreferences",
+  "substanceComfort"
+]);
+const XYNC_TOPICS = {
+  provider: [
+    "communicationStyle",
+    "socialEnergy",
+    "planningStyle",
+    "interactionStyle",
+    "boundaries",
+    "consentCommunication",
+    "bedroomPreferences",
+    "kinkPreferences",
+    "substanceUse",
+    "substanceComfort"
+  ],
+  creator: [
+    "contentInterests",
+    "spendingBudget",
+    "interactionStyle",
+    "communicationFrequency",
+    "customContentInterest",
+    "kinkPreferences",
+    "creatorSpecialties"
+  ]
+};
+
+// Cap each multi-select answer to keep stored records small and predictable.
+const XYNC_MULTI_SELECT_LIMIT = 30;
+const XYNC_SUBSTANCE_USE_STATUS_ALIASES = {
+  uses: "uses",
+  use: "uses",
+  yes: "uses",
+  y: "uses",
+  true: "uses",
+  "1": "uses",
+  sometimes: "uses",
+  occasionally: "uses",
+  does_not_use: "does_not_use",
+  "does not use": "does_not_use",
+  "doesn't use": "does_not_use",
+  no: "does_not_use",
+  n: "does_not_use",
+  false: "does_not_use",
+  "0": "does_not_use",
+  never: "does_not_use",
+  prefer_not_to_answer: "prefer_not_to_answer"
+};
+
+const emptyXyncRecord = () => ({
+  answers: {},
+  completedAt: null,
+  updatedAt: null
+});
+
+const isXyncType = (type) => XYNC_TYPES.has(type);
+
+const cleanXyncString = (value) => {
+  if (typeof value !== "string") return null;
+  const cleaned = cleanText(value, 80);
+  return cleaned || null;
+};
+
+const cleanXyncArray = (value) => {
+  if (!Array.isArray(value)) return null;
+  const cleaned = [];
+  const seen = new Set();
+  let preferNotToAnswer = false;
+
+  for (const entry of value) {
+    const cleanedEntry = cleanXyncString(entry);
+    if (!cleanedEntry) continue;
+    if (cleanedEntry === "prefer_not_to_answer") {
+      preferNotToAnswer = true;
+      continue;
+    }
+    if (seen.has(cleanedEntry)) continue;
+    seen.add(cleanedEntry);
+    cleaned.push(cleanedEntry);
+    if (cleaned.length >= XYNC_MULTI_SELECT_LIMIT) break;
+  }
+
+  if (cleaned.length) return cleaned;
+  return preferNotToAnswer ? "prefer_not_to_answer" : null;
+};
+
+const cleanXyncAnswer = (type, key, value) => {
+  if (value === "prefer_not_to_answer") return value;
+
+  if (XYNC_MULTI_SELECT_KEYS.has(key)) {
+    if (typeof value === "string") {
+      const cleaned = cleanXyncString(value);
+      return cleaned === "prefer_not_to_answer" ? cleaned : null;
+    }
+    return cleanXyncArray(value);
+  }
+
+  if (Array.isArray(value)) return null;
+  return cleanXyncString(value);
+};
+
+const cleanXyncAnswers = (type, answers) => {
+  if (!isXyncType(type) || !answers || typeof answers !== "object" || Array.isArray(answers)) {
+    return {};
+  }
+
+  const cleanAnswers = {};
+  for (const key of XYNC_TOPICS[type]) {
+    if (!Object.prototype.hasOwnProperty.call(answers, key)) continue;
+    const cleaned = cleanXyncAnswer(type, key, answers[key]);
+    if (cleaned !== null && cleaned !== undefined && cleaned !== "") {
+      cleanAnswers[key] = cleaned;
+    }
+  }
+  return cleanAnswers;
+};
+
+const getXyncRecord = (user, type) => {
+  const record = user?.xync && typeof user.xync === "object" ? user.xync[type] : null;
+  const defaults = emptyXyncRecord();
+  const answers = cleanXyncAnswers(type, record?.answers);
+  return {
+    ...defaults,
+    answers,
+    completedAt: typeof record?.completedAt === "string" ? record.completedAt : null,
+    updatedAt: typeof record?.updatedAt === "string" ? record.updatedAt : null
+  };
+};
+
+const hasAnsweredXyncValue = (answers) =>
+  Object.values(answers).some(
+    (value) =>
+      (Array.isArray(value) && value.some((entry) => entry !== "prefer_not_to_answer")) ||
+      (typeof value === "string" && value.trim() && value !== "prefer_not_to_answer")
+  );
+
+const xyncComparableValue = (type, key, value) => {
+  if (value === null || value === undefined || value === "") return null;
+  if (Array.isArray(value)) {
+    if (!XYNC_MULTI_SELECT_KEYS.has(key)) return null;
+    const unique = [
+      ...new Set(
+        value
+          .map((entry) => cleanXyncString(entry))
+          .filter((entry) => entry && entry !== "prefer_not_to_answer")
+      )
+    ];
+    return unique.length ? unique : null;
+  }
+  if (typeof value !== "string") return null;
+  if (value === "prefer_not_to_answer") return null;
+  return cleanXyncString(value);
+};
+
+const xyncTopicScore = (key, clientValue, targetValue) => {
+  if (Array.isArray(clientValue) || Array.isArray(targetValue)) {
+    const clientValues = Array.isArray(clientValue) ? clientValue : [clientValue];
+    const targetValues = Array.isArray(targetValue) ? targetValue : [targetValue];
+    const clientSet = new Set(clientValues);
+    const targetSet = new Set(targetValues);
+    const union = new Set([...clientSet, ...targetSet]);
+    if (!union.size) return null;
+    let overlap = 0;
+    union.forEach((entry) => {
+      if (clientSet.has(entry) && targetSet.has(entry)) overlap += 1;
+    });
+    return Math.round((overlap / union.size) * 100);
+  }
+
+  if (typeof clientValue !== "string" || typeof targetValue !== "string") return null;
+  return clientValue === targetValue ? 100 : 0;
+};
+
+const xyncBandForScore = (score) => {
+  if (typeof score !== "number") return null;
+  if (score < 40) return { band: "Low", label: "Low Xync" };
+  if (score < 60) return { band: "Possible", label: "Possible Xync" };
+  if (score < 80) return { band: "Good", label: "Good Xync" };
+  return { band: "Strong", label: "Strong Xync" };
+};
+
+const isValidXyncTargetId = (value) =>
+  typeof value === "string" &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+
+const validateXyncRoleAccess = (role, type) =>
+  role !== "business" &&
+  !(
+    (role === "provider" && type !== "provider") ||
+    (role === "creator" && type !== "creator")
+  );
+
+const xyncSubstanceUseStatus = (value) => {
+  if (value === null || value === undefined || value === "") return "not_answered";
+  if (Array.isArray(value)) return "not_answered";
+  if (typeof value !== "string") return "not_answered";
+
+  const cleaned = cleanText(value, 80);
+  if (!cleaned) return "not_answered";
+  const normalized = cleaned.toLowerCase();
+  if (Object.prototype.hasOwnProperty.call(XYNC_SUBSTANCE_USE_STATUS_ALIASES, normalized)) {
+    return XYNC_SUBSTANCE_USE_STATUS_ALIASES[normalized];
+  }
+  return "not_answered";
+};
+
+const xyncWarningLabel = (key) => {
+  const labels = {
+    boundaries: "Boundary expectations differ",
+    consentCommunication: "Consent communication preferences differ",
+    bedroomPreferences: "Bedroom preferences may need discussion",
+    kinkPreferences: "Kink preferences may need discussion",
+    substanceComfort: "Substance-use comfort may need discussion"
+  };
+  return labels[key] || null;
+};
+
+const xyncValuesDiffer = (clientValue, targetValue) => {
+  if (Array.isArray(clientValue) || Array.isArray(targetValue)) {
+    const clientValues = Array.isArray(clientValue) ? clientValue : [clientValue];
+    const targetValues = Array.isArray(targetValue) ? targetValue : [targetValue];
+    if (clientValues.length !== targetValues.length) return true;
+    const clientSet = new Set(clientValues);
+    const targetSet = new Set(targetValues);
+    if (clientSet.size !== targetSet.size) return true;
+    for (const entry of clientSet) {
+      if (!targetSet.has(entry)) return true;
+    }
+    return false;
+  }
+
+  return clientValue !== targetValue;
+};
+
+const compareXyncAnswers = (clientUser, targetUser, type) => {
+  const topics = XYNC_TOPICS[type] || [];
+  const clientRecord = getXyncRecord(clientUser, type);
+  const targetRecord = getXyncRecord(targetUser, type);
+  const comparableAnswers = [];
+  const warnings = [];
+  const scores = [];
+
+  for (const key of topics) {
+    const clientValue = xyncComparableValue(type, key, clientRecord.answers[key]);
+    const targetValue = xyncComparableValue(type, key, targetRecord.answers[key]);
+    if (clientValue === null || targetValue === null) continue;
+
+    const topicScore = xyncTopicScore(key, clientValue, targetValue);
+    if (topicScore === null) continue;
+    comparableAnswers.push(key);
+    scores.push(topicScore);
+
+    if (
+      type === "provider" &&
+      XYNC_WARNING_KEYS.has(key) &&
+      xyncWarningLabel(key) &&
+      xyncValuesDiffer(clientValue, targetValue)
+    ) {
+      warnings.push(xyncWarningLabel(key));
+    }
+  }
+
+  const score = scores.length
+    ? Math.round(scores.reduce((total, value) => total + value, 0) / scores.length)
+    : null;
+  const band = xyncBandForScore(score);
+
+  return {
+    score,
+    band: band ? band.band : null,
+    label: band ? band.label : null,
+    warnings,
+    comparableAnswers,
+    clientCompleted: Boolean(clientRecord.completedAt),
+    targetCompleted: Boolean(targetRecord.completedAt),
+    substanceUseStatus:
+      type === "provider" ? xyncSubstanceUseStatus(clientRecord.answers.substanceUse) : null
+  };
+};
+
 const publicUser = (user) => ({
   id: user.id,
   role: user.role,
@@ -519,6 +810,10 @@ const publicUser = (user) => ({
     locations: cleanDirectorySelections(user.settings?.locations, DIRECTORY_OPTIONS.locations),
     services: cleanDirectorySelections(user.settings?.services, DIRECTORY_OPTIONS.services),
     attributes: cleanDirectorySelections(user.settings?.attributes, DIRECTORY_OPTIONS.attributes)
+  },
+  xyncStatus: {
+    providerCompleted: Boolean(user.xync?.provider?.completedAt),
+    creatorCompleted: Boolean(user.xync?.creator?.completedAt)
   }
 });
 
@@ -973,6 +1268,84 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
       const user = getAuthenticatedUser(request);
       if (!user) return json(response, 401, { error: "Not signed in." });
       return json(response, 200, { user: publicUser(user) });
+    }
+
+    const xyncComparisonMatch = pathname.match(/^\/api\/xync\/(provider|creator)\/([^/]+)$/);
+    if (xyncComparisonMatch && request.method === "GET") {
+      const xyncType = xyncComparisonMatch[1];
+      const targetId = xyncComparisonMatch[2];
+      const authenticatedUser = requireSession(request);
+      if (!authenticatedUser) return json(response, 401, { error: "Sign in to compare Xync answers." });
+      if (authenticatedUser.role !== "client") {
+        return json(response, 403, { error: "Only clients can compare Xync answers." });
+      }
+      if (!isValidXyncTargetId(targetId)) return json(response, 404, { error: "Match not found." });
+
+      const comparison = await usersQueue(() => {
+        const targetUser = readUsers().find(
+          (user) =>
+            user.id === targetId &&
+            user.role === xyncType &&
+            !user.deactivatedAt
+        );
+        if (!targetUser) return { notFound: true };
+        return { result: compareXyncAnswers(authenticatedUser, targetUser, xyncType) };
+      });
+      if (comparison.notFound) return json(response, 404, { error: "Match not found." });
+
+      return json(response, 200, comparison.result);
+    }
+
+    const xyncRouteMatch = pathname.match(/^\/api\/xync\/(provider|creator)$/);
+    if (xyncRouteMatch) {
+      const xyncType = xyncRouteMatch[1];
+      const authenticatedUser = requireSession(request);
+      if (!authenticatedUser) {
+        return json(response, 401, {
+          error: request.method === "GET" ? "Sign in to view Xync answers." : "Sign in to save Xync answers."
+        });
+      }
+      if (!validateXyncRoleAccess(authenticatedUser.role, xyncType)) {
+        return json(response, 403, { error: "That Xync questionnaire is not available for your account type." });
+      }
+
+      if (request.method === "GET") {
+        return json(response, 200, getXyncRecord(authenticatedUser, xyncType));
+      }
+
+      if (request.method === "PUT") {
+        const body = await readJsonBody(request);
+        const sourceAnswers =
+          body && typeof body.answers === "object" && !Array.isArray(body.answers) ? body.answers : {};
+        const now = new Date().toISOString();
+        const saved = await usersQueue(() => {
+          const users = readUsers();
+          const user = users.find((item) => item.id === authenticatedUser.id);
+          if (!user) return { notFound: true };
+
+          const nextAnswers = cleanXyncAnswers(xyncType, sourceAnswers);
+          const existingCurrentRecord = getXyncRecord(user, xyncType);
+
+          const existingXync = user.xync && typeof user.xync === "object" ? user.xync : {};
+          user.xync = {
+            ...existingXync,
+            provider: existingXync.provider || emptyXyncRecord(),
+            creator: existingXync.creator || emptyXyncRecord(),
+            [xyncType]: {
+              answers: nextAnswers,
+              completedAt:
+                existingCurrentRecord.completedAt || (hasAnsweredXyncValue(nextAnswers) ? now : null),
+              updatedAt: now
+            }
+          };
+
+          writeUsers(users);
+          return { record: user.xync[xyncType] };
+        });
+
+        if (saved.notFound) return json(response, 404, { error: "Account not found." });
+        return json(response, 200, saved.record);
+      }
     }
 
     if (pathname === "/api/business/profile" && request.method === "GET") {
