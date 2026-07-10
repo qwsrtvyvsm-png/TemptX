@@ -3,7 +3,7 @@ const messageCtas = document.querySelectorAll("[data-message-cta]");
 const editProfileLinks = document.querySelectorAll("[data-edit-profile]");
 const favouriteButtons = document.querySelectorAll("[data-favourite-provider]");
 
-const formatXyncLabel = (key) => key
+const convertXyncKeyToLabel = (key) => key
   .replace(/([a-z])([A-Z])/g, "$1 $2")
   .replace(/[_-]+/g, " ")
   .replace(/^./, (ch) => ch.toUpperCase());
@@ -12,7 +12,7 @@ const formatXyncValue = (value) => {
   if (Array.isArray(value)) return value.join(", ");
   if (value && typeof value === "object") {
     return Object.entries(value)
-      .map(([key, nestedValue]) => `${formatXyncLabel(key)}: ${formatXyncValue(nestedValue)}`)
+      .map(([key, nestedValue]) => `${convertXyncKeyToLabel(key)}: ${formatXyncValue(nestedValue)}`)
       .join(" · ");
   }
   return String(value);
@@ -25,6 +25,7 @@ const renderProviderXyncResults = (xyncResults) => {
 
   const entries = Array.isArray(xyncResults)
     ? xyncResults.map((item, index) => {
+      // Array results may use either question/answer or label/value pairs.
       const result = item && typeof item === "object" ? item : {};
       return [result.question || result.label || `Result ${index + 1}`, result.answer || result.value || item];
     })
@@ -38,7 +39,7 @@ const renderProviderXyncResults = (xyncResults) => {
       const article = document.createElement("article");
       article.className = "provider-xync-result";
       const heading = document.createElement("h3");
-      heading.textContent = formatXyncLabel(String(key));
+      heading.textContent = convertXyncKeyToLabel(String(key));
       const answer = document.createElement("p");
       answer.textContent = formatXyncValue(value);
       article.append(heading, answer);
@@ -251,7 +252,7 @@ const loadPublicProvider = async () => {
     if (sessionResponse.ok) {
       const { user } = await sessionResponse.json();
       applyOwnerControls(user.role, user.id, profileIsProvider);
-      if (user.role === "client" && profileIsProvider && publicProfile) {
+      if (user.role === "client" && profileIsProvider && publicProfile?.xyncResults) {
         renderProviderXyncResults(publicProfile.xyncResults);
       }
     }
