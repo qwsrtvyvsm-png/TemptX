@@ -19,6 +19,7 @@ if (dashboard) {
 
   const getApplicationStatusDetails = (status) => {
     const details = {
+      draft: "Your profile is private and not yet submitted.",
       pending_review: "We're reviewing your application. This typically takes 1-2 business days.",
       approved: "Your business account is active and your profile is visible in the directory.",
       rejected: "Your application was not approved. Review the community standards and reapply.",
@@ -55,7 +56,8 @@ if (dashboard) {
       const displayName = user.settings?.displayName || user.workingName || "your business";
       const accountCategory = formatLabel(user.accountCategory || "adult business");
       const businessLocation = user.businessProfile?.location || "Location pending";
-      const storedApplicationStatus = user.applicationStatus || "pending_review";
+      const storedApplicationStatus = user.applicationStatus || "draft";
+      const isDraftStatus = storedApplicationStatus === "draft";
       const statusDetails = getApplicationStatusDetails(storedApplicationStatus);
 
       if (title) {
@@ -75,7 +77,11 @@ if (dashboard) {
       }
 
       if (applicationState) {
-        applicationState.textContent = storedApplicationStatus;
+        applicationState.textContent = isDraftStatus
+          ? "Complete your business profile"
+          : storedApplicationStatus === "pending_review"
+          ? "Application Under Review"
+          : formatLabel(storedApplicationStatus.replace(/_/g, " "));
       }
 
       if (applicationDetails) {
@@ -83,7 +89,7 @@ if (dashboard) {
       }
 
       if (statusPill) {
-        statusPill.textContent = storedApplicationStatus;
+        statusPill.textContent = formatLabel(storedApplicationStatus.replace(/_/g, " "));
       }
 
       // Wire up public profile link

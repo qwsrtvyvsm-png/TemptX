@@ -27,8 +27,11 @@ if (settingsForm) {
   const accountActionSubmit = document.querySelector("#accountActionSubmit");
   const xyncSettingsSection = document.querySelector("#xyncSettingsSection");
   const xyncSettingsLink = document.querySelector("#xyncSettingsLink");
-  let currentUser = null;
-  let accountAction = "deactivate";
+  const generateRecoveryKeyButton = document.querySelector("#generateRecoveryKeyButton");
+  const recoveryAccessStatus = document.querySelector("#recoveryAccessStatus");
+  const newRecoveryKeyCard = document.querySelector("#newRecoveryKeyCard");
+  const newRecoveryKeyValue = document.querySelector("#newRecoveryKeyValue");
+  const copyNewRecoveryKeyButton = document.querySelector("#copyNewRecoveryKey");
 
   const setStatus = (message = "", type = "") => {
     status.textContent = message;
@@ -39,6 +42,12 @@ if (settingsForm) {
     checkboxes.forEach((checkbox) => {
       checkbox.checked = values.includes(checkbox.value);
     });
+  };
+
+  const setRecoveryAccessStatus = (message = "", type = "") => {
+    if (!recoveryAccessStatus) return;
+    recoveryAccessStatus.textContent = message;
+    recoveryAccessStatus.className = type ? `is-${type}` : "";
   };
 
   const getCheckedValues = (checkboxes) =>
@@ -189,6 +198,49 @@ if (settingsForm) {
       accountActionSubmit.disabled = false;
     }
   });
+
+  if (generateRecoveryKeyButton) {
+    generateRecoveryKeyButton.addEventListener("click", async () => {
+      generateRecoveryKeyButton.disabled = true;
+      setRecoveryAccessStatus("Generating a new recovery key…");
+
+      try {
+        const response = await fetch("/api/auth/recovery-key", {
+          method: "POST"
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Unable to generate a new recovery key.");
+
+        if (newRecoveryKeyValue) {
+          newRecoveryKeyValue.textContent = result.recoveryCode || "";
+        }
+        if (newRecoveryKeyCard) {
+          newRecoveryKeyCard.hidden = false;
+        }
+        setRecoveryAccessStatus("New recovery key generated. Copy and store it now; it cannot be shown again.", "success");
+      } catch (error) {
+        setRecoveryAccessStatus(error.message || "Unable to generate a new recovery key.", "error");
+      } finally {
+        generateRecoveryKeyButton.disabled = false;
+      }
+    });
+  }
+
+  if (copyNewRecoveryKeyButton) {
+    copyNewRecoveryKeyButton.addEventListener("click", async () => {
+      if (!newRecoveryKeyValue || !newRecoveryKeyValue.textContent) {
+        setRecoveryAccessStatus("Generate a recovery key first.", "error");
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(newRecoveryKeyValue.textContent);
+        setRecoveryAccessStatus("Recovery key copied.", "success");
+      } catch {
+        setRecoveryAccessStatus("Copy unavailable. Save the recovery key manually.", "error");
+      }
+    });
+  }
 
   loadSettings();
 }

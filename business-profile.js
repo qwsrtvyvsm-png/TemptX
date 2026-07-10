@@ -25,6 +25,8 @@ if (businessProfileForm || authErrorContainer) {
   const profileMeta = document.querySelector("#businessProfileMeta");
   const applicationStatusSection = document.querySelector("#applicationStatusSection");
   const applicationStatusPill = document.querySelector("#applicationStatusPill");
+  const applicationStatusTitle = document.querySelector("#applicationStatusTitle");
+  const applicationStatusText = document.querySelector("#applicationStatusText");
 
   let currentUser = null;
   let currentBusinessProfile = null;
@@ -163,9 +165,32 @@ if (businessProfileForm || authErrorContainer) {
 
   // ── Display application status ───────────────────────────────────────────────
   const displayApplicationStatus = (status) => {
+    const currentStatus = status || "draft";
+    const isDraftStatus = currentStatus === "draft";
+    const statusTextByState = {
+      pending_review: "We're reviewing your application. This typically takes 1-2 business days.",
+      approved: "Your business account is active and your profile is visible in the directory.",
+      rejected: "Your application was not approved. Review the community standards and reapply.",
+      suspended: "Your account has been temporarily suspended. Contact support for details."
+    };
+
     if (applicationStatusPill && applicationStatusSection) {
-      applicationStatusPill.textContent = formatStatus(status || "pending_review");
+      applicationStatusPill.textContent = formatStatus(currentStatus);
       applicationStatusSection.hidden = false;
+    }
+
+    if (applicationStatusTitle) {
+      applicationStatusTitle.textContent = isDraftStatus
+        ? "Complete your business profile"
+        : currentStatus === "pending_review"
+        ? "Application Under Review"
+        : formatStatus(currentStatus);
+    }
+
+    if (applicationStatusText) {
+      applicationStatusText.textContent = isDraftStatus
+        ? "Your profile is private and not yet submitted."
+        : statusTextByState[currentStatus] || "Check back soon for your application status.";
     }
   };
 

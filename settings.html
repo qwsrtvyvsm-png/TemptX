@@ -283,6 +283,33 @@
         <div class="settings-section-heading">
           <div>
             <p class="eyebrow">Account</p>
+            <h2>Recovery Access</h2>
+          </div>
+          <p>Generate a new recovery key when you need to revoke the old one.</p>
+        </div>
+
+        <div class="danger-row">
+          <span>
+            <strong>Generate New Recovery Key</strong>
+            <small>This replaces your current recovery key immediately.</small>
+          </span>
+          <button type="button" class="danger-button" id="generateRecoveryKeyButton">Generate New Recovery Key</button>
+        </div>
+
+        <p id="recoveryAccessStatus" aria-live="polite"></p>
+        <div class="recovery-key-card" id="newRecoveryKeyCard" hidden>
+          <p class="eyebrow">Save this once</p>
+          <h3>Your new recovery key</h3>
+          <code id="newRecoveryKeyValue"></code>
+          <p>Store this somewhere private. TEMPTX cannot display it again.</p>
+          <button class="outline-btn" id="copyNewRecoveryKey" type="button">Copy recovery key</button>
+        </div>
+      </section>
+
+      <section class="settings-section danger-zone">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Account</p>
             <h2>Danger zone</h2>
           </div>
           <p>Temporarily deactivate your account or permanently delete it.</p>

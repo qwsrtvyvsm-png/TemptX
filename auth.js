@@ -221,17 +221,20 @@ if (authForm) {
       if (!response.ok) throw new Error(result.error || "Unable to continue.");
 
       if (mode === "signup") {
-        recoveryKeyValue.textContent = result.recoveryCode;
-        recoveryKeyCard.hidden = false;
+        if (role === "business") {
+          window.location.href = "business-profile.html?welcome=1";
+          return;
+        }
+
         setStatus(
           authStatus,
           role === "client"
-            ? `Account created. Your client ID is ${result.clientId}. Save your ID and recovery key somewhere private.`
+            ? `Account created. Your client ID is ${result.clientId}.`
             : role === "creator"
-            ? "Creator account created. Save your recovery key somewhere private."
+            ? "Creator account created."
             : role === "business"
             ? "Your application is under review."
-            : "Provider account created. Save your recovery key somewhere private.",
+            : "Provider account created.",
           "success"
         );
         authSubmit.textContent =
@@ -326,15 +329,6 @@ if (authForm) {
       window.setTimeout(closeRecovery, 1200);
     } catch (error) {
       setStatus(recoveryStatus, error.message, "error");
-    }
-  });
-
-  document.querySelector("#copyRecoveryKey").addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(recoveryKeyValue.textContent);
-      setStatus(authStatus, "Recovery key copied. Store it somewhere private.", "success");
-    } catch {
-      setStatus(authStatus, "Copy was unavailable. Select and save the recovery key manually.", "error");
     }
   });
 

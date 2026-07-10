@@ -262,7 +262,8 @@ const requireAuthRateLimit = (request, response, action, identifier = "") => {
     signup: [5, 60 * 60 * 1000],
     login: [10, 15 * 60 * 1000],
     forgot: [5, 60 * 60 * 1000],
-    reset: [5, 60 * 60 * 1000]
+    reset: [5, 60 * 60 * 1000],
+    rotateRecovery: [5, 60 * 60 * 1000]
   };
   const [limit, windowMs] = limits[action];
   if (rateLimit(authRateLimits, key, limit, windowMs)) return true;
@@ -1074,7 +1075,7 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
           user.accountCategory = accountCategory;
           if (role === "business") {
             user.businessAbn = businessAbn;
-            user.applicationStatus = "pending_review";
+            user.applicationStatus = "draft";
             user.businessProfile = {
               website: "",
               contactPhone: businessPhone,
@@ -1117,8 +1118,7 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
         {
           message: "Account created.",
           user: publicUser(signup.user),
-          clientId: signup.user.clientId || null,
-          recoveryCode
+          clientId: signup.user.clientId || null
         },
         {
           "Set-Cookie":
@@ -1396,7 +1396,7 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
       return json(response, 200, {
         user: publicUser(user),
         businessProfile: user.businessProfile || {},
-        applicationStatus: user.applicationStatus || "pending_review"
+        applicationStatus: user.applicationStatus || "draft"
       });
     }
 
@@ -1456,7 +1456,7 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
         message: "Business profile saved.",
         user: publicUser(saved.user),
         businessProfile: saved.user.businessProfile || {},
-        applicationStatus: saved.user.applicationStatus || "pending_review"
+        applicationStatus: saved.user.applicationStatus || "draft"
       });
     }
 
@@ -1539,6 +1539,29 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
       return json(response, 200, {
         message: "Settings saved.",
         user: publicUser(saved.user)
+      });
+    }
+
+    if (pathname === "/api/auth/recovery-key" && request.method === "POST") {
+      const authenticatedUser = getAuthenticatedUser(request);
+      if (!authenticatedUser) return json(response, 401, { error: "Sign in to manage your recovery key." });
+      if (!requireAuthRateLimit(request, response, "rotateRecovery", authenticatedUser.id)) return;
+
+      const recoveryCode = makeRecoveryCode();
+      const rotated = await usersQueue(() => {
+        const users = readUsers();
+        const user = users.find((item) => item.id === authenticatedUser.id);
+        if (!user) return { notFound: true };
+        user.recoveryCodeHash = hashPrivateValue(recoveryCode);
+        user.recoveryCodeUpdatedAt = new Date().toISOString();
+        writeUsers(users);
+        return { recoveryCode };
+      });
+
+      if (rotated.notFound) return json(response, 404, { error: "Account not found." });
+      return json(response, 200, {
+        message: "New recovery key generated. Save it somewhere private.",
+        recoveryCode: rotated.recoveryCode
       });
     }
 
