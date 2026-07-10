@@ -13,6 +13,9 @@ const pricePoaFilter = document.querySelector("#directoryPricePoa");
 const identityFilter = document.querySelector("#directoryIdentity");
 const availabilityFilter = document.querySelector("#directoryAvailability");
 const verifiedFilter = document.querySelector("#directoryVerified");
+const xyncFilter = document.querySelector("#directoryXync");
+const xyncFilterPanel = document.querySelector("#directoryXyncPanel");
+const xyncCta = document.querySelector("#directoryXyncCta");
 const sortFilter = document.querySelector("#directorySort");
 const resetButton = document.querySelector("#resetDirectory");
 const menuButton = document.querySelector(".directory-menu-button");
@@ -230,6 +233,7 @@ const applyFilters = () => {
   const selectedIdentity = normalise(identityFilter.value);
   const selectedAvailability = normalise(availabilityFilter.value);
   const selectedStatus = normalise(verifiedFilter.value);
+  const selectedXync = normalise(xyncFilter.value);
 
   const visibleCards = cards.filter((card) => {
     const searchable = normalise(
@@ -244,6 +248,7 @@ const applyFilters = () => {
     const matchesIdentity = !selectedIdentity || normalise(card.dataset.identity || "") === selectedIdentity;
     const matchesAvailability = !selectedAvailability || normalise(card.dataset.availability) === selectedAvailability;
     const matchesStatus = !selectedStatus || normalise(card.dataset.status).includes(selectedStatus);
+    const matchesXync = !selectedXync || normalise(card.dataset.xyncBand || "") === selectedXync;
     const isVisible =
       matchesQuery &&
       matchesLocation &&
@@ -252,7 +257,8 @@ const applyFilters = () => {
       matchesPrice &&
       matchesIdentity &&
       matchesAvailability &&
-      matchesStatus;
+      matchesStatus &&
+      matchesXync;
     card.hidden = !isVisible;
     return isVisible;
   });
@@ -276,7 +282,7 @@ filterForm.addEventListener("submit", (event) => {
   filterForm.classList.remove("is-open");
 });
 
-[search, locationFilter, categoryFilter, attributeFilter, identityFilter, availabilityFilter, verifiedFilter, sortFilter].forEach((control) => {
+[search, locationFilter, categoryFilter, attributeFilter, identityFilter, availabilityFilter, verifiedFilter, xyncFilter, sortFilter].forEach((control) => {
   control.addEventListener(control === search ? "input" : "change", applyFilters);
 });
 
@@ -372,6 +378,8 @@ const createProviderCard = (provider) => {
   card.dataset.availability = "";
   card.dataset.status = "";
   card.dataset.tag = "new";
+  card.dataset.providerId = provider.id;
+  card.dataset.demo = provider.demo === true || String(provider.id).startsWith("demo-") ? "true" : "false";
 
   card.innerHTML = `
     <div class="dir-card-media">
@@ -398,6 +406,56 @@ const createProviderCard = (provider) => {
   `;
 
   return card;
+};
+
+const addXyncBadge = (card, result) => {
+  let badge = card.querySelector(".dir-card-xync");
+  if (!badge) {
+    badge = document.createElement("span");
+    badge.className = "dir-card-xync";
+    card.querySelector(".dir-card-info").insertBefore(badge, card.querySelector(".dir-card-footer"));
+  }
+
+  if (!result || result.targetCompleted === false) {
+    badge.textContent = "Xync not completed";
+    badge.dataset.state = "incomplete";
+    card.dataset.xyncBand = "";
+    delete card.dataset.xyncScore;
+    return;
+  }
+
+  const score = Number(result.score);
+  const scoreLabel = Number.isFinite(score) ? `${score}%` : "";
+  const label = result.label || result.band || "Xync";
+  badge.textContent = scoreLabel ? `${scoreLabel} · ${label}` : label;
+  badge.dataset.state = "complete";
+  card.dataset.xyncBand = normalise(String(result.band || "")).replace(/\s+xync$/, "");
+  if (Number.isFinite(score)) card.dataset.xyncScore = String(score);
+  else delete card.dataset.xyncScore;
+};
+
+const loadXyncResults = async () => {
+  try {
+    const response = await fetch("/api/xync/directory/providers");
+    if (!response.ok) return;
+    const result = await response.json();
+
+    if (!result || typeof result.clientCompleted !== "boolean") return;
+    if (!result.clientCompleted) {
+      xyncCta.hidden = false;
+      return;
+    }
+
+    xyncFilterPanel.hidden = false;
+    const results = new Map(
+      (Array.isArray(result.results) ? result.results : []).map((item) => [String(item.providerId), item])
+    );
+    cards.filter((card) => card.dataset.demo !== "true").forEach((card) => {
+      addXyncBadge(card, results.get(card.dataset.providerId));
+    });
+  } catch {
+    // Xync is optional; the normal directory remains available when it cannot load.
+  }
 };
 
 const loadProviders = async () => {
@@ -450,6 +508,7 @@ const loadProviders = async () => {
 const initialiseDirectory = async () => {
   enhanceDirectorySelects();
   await loadProviders();
+  await loadXyncResults();
   applyUrlFilters();
   syncCustomSelects();
   updatePriceReadout();
