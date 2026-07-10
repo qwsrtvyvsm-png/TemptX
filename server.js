@@ -536,12 +536,27 @@ const XYNC_TOPICS = {
   ]
 };
 
-const XYNC_LABELS = [
-  { min: 0, max: 39, label: "Low Xync" },
-  { min: 40, max: 59, label: "Possible Xync" },
-  { min: 60, max: 79, label: "Good Xync" },
-  { min: 80, max: 100, label: "Strong Xync" }
-];
+// Cap each multi-select answer to keep stored records small and predictable.
+const XYNC_MULTI_SELECT_LIMIT = 30;
+const XYNC_SUBSTANCE_USE_STATUS_ALIASES = {
+  uses: "uses",
+  use: "uses",
+  yes: "uses",
+  y: "uses",
+  true: "uses",
+  "1": "uses",
+  sometimes: "uses",
+  occasionally: "uses",
+  does_not_use: "does_not_use",
+  "does not use": "does_not_use",
+  "doesn't use": "does_not_use",
+  no: "does_not_use",
+  n: "does_not_use",
+  false: "does_not_use",
+  "0": "does_not_use",
+  never: "does_not_use",
+  prefer_not_to_answer: "prefer_not_to_answer"
+};
 
 const emptyXyncRecord = () => ({
   answers: {},
@@ -561,16 +576,23 @@ const cleanXyncArray = (value) => {
   if (!Array.isArray(value)) return null;
   const cleaned = [];
   const seen = new Set();
+  let preferNotToAnswer = false;
 
   for (const entry of value) {
     const cleanedEntry = cleanXyncString(entry);
-    if (!cleanedEntry || cleanedEntry === "prefer_not_to_answer" || seen.has(cleanedEntry)) continue;
+    if (!cleanedEntry) continue;
+    if (cleanedEntry === "prefer_not_to_answer") {
+      preferNotToAnswer = true;
+      continue;
+    }
+    if (seen.has(cleanedEntry)) continue;
     seen.add(cleanedEntry);
     cleaned.push(cleanedEntry);
-    if (cleaned.length >= 30) break;
+    if (cleaned.length >= XYNC_MULTI_SELECT_LIMIT) break;
   }
 
-  return cleaned.length ? cleaned : null;
+  if (cleaned.length) return cleaned;
+  return preferNotToAnswer ? "prefer_not_to_answer" : null;
 };
 
 const cleanXyncAnswer = (type, key, value) => {
@@ -618,14 +640,22 @@ const getXyncRecord = (user, type) => {
 
 const hasAnsweredXyncValue = (answers) =>
   Object.values(answers).some(
-    (value) => (Array.isArray(value) && value.length > 0) || (typeof value === "string" && value.trim())
+    (value) =>
+      (Array.isArray(value) && value.some((entry) => entry !== "prefer_not_to_answer")) ||
+      (typeof value === "string" && value.trim() && value !== "prefer_not_to_answer")
   );
 
 const xyncComparableValue = (type, key, value) => {
   if (value === null || value === undefined || value === "") return null;
   if (Array.isArray(value)) {
     if (!XYNC_MULTI_SELECT_KEYS.has(key)) return null;
-    const unique = [...new Set(value.map((entry) => cleanXyncString(entry)).filter(Boolean))];
+    const unique = [
+      ...new Set(
+        value
+          .map((entry) => cleanXyncString(entry))
+          .filter((entry) => entry && entry !== "prefer_not_to_answer")
+      )
+    ];
     return unique.length ? unique : null;
   }
   if (typeof value !== "string") return null;
@@ -654,23 +684,33 @@ const xyncTopicScore = (key, clientValue, targetValue) => {
 
 const xyncBandForScore = (score) => {
   if (typeof score !== "number") return null;
-  const bucket = XYNC_LABELS.find((entry) => score >= entry.min && score <= entry.max);
-  return bucket || null;
+  if (score < 40) return { band: "Low", label: "Low Xync" };
+  if (score < 60) return { band: "Possible", label: "Possible Xync" };
+  if (score < 80) return { band: "Good", label: "Good Xync" };
+  return { band: "Strong", label: "Strong Xync" };
 };
+
+const isValidXyncTargetId = (value) =>
+  typeof value === "string" &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+
+const validateXyncRoleAccess = (role, type) =>
+  role !== "business" &&
+  !(
+    (role === "provider" && type !== "provider") ||
+    (role === "creator" && type !== "creator")
+  );
 
 const xyncSubstanceUseStatus = (value) => {
   if (value === null || value === undefined || value === "") return "not_answered";
   if (Array.isArray(value)) return "not_answered";
   if (typeof value !== "string") return "not_answered";
 
-  const normalized = cleanText(value, 80).toLowerCase();
-  if (!normalized) return "not_answered";
-  if (normalized === "prefer_not_to_answer") return "prefer_not_to_answer";
-  if (["uses", "use", "yes", "y", "true", "1", "sometimes", "occasionally"].includes(normalized)) return "uses";
-  if (
-    ["does_not_use", "does not use", "doesn't use", "no", "n", "false", "0", "never"].includes(normalized)
-  ) {
-    return "does_not_use";
+  const cleaned = cleanText(value, 80);
+  if (!cleaned) return "not_answered";
+  const normalized = cleaned.toLowerCase();
+  if (Object.prototype.hasOwnProperty.call(XYNC_SUBSTANCE_USE_STATUS_ALIASES, normalized)) {
+    return XYNC_SUBSTANCE_USE_STATUS_ALIASES[normalized];
   }
   return "not_answered";
 };
@@ -738,13 +778,14 @@ const compareXyncAnswers = (clientUser, targetUser, type) => {
 
   return {
     score,
-    band: band ? band.label.replace(" Xync", "") : null,
+    band: band ? band.band : null,
     label: band ? band.label : null,
     warnings,
     comparableAnswers,
     clientCompleted: Boolean(clientRecord.completedAt),
     targetCompleted: Boolean(targetRecord.completedAt),
-    substanceUseStatus: type === "provider" ? xyncSubstanceUseStatus(clientRecord.answers.substanceUse) : undefined
+    substanceUseStatus:
+      type === "provider" ? xyncSubstanceUseStatus(clientRecord.answers.substanceUse) : null
   };
 };
 
@@ -1238,80 +1279,73 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
       if (authenticatedUser.role !== "client") {
         return json(response, 403, { error: "Only clients can compare Xync answers." });
       }
+      if (!isValidXyncTargetId(targetId)) return json(response, 404, { error: "Match not found." });
 
-      const targetUser = readUsers().find(
-        (user) =>
-          user.id === targetId &&
-          user.role === xyncType &&
-          !user.deactivatedAt
-      );
-      if (!targetUser) return json(response, 404, { error: "Match not found." });
-
-      return json(response, 200, compareXyncAnswers(authenticatedUser, targetUser, xyncType));
-    }
-
-    const xyncMatch = pathname.match(/^\/api\/xync\/(provider|creator)$/);
-    if (xyncMatch && request.method === "GET") {
-      const xyncType = xyncMatch[1];
-      const authenticatedUser = requireSession(request);
-      if (!authenticatedUser) return json(response, 401, { error: "Sign in to view Xync answers." });
-      if (authenticatedUser.role === "business") {
-        return json(response, 403, { error: "Business accounts cannot use Xync." });
-      }
-      if (
-        (authenticatedUser.role === "provider" && xyncType !== "provider") ||
-        (authenticatedUser.role === "creator" && xyncType !== "creator")
-      ) {
-        return json(response, 403, { error: "That Xync questionnaire is not available for your account type." });
-      }
-
-      return json(response, 200, getXyncRecord(authenticatedUser, xyncType));
-    }
-
-    if (xyncMatch && request.method === "PUT") {
-      const xyncType = xyncMatch[1];
-      const authenticatedUser = requireSession(request);
-      if (!authenticatedUser) return json(response, 401, { error: "Sign in to save Xync answers." });
-      if (authenticatedUser.role === "business") {
-        return json(response, 403, { error: "Business accounts cannot use Xync." });
-      }
-      if (
-        (authenticatedUser.role === "provider" && xyncType !== "provider") ||
-        (authenticatedUser.role === "creator" && xyncType !== "creator")
-      ) {
-        return json(response, 403, { error: "That Xync questionnaire is not available for your account type." });
-      }
-
-      const body = await readJsonBody(request);
-      const sourceAnswers =
-        body && typeof body.answers === "object" && !Array.isArray(body.answers) ? body.answers : {};
-      const now = new Date().toISOString();
-      const saved = await usersQueue(() => {
-        const users = readUsers();
-        const user = users.find((item) => item.id === authenticatedUser.id);
-        if (!user) return { notFound: true };
-
-        const nextAnswers = cleanXyncAnswers(xyncType, sourceAnswers);
-        const existingCurrentRecord = getXyncRecord(user, xyncType);
-        const otherType = xyncType === "provider" ? "creator" : "provider";
-        const otherRecord = getXyncRecord(user, otherType);
-
-        user.xync = {
-          [otherType]: otherRecord,
-          [xyncType]: {
-            answers: nextAnswers,
-            completedAt:
-              existingCurrentRecord.completedAt || (hasAnsweredXyncValue(nextAnswers) ? now : null),
-            updatedAt: now
-          }
-        };
-
-        writeUsers(users);
-        return { record: user.xync[xyncType] };
+      const comparison = await usersQueue(() => {
+        const targetUser = readUsers().find(
+          (user) =>
+            user.id === targetId &&
+            user.role === xyncType &&
+            !user.deactivatedAt
+        );
+        if (!targetUser) return { notFound: true };
+        return { result: compareXyncAnswers(authenticatedUser, targetUser, xyncType) };
       });
+      if (comparison.notFound) return json(response, 404, { error: "Match not found." });
 
-      if (saved.notFound) return json(response, 404, { error: "Account not found." });
-      return json(response, 200, saved.record);
+      return json(response, 200, comparison.result);
+    }
+
+    const xyncRouteMatch = pathname.match(/^\/api\/xync\/(provider|creator)$/);
+    if (xyncRouteMatch) {
+      const xyncType = xyncRouteMatch[1];
+      const authenticatedUser = requireSession(request);
+      if (!authenticatedUser) {
+        return json(response, 401, {
+          error: request.method === "GET" ? "Sign in to view Xync answers." : "Sign in to save Xync answers."
+        });
+      }
+      if (!validateXyncRoleAccess(authenticatedUser.role, xyncType)) {
+        return json(response, 403, { error: "That Xync questionnaire is not available for your account type." });
+      }
+
+      if (request.method === "GET") {
+        return json(response, 200, getXyncRecord(authenticatedUser, xyncType));
+      }
+
+      if (request.method === "PUT") {
+        const body = await readJsonBody(request);
+        const sourceAnswers =
+          body && typeof body.answers === "object" && !Array.isArray(body.answers) ? body.answers : {};
+        const now = new Date().toISOString();
+        const saved = await usersQueue(() => {
+          const users = readUsers();
+          const user = users.find((item) => item.id === authenticatedUser.id);
+          if (!user) return { notFound: true };
+
+          const nextAnswers = cleanXyncAnswers(xyncType, sourceAnswers);
+          const existingCurrentRecord = getXyncRecord(user, xyncType);
+
+          const existingXync = user.xync && typeof user.xync === "object" ? user.xync : {};
+          user.xync = {
+            ...existingXync,
+            provider: existingXync.provider || emptyXyncRecord(),
+            creator: existingXync.creator || emptyXyncRecord(),
+            [xyncType]: {
+              answers: nextAnswers,
+              completedAt:
+                existingCurrentRecord.completedAt || (hasAnsweredXyncValue(nextAnswers) ? now : null),
+              updatedAt: now
+            }
+          };
+
+          writeUsers(users);
+          return { record: user.xync[xyncType] };
+        });
+
+        if (saved.notFound) return json(response, 404, { error: "Account not found." });
+        return json(response, 200, saved.record);
+      }
     }
 
     if (pathname === "/api/business/profile" && request.method === "GET") {
