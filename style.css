@@ -501,6 +501,31 @@
   border-bottom: none;
 }
 
+.directory-xync-filter[hidden],
+.directory-xync-cta[hidden] {
+  display: none;
+}
+
+.directory-xync-note {
+  margin: 0;
+  color: rgba(var(--cream-rgb), 0.48);
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.directory-xync-cta {
+  margin: 10px 0 0;
+  padding: 10px 0;
+  color: rgba(var(--cream-rgb), 0.62);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.directory-xync-cta a {
+  color: var(--gold);
+  font-weight: 700;
+}
+
 /* Toggle group — no extra padding, just the toggle label */
 .dir-filter-group--toggle {
   padding: 8px 0;
@@ -1178,6 +1203,24 @@
   font-size: 0.82rem;
   line-height: 1.55;
   padding-bottom: 10px;
+}
+
+.dir-card-xync {
+  display: block;
+  width: fit-content;
+  margin: 0 0 8px;
+  padding: 4px 8px;
+  border: 1px solid rgba(var(--gold-rgb), 0.35);
+  border-radius: 999px;
+  color: var(--champagne);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.dir-card-xync[data-state="incomplete"] {
+  border-color: rgba(var(--cream-rgb), 0.2);
+  color: rgba(var(--cream-rgb), 0.52);
 }
 
 .dir-card-footer {
