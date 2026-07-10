@@ -28,7 +28,7 @@ const renderProviderXyncResults = (xyncResults) => {
       const result = item && typeof item === "object" ? item : {};
       return [result.question || result.label || `Result ${index + 1}`, result.answer || result.value || item];
     })
-    : Object.entries(xyncResults.answers || xyncResults.responses || xyncResults.results || xyncResults);
+    : Object.entries(xyncResults);
   const visibleEntries = entries.filter(([, value]) => value !== null && value !== undefined && value !== "");
 
   if (!visibleEntries.length) return;
@@ -252,7 +252,7 @@ const loadPublicProvider = async () => {
       const { user } = await sessionResponse.json();
       applyOwnerControls(user.role, user.id, profileIsProvider);
       if (user.role === "client" && profileIsProvider) {
-        renderProviderXyncResults(publicProfile?.xyncResults || publicProfile?.xync);
+        renderProviderXyncResults(publicProfile?.xyncResults);
       }
     }
   } catch {
