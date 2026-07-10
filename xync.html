@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>TEMPTX | Xync</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="xync.css">
+</head>
+<body class="xync-page">
+  <div class="age-gate" id="age-gate" role="dialog" aria-modal="true" aria-labelledby="age-gate-title">
+    <div class="age-gate__panel">
+      <p class="age-gate__eyebrow">18+ only</p>
+      <h1 id="age-gate-title">Please confirm you are an adult.</h1>
+      <p>This site is for adults only.</p>
+      <div class="age-gate__actions">
+        <button class="button button--primary" id="age-gate-confirm" type="button">I am 18 or older</button>
+        <button class="button button--ghost" id="age-gate-decline" type="button">Leave site</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="site-header xync-header">
+    <a class="site-header__brand" href="index.html" aria-label="TEMPTX home">
+      <span class="site-header__brand-mark">TEMPTX</span>
+    </a>
+    <a class="site-header__back" id="xync-back-link" href="profile.html">Back to profile</a>
+  </header>
+
+  <main class="xync-shell">
+    <section class="hero-card">
+      <p class="hero-card__eyebrow">Optional but highly recommended</p>
+      <h1>Find your Xync.</h1>
+      <p class="hero-card__lede">Xync compares communication, boundaries and preferences to help you understand compatibility before connecting.</p>
+      <p class="hero-card__privacy">Your individual answers stay private. Xync only shares your compatibility score, result band and topics worth discussing.</p>
+    </section>
+
+    <section class="state-card" id="xync-loading" aria-live="polite">
+      <p>Loading your Xync questionnaire…</p>
+    </section>
+
+    <section class="state-card state-card--empty" id="xync-empty" hidden aria-live="polite">
+      <h2>No questionnaire available.</h2>
+      <p>Refresh the page or return to your dashboard.</p>
+    </section>
+
+    <section class="state-card state-card--denied" id="xync-access-denied" hidden aria-live="polite">
+      <h2>Access denied</h2>
+      <p id="xync-access-denied-copy"></p>
+      <a class="button button--primary" id="xync-access-denied-link" href="index.html">Return</a>
+    </section>
+
+    <section class="questionnaire-card" id="xync-app" hidden>
+      <div class="questionnaire-card__top">
+        <div>
+          <p class="questionnaire-card__eyebrow" id="xync-role-label">Xync questionnaire</p>
+          <h2 id="xync-question-count">Question 1 of 1</h2>
+        </div>
+        <div class="questionnaire-card__progress-wrap">
+          <div class="questionnaire-card__progress" aria-hidden="true">
+            <span class="questionnaire-card__progress-fill" id="xync-progress-fill"></span>
+          </div>
+          <p class="questionnaire-card__progress-text" id="xync-progress-text">0%</p>
+        </div>
+      </div>
+
+      <form id="xync-form" novalidate>
+        <fieldset class="question-block">
+          <legend id="xync-question-legend">Question</legend>
+          <p class="question-block__prompt" id="xync-question-copy" aria-hidden="true"></p>
+          <div class="question-block__options" id="xync-options"></div>
+        </fieldset>
+
+        <div class="questionnaire-card__nav">
+          <button class="button button--ghost" id="xync-prev" type="button">Previous</button>
+          <button class="button button--ghost" id="xync-next" type="button">Next</button>
+          <button class="button button--primary" id="xync-save" type="submit">Save Xync</button>
+        </div>
+      </form>
+
+      <div class="save-status" id="xync-save-status" aria-live="polite" role="status"></div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+  <script src="xync.js"></script>
+</body>
+</html>
