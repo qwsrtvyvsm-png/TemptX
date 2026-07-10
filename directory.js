@@ -429,7 +429,7 @@ const addXyncBadge = (card, result) => {
   const label = result.label || result.band || "Xync";
   badge.textContent = scoreLabel ? `${scoreLabel} · ${label}` : label;
   badge.dataset.state = "complete";
-  card.dataset.xyncBand = result.band || "";
+  card.dataset.xyncBand = normalise(String(result.band || "")).replace(/\s+xync$/, "");
   if (Number.isFinite(score)) card.dataset.xyncScore = String(score);
   else delete card.dataset.xyncScore;
 };
