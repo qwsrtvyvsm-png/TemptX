@@ -252,7 +252,7 @@ const loadPublicProvider = async () => {
       const { user } = await sessionResponse.json();
       applyOwnerControls(user.role, user.id, profileIsProvider);
       if (user.role === "client" && profileIsProvider && publicProfile) {
-        renderProviderXyncResults(publicProfile?.xyncResults);
+        renderProviderXyncResults(publicProfile.xyncResults);
       }
     }
   } catch {
