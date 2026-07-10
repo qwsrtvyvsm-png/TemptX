@@ -861,14 +861,14 @@ const sessionCookie = (token, remember = true) =>
 
 const getSessionToken = (request) => getCookie(request, "temptx_session");
 
-const getAuthenticatedUser = (request) => {
+const getAuthenticatedUser = (request, users = null) => {
   const token = getSessionToken(request);
   const session = token ? sessions.get(token) : null;
   if (!session || session.expiresAt < Date.now()) {
     if (token) sessions.delete(token);
     return null;
   }
-  return readUsers().find((user) => user.id === session.userId) || null;
+  return (users || readUsers()).find((user) => user.id === session.userId) || null;
 };
 
 const requireSession = (request) => getAuthenticatedUser(request);
@@ -1268,6 +1268,44 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
       const user = getAuthenticatedUser(request);
       if (!user) return json(response, 401, { error: "Not signed in." });
       return json(response, 200, { user: publicUser(user) });
+    }
+
+    if (pathname === "/api/xync/directory/providers" && request.method === "GET") {
+      const users = readUsers();
+      const authenticatedUser = getAuthenticatedUser(request, users);
+      if (!authenticatedUser) {
+        return json(response, 401, { error: "Sign in to view provider Xync results." });
+      }
+      if (authenticatedUser.role !== "client") {
+        return json(response, 403, { error: "Only clients can view provider Xync results." });
+      }
+
+      const clientCompleted = Boolean(getXyncRecord(authenticatedUser, "provider").completedAt);
+      if (!clientCompleted) {
+        return json(response, 200, { clientCompleted: false, results: [] });
+      }
+
+      const results = users
+        .filter(
+          (user) =>
+            user.role === "provider" &&
+            !user.deactivatedAt &&
+            user.settings?.profileVisible !== false &&
+            String(user.settings?.displayName || "").trim()
+        )
+        .map((provider) => {
+          const comparison = compareXyncAnswers(authenticatedUser, provider, "provider");
+          return {
+            providerId: provider.id,
+            score: comparison.score,
+            band: comparison.band,
+            label: comparison.label,
+            comparableAnswers: comparison.comparableAnswers.length,
+            targetCompleted: comparison.targetCompleted
+          };
+        });
+
+      return json(response, 200, { clientCompleted: true, results });
     }
 
     const xyncComparisonMatch = pathname.match(/^\/api\/xync\/(provider|creator)\/([^/]+)$/);
