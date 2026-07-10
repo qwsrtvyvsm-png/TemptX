@@ -6,13 +6,13 @@ const favouriteButtons = document.querySelectorAll("[data-favourite-provider]");
 const formatXyncLabel = (key) => key
   .replace(/([a-z])([A-Z])/g, "$1 $2")
   .replace(/[_-]+/g, " ")
-  .replace(/^./, (character) => character.toUpperCase());
+  .replace(/^./, (ch) => ch.toUpperCase());
 
 const formatXyncValue = (value) => {
   if (Array.isArray(value)) return value.join(", ");
   if (value && typeof value === "object") {
     return Object.entries(value)
-      .map(([key, item]) => `${formatXyncLabel(key)}: ${formatXyncValue(item)}`)
+      .map(([key, nestedValue]) => `${formatXyncLabel(key)}: ${formatXyncValue(nestedValue)}`)
       .join(" · ");
   }
   return String(value);
