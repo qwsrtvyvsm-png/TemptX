@@ -25,6 +25,8 @@ if (settingsForm) {
   const deleteConfirmation = document.querySelector("#deleteConfirmation");
   const accountActionStatus = document.querySelector("#accountActionStatus");
   const accountActionSubmit = document.querySelector("#accountActionSubmit");
+  const xyncSettingsSection = document.querySelector("#xyncSettingsSection");
+  const xyncSettingsLink = document.querySelector("#xyncSettingsLink");
   let currentUser = null;
   let accountAction = "deactivate";
 
@@ -65,6 +67,9 @@ if (settingsForm) {
     document.querySelector("#accountIdentifier").textContent = identifier;
     document.querySelector("#profileVisibleRow").hidden = !isProvider;
     document.querySelector("#providerDirectorySettings").hidden = !isProvider;
+    const xyncRole = isProvider ? "Provider" : isCreator ? "Creator" : user.role === "client" ? "Provider & Creator" : "";
+    xyncSettingsSection.hidden = !xyncRole;
+    if (xyncRole) xyncSettingsLink.textContent = `Manage ${xyncRole} Xync`;
 
     fields.displayName.value = settings.displayName;
     fields.directMessages.checked = settings.directMessages;

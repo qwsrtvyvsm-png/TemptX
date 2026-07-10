@@ -38,6 +38,8 @@ if (dashboard) {
       if (!response.ok) return;
       const result = await response.json();
       const user = result.user;
+      const xyncLink = document.querySelector("#creatorXyncLink");
+      xyncLink.hidden = user?.role !== "creator";
       if (user?.role && user.role !== "creator") {
         document.querySelector("#dashboardWelcome").textContent =
           "This dashboard is built for creator accounts. Switch to a creator account to manage creator earnings and content tools.";
