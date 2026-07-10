@@ -8,40 +8,59 @@ const convertXyncKeyToLabel = (key) => key
   .replace(/[_-]+/g, " ")
   .replace(/^./, (ch) => ch.toUpperCase());
 
-const formatXyncValue = (value) => {
-  if (Array.isArray(value)) return value.join(", ");
-  if (value && typeof value === "object") {
-    return Object.entries(value)
-      .map(([key, nestedValue]) => `${convertXyncKeyToLabel(key)}: ${formatXyncValue(nestedValue)}`)
-      .join(" · ");
-  }
-  return String(value);
-};
-
 const renderProviderXyncResults = (xyncResults) => {
   const section = document.querySelector("#providerXyncSection");
   const resultsContainer = document.querySelector("#providerXyncResults");
   if (!section || !resultsContainer || !xyncResults) return;
 
-  const entries = Array.isArray(xyncResults)
-    ? xyncResults.map((item, index) => {
-      // Array results may use either question/answer or label/value pairs.
-      const result = item && typeof item === "object" ? item : {};
-      return [result.question || result.label || `Result ${index + 1}`, result.answer || result.value || item];
-    })
-    : Object.entries(xyncResults);
-  const visibleEntries = entries.filter(([, value]) => value !== null && value !== undefined && value !== "");
+  const {
+    score,
+    band,
+    label,
+    warnings,
+    comparableAnswers,
+    clientCompleted,
+    targetCompleted,
+  } = xyncResults;
+  const entries = [];
+  const topicLabels = (items) => {
+    if (Array.isArray(items)) {
+      return items
+        .map((item) => (item && typeof item === "object" ? item.topic || item.label : null))
+        .filter(Boolean);
+    }
+    if (items && typeof items === "object") return Object.keys(items);
+    return [];
+  };
 
-  if (!visibleEntries.length) return;
+  if (score !== null && score !== undefined && score !== "") {
+    entries.push(["Score", `${Math.round(Number(score))}%`]);
+  }
+  if (band) entries.push(["Band", band]);
+  if (label) entries.push(["Match", label]);
+  if (clientCompleted !== null && clientCompleted !== undefined) {
+    entries.push(["Your Xync", clientCompleted ? "Complete" : "Incomplete"]);
+  }
+  if (targetCompleted !== null && targetCompleted !== undefined) {
+    entries.push(["Provider Xync", targetCompleted ? "Complete" : "Incomplete"]);
+  }
+
+  const comparableTopics = topicLabels(comparableAnswers);
+  if (comparableTopics.length) entries.push(["Compared topics", comparableTopics.join(", ")]);
+
+  const warningTopics = topicLabels(warnings);
+  if (warningTopics.length) entries.push(["Topics to consider", warningTopics.join(", ")]);
+
+  if (!entries.length) return;
 
   resultsContainer.replaceChildren(
-    ...visibleEntries.map(([key, value]) => {
+    ...entries.map(([key, value]) => {
       const article = document.createElement("article");
       article.className = "provider-xync-result";
       const heading = document.createElement("h3");
       heading.textContent = convertXyncKeyToLabel(String(key));
       const answer = document.createElement("p");
-      answer.textContent = formatXyncValue(value);
+      answer.textContent = value;
       article.append(heading, answer);
       return article;
     })
@@ -223,8 +242,6 @@ const loadPublicProvider = async () => {
     let dirResponse = null;
     let sessionResponse = null;
     let profileResponse = null;
-    let publicProfile = null;
-
     if (providerId) {
       [dirResponse, sessionResponse, profileResponse] = responses;
     } else {
@@ -245,15 +262,21 @@ const loadPublicProvider = async () => {
     // Apply server-persisted profile content for all visitors
     if (profileResponse && profileResponse.ok) {
       const { profile } = await profileResponse.json();
-      publicProfile = profile;
       applyProfileDetails(profile);
     }
 
-    if (sessionResponse.ok) {
+    if (sessionResponse?.ok) {
       const { user } = await sessionResponse.json();
       applyOwnerControls(user.role, user.id, profileIsProvider);
-      if (user.role === "client" && profileIsProvider && publicProfile?.xyncResults) {
-        renderProviderXyncResults(publicProfile.xyncResults);
+      if (user.role === "client" && profileIsProvider && providerId) {
+        try {
+          const xyncResponse = await fetch(`/api/xync/provider/${encodeURIComponent(providerId)}`);
+          if (xyncResponse.ok) {
+            renderProviderXyncResults(await xyncResponse.json());
+          }
+        } catch {
+          // Xync failures should not prevent access to the provider profile.
+        }
       }
     }
   } catch {
