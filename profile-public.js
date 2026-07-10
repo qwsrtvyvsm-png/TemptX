@@ -251,7 +251,7 @@ const loadPublicProvider = async () => {
     if (sessionResponse.ok) {
       const { user } = await sessionResponse.json();
       applyOwnerControls(user.role, user.id, profileIsProvider);
-      if (user.role === "client" && profileIsProvider) {
+      if (user.role === "client" && profileIsProvider && publicProfile) {
         renderProviderXyncResults(publicProfile?.xyncResults);
       }
     }
