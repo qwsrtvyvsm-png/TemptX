@@ -89,7 +89,7 @@ if (dashboard) {
       // Wire up public profile link
       if (viewPublicProfileLink && userId) {
         viewPublicProfileLink.href = `business-public.html?id=${encodeURIComponent(userId)}`;
-        viewPublicProfileLink.style.display = "inline-block";
+        viewPublicProfileLink.hidden = false;
       }
     } catch (error) {
       applyPreviewMode(`Preview mode only. We couldn't load your business account details right now: ${error.message}`);

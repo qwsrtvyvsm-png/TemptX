@@ -488,6 +488,27 @@
   text-align: center;
 }
 
+.dashboard-empty-state {
+  text-align: center;
+  color: var(--muted);
+}
+
+.dashboard-empty-state-spacious {
+  padding: 40px 20px;
+}
+
+.dashboard-empty-state-compact {
+  padding: 20px;
+}
+
+.dashboard-empty-state-small {
+  font-size: 0.9em;
+}
+
+.dashboard-preview-row {
+  opacity: 0.5;
+}
+
 @media (max-width: 680px) {
   .dashboard-action-buttons {
     flex-direction: column;
