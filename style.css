@@ -4145,6 +4145,43 @@ h2 {
   background: linear-gradient(145deg, var(--wine), var(--wood));
 }
 
+.provider-xync-section[hidden] {
+  display: none;
+}
+
+.provider-xync-intro {
+  max-width: 52ch;
+  color: var(--muted);
+}
+
+.provider-xync-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: rgba(var(--champagne-rgb), 0.12);
+  border: 1px solid rgba(var(--champagne-rgb), 0.32);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--luxury-shadow);
+}
+
+.provider-xync-result {
+  min-height: 150px;
+  padding: 28px;
+  background: linear-gradient(145deg, var(--wine), var(--wood));
+}
+
+.provider-xync-result h3 {
+  margin-bottom: 16px;
+  color: var(--gold);
+}
+
+.provider-xync-result p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
 .profile-table {
   border: 1px solid rgba(var(--champagne-rgb), 0.28);
   border-radius: 10px;
@@ -4952,6 +4989,10 @@ h3 {
   }
 
   .profile-menu {
+    grid-template-columns: 1fr;
+  }
+
+  .provider-xync-results {
     grid-template-columns: 1fr;
   }
 
