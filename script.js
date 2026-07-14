@@ -245,3 +245,48 @@ logoutLinks.forEach((link) => {
     }
   });
 });
+
+/* ── Hero parallax — subtle layered depth on scroll ── */
+(() => {
+  const hero = document.querySelector(".collection-hero");
+  if (!hero || !hero.querySelector(".hero-panel")) {
+    return;
+  }
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let ticking = false;
+
+  const applyParallax = () => {
+    ticking = false;
+
+    if (reduceMotion.matches) {
+      hero.style.setProperty("--hero-scroll", "0");
+      return;
+    }
+
+    const rect = hero.getBoundingClientRect();
+    const viewH = window.innerHeight || 1;
+    // -1…1 while hero is near the viewport center
+    const progress = (viewH * 0.5 - (rect.top + rect.height * 0.5)) / viewH;
+    const clamped = Math.max(-1, Math.min(1, progress));
+    hero.style.setProperty("--hero-scroll", clamped.toFixed(4));
+  };
+
+  const onScrollOrResize = () => {
+    if (ticking) {
+      return;
+    }
+    ticking = true;
+    window.requestAnimationFrame(applyParallax);
+  };
+
+  applyParallax();
+  window.addEventListener("scroll", onScrollOrResize, { passive: true });
+  window.addEventListener("resize", onScrollOrResize, { passive: true });
+
+  if (typeof reduceMotion.addEventListener === "function") {
+    reduceMotion.addEventListener("change", applyParallax);
+  } else if (typeof reduceMotion.addListener === "function") {
+    reduceMotion.addListener(applyParallax);
+  }
+})();

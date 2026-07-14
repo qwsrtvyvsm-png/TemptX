@@ -285,21 +285,21 @@
             <p class="eyebrow">Account</p>
             <h2>Recovery Access</h2>
           </div>
-          <p>Generate a new recovery key when you need to revoke the old one.</p>
+          <p>Generate your recovery key here and write it down somewhere private. This is the only place TEMPTX shows it.</p>
         </div>
 
         <div class="danger-row">
           <span>
-            <strong>Generate New Recovery Key</strong>
-            <small>This replaces your current recovery key immediately.</small>
+            <strong>Generate Recovery Key</strong>
+            <small>Write it down now. Generating again replaces the previous key immediately.</small>
           </span>
-          <button type="button" class="danger-button" id="generateRecoveryKeyButton">Generate New Recovery Key</button>
+          <button type="button" class="danger-button" id="generateRecoveryKeyButton">Generate Recovery Key</button>
         </div>
 
         <p id="recoveryAccessStatus" aria-live="polite"></p>
         <div class="recovery-key-card" id="newRecoveryKeyCard" hidden>
           <p class="eyebrow">Save this once</p>
-          <h3>Your new recovery key</h3>
+          <h3>Your recovery key</h3>
           <code id="newRecoveryKeyValue"></code>
           <p>Store this somewhere private. TEMPTX cannot display it again.</p>
           <button class="outline-btn" id="copyNewRecoveryKey" type="button">Copy recovery key</button>

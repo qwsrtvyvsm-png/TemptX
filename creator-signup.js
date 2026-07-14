@@ -3,8 +3,6 @@ const creatorSignupForm = document.querySelector("#creatorSignupForm");
 if (creatorSignupForm) {
   const status = document.querySelector("#creatorSignupStatus");
   const submitButton = document.querySelector("#creatorSignupSubmit");
-  const recoveryKeyCard = document.querySelector("#creatorRecoveryKeyCard");
-  const recoveryKeyValue = document.querySelector("#creatorRecoveryKeyValue");
 
   const setStatus = (message = "", type = "") => {
     status.textContent = message;
@@ -51,10 +49,8 @@ if (creatorSignupForm) {
       const result = await readApiResponse(response);
       if (!response.ok) throw new Error(result.error || "Unable to create creator account.");
 
-      recoveryKeyValue.textContent = result.recoveryCode;
-      recoveryKeyCard.hidden = false;
       creatorSignupForm.reset();
-      setStatus("Creator account created. Save your recovery key somewhere private.", "success");
+      setStatus("Creator account created. Generate your recovery key in Settings.", "success");
       submitButton.textContent = "Open dashboard";
       submitButton.type = "button";
       submitButton.onclick = () => {
@@ -64,15 +60,6 @@ if (creatorSignupForm) {
       setStatus(error.message, "error");
     } finally {
       submitButton.disabled = false;
-    }
-  });
-
-  document.querySelector("#creatorCopyRecoveryKey").addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(recoveryKeyValue.textContent);
-      setStatus("Recovery key copied. Store it somewhere private.", "success");
-    } catch {
-      setStatus("Copy was unavailable. Select and save the recovery key manually.", "error");
     }
   });
 }

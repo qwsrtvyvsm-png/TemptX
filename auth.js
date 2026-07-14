@@ -54,8 +54,6 @@ if (authForm) {
   const policyConsentRow = document.querySelector("#policyConsentRow");
   const acceptedPolicies = document.querySelector("#acceptedPolicies");
   const passwordRequirements = document.querySelector("#passwordRequirements");
-  const recoveryKeyCard = document.querySelector("#recoveryKeyCard");
-  const recoveryKeyValue = document.querySelector("#recoveryKeyValue");
 
   const setStatus = (element, message = "", type = "") => {
     element.textContent = message;
@@ -139,8 +137,8 @@ if (authForm) {
     forgotEmailField.hidden = !isEmailAccount;
     forgotClientIdField.hidden = isEmailAccount;
     forgotDescription.textContent = isEmailAccount
-      ? `Enter your ${role} email and the recovery key saved during signup.`
-      : "Enter your client ID and the recovery key saved during signup.";
+      ? `Enter your ${role} email and the recovery key from Settings.`
+      : "Enter your client ID and the recovery key from Settings.";
     document.querySelector("#forgotEmail").placeholder =
       role === "creator" ? "creator@example.com" : role === "business" ? "contact@yourbusiness.com.au" : "provider@example.com";
     authPrivacyNote.textContent = isProvider
@@ -157,7 +155,6 @@ if (authForm) {
     if (!lockedMode || !lockedRole) {
       history.replaceState(null, "", `auth.html?mode=${mode}&role=${role}${nextParam}`);
     }
-    recoveryKeyCard.hidden = true;
     setStatus(authStatus);
   };
 
@@ -229,12 +226,12 @@ if (authForm) {
         setStatus(
           authStatus,
           role === "client"
-            ? `Account created. Your client ID is ${result.clientId}.`
+            ? `Account created. Your client ID is ${result.clientId}. Generate a recovery key in Settings.`
             : role === "creator"
-            ? "Creator account created."
+            ? "Creator account created. Generate a recovery key in Settings."
             : role === "business"
-            ? "Your application is under review."
-            : "Provider account created.",
+            ? "Your application is under review. Generate a recovery key in Settings."
+            : "Provider account created. Generate a recovery key in Settings.",
           "success"
         );
         authSubmit.textContent =

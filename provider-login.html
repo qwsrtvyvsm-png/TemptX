@@ -99,14 +99,6 @@
       </form>
 
       <div class="auth-status" id="authStatus" aria-live="polite"></div>
-      <section class="recovery-key-card" id="recoveryKeyCard" hidden>
-        <p class="eyebrow">Save this once</p>
-        <h2>Your recovery key</h2>
-        <code id="recoveryKeyValue"></code>
-        <p>Store this somewhere private. TemptX cannot display it again.</p>
-        <button class="outline-btn" id="copyRecoveryKey" type="button">Copy recovery key</button>
-      </section>
-
       <p class="auth-privacy-note" id="authPrivacyNote">Provider accounts are for physical escort services · 18+ only · Contact details stay protected</p>
       <p class="auth-policy-links" id="authPolicyLinks" hidden>
         By creating an account you confirm you are 18+ and agree to the
@@ -123,7 +115,7 @@
       <button class="auth-modal-close" type="button" id="closeForgotModal">Close</button>
       <p class="eyebrow">Account recovery</p>
       <h2 id="forgotTitle">Reset your password.</h2>
-      <p id="forgotDescription">Enter your provider email and the recovery key saved during signup.</p>
+      <p id="forgotDescription">Enter your provider email and the recovery key from Settings.</p>
 
       <form id="forgotForm" class="auth-form">
         <label class="auth-field" id="forgotEmailField">
@@ -164,6 +156,6 @@
     </section>
   </div>
 
-  <script src="auth.js?v=20260703-06"></script>
+  <script src="auth.js?v=20260713-01"></script>
 </body>
 </html>

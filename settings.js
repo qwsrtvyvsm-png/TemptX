@@ -217,7 +217,7 @@ if (settingsForm) {
         if (newRecoveryKeyCard) {
           newRecoveryKeyCard.hidden = false;
         }
-        setRecoveryAccessStatus("New recovery key generated. Copy and store it now; it cannot be shown again.", "success");
+        setRecoveryAccessStatus("Recovery key generated. Copy and write it down now; it cannot be shown again.", "success");
       } catch (error) {
         setRecoveryAccessStatus(error.message || "Unable to generate a new recovery key.", "error");
       } finally {
