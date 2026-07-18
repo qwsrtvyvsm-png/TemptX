@@ -77,10 +77,29 @@
         </p>
       </div>
       <div class="dashboard-actions" aria-label="Dashboard actions">
-        <a class="outline-btn" href="creator-signup.html">Creator profile</a>
+        <a class="outline-btn" href="creator-profile.html">Creator profile</a>
         <a class="outline-btn" id="creatorXyncLink" href="xync.html" hidden>Manage Creator Xync</a>
         <a class="light-btn" href="chat.html">Open messages</a>
       </div>
+    </section>
+
+    <section class="setup-checklist" id="setupChecklist" hidden aria-labelledby="setupChecklistTitle">
+      <div class="setup-checklist-heading">
+        <div>
+          <p class="eyebrow">Setup</p>
+          <h2 id="setupChecklistTitle">Complete your setup</h2>
+        </div>
+        <p>Finish the required steps to prepare your creator account.</p>
+      </div>
+
+      <div class="setup-checklist-progress">
+        <div class="setup-checklist-progress-bar">
+          <span id="setupChecklistProgressFill" style="width: 0%"></span>
+        </div>
+        <p class="setup-checklist-progress-label" id="setupChecklistProgressLabel">Loading setup progress…</p>
+      </div>
+
+      <ul class="setup-checklist-list" id="setupChecklistList"></ul>
     </section>
 
     <section class="dashboard-kpis" aria-label="Creator earnings summary">

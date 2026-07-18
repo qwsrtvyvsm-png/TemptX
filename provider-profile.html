@@ -52,6 +52,25 @@
       <a class="outline-btn settings-back" href="profile.html">Back to profile</a>
     </aside>
 
+    <section class="setup-checklist" id="setupChecklist" aria-labelledby="setupChecklistTitle">
+      <div class="setup-checklist-heading">
+        <div>
+          <p class="eyebrow">Setup</p>
+          <h2 id="setupChecklistTitle">Complete your setup</h2>
+        </div>
+        <p>Finish the required steps to prepare your provider profile.</p>
+      </div>
+
+      <div class="setup-checklist-progress">
+        <div class="setup-checklist-progress-bar">
+          <span id="setupChecklistProgressFill" style="width: 0%"></span>
+        </div>
+        <p class="setup-checklist-progress-label" id="setupChecklistProgressLabel">Loading setup progress…</p>
+      </div>
+
+      <ul class="setup-checklist-list" id="setupChecklistList"></ul>
+    </section>
+
     <form class="settings-form" id="profileEditForm" novalidate>
 
       <!-- 1. Profile Details -->

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Creator Profile | TEMPTX</title>
+  <meta name="description" content="Manage your TEMPTX Creator profile — bio, content formats, and public visibility." />
+  <link rel="stylesheet" href="style.css?v=20260703-07" />
+</head>
+
+<body class="settings-body cinematic-background">
+  <header class="chat-header settings-header">
+    <a class="brand-mark chat-brand" href="index.html">
+      <span class="brand-word">TEMPT</span>
+      <span class="brand-x">X</span>
+    </a>
+
+    <nav class="chat-top-nav" aria-label="Creator profile navigation">
+      <a href="creator-dashboard.html">Dashboard</a>
+      <a href="creator-profile.html" aria-current="page">Creator Profile</a>
+      <a href="chat.html">Messages</a>
+      <a href="settings.html">Settings</a>
+    </nav>
+
+    <div class="account-dropdown hover-dropdown">
+      <a href="creator-profile.html" class="header-tool profile-tool" aria-label="Creator profile">
+        <span></span>
+      </a>
+      <div class="dropdown-menu account-menu">
+        <a href="creator-dashboard.html">Creator Dashboard</a>
+        <a href="creator-profile.html">Creator Profile</a>
+        <a href="chat.html">Messages</a>
+        <a href="settings.html">Settings</a>
+        <a href="creator-login.html" data-login>Creator Log In</a>
+        <a href="auth.html" data-logout hidden>Log Out</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="settings-shell">
+    <aside class="settings-intro">
+      <p class="eyebrow">Profile management</p>
+      <h1>Creator Profile.</h1>
+      <p>These details control your public Creator profile — your bio, the content formats you offer, and whether your profile can be seen by visitors.</p>
+
+      <a class="outline-btn settings-back" href="creator-dashboard.html">Back to dashboard</a>
+    </aside>
+
+    <div id="creatorProfileErrorContainer" hidden>
+      <div class="settings-form">
+        <section class="settings-section">
+          <p id="creatorProfileErrorMessage" class="error-message"></p>
+        </section>
+      </div>
+    </div>
+
+    <form class="settings-form" id="creatorProfileForm" novalidate hidden>
+
+      <!-- 1. Basics -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">About you</p>
+            <h2>Basics</h2>
+          </div>
+          <p>Your public display name and primary Creator category.</p>
+        </div>
+
+        <label class="settings-text-field">
+          <span>Display name</span>
+          <input type="text" id="creatorDisplayName" maxlength="80" placeholder="Your public Creator name" required />
+        </label>
+
+        <fieldset class="directory-choice-group">
+          <legend>Creator type</legend>
+          <div class="directory-choice-grid">
+            <label><input type="radio" name="creatorType" value="Solo creator" required /> Solo creator</label>
+            <label><input type="radio" name="creatorType" value="Couple or shared account" /> Couple or shared account</label>
+            <label><input type="radio" name="creatorType" value="Cam model" /> Cam model</label>
+            <label><input type="radio" name="creatorType" value="Adult performer" /> Adult performer</label>
+            <label><input type="radio" name="creatorType" value="Custom content creator" /> Custom content creator</label>
+            <label><input type="radio" name="creatorType" value="Fetish or kink creator" /> Fetish or kink creator</label>
+            <label><input type="radio" name="creatorType" value="Adult studio or production account" /> Adult studio or production account</label>
+          </div>
+        </fieldset>
+
+        <label class="settings-text-field">
+          <span>Headline</span>
+          <input type="text" id="creatorHeadline" maxlength="120" placeholder="A short tagline for your profile" />
+        </label>
+      </section>
+
+      <!-- 2. Bio -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">About you</p>
+            <h2>Bio</h2>
+          </div>
+          <p>A short description shown on your public Creator profile. Keep it clear and up to date.</p>
+        </div>
+
+        <label class="settings-text-field">
+          <span>Bio</span>
+          <textarea
+            id="creatorBio"
+            rows="6"
+            maxlength="500"
+            placeholder="Tell visitors about the content you create…"
+          ></textarea>
+        </label>
+
+        <p class="directory-choice-note" id="creatorBioCount">0 / 500 characters</p>
+      </section>
+
+      <!-- 3. Content formats -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Offering</p>
+            <h2>Content formats</h2>
+          </div>
+          <p>Select every format you offer. This appears on your public Creator profile.</p>
+        </div>
+
+        <fieldset class="directory-choice-group">
+          <legend class="visually-hidden">Content formats</legend>
+          <div class="directory-choice-grid">
+            <label><input type="checkbox" name="creatorContentFormat" value="Photos" /> Photos</label>
+            <label><input type="checkbox" name="creatorContentFormat" value="Videos" /> Videos</label>
+            <label><input type="checkbox" name="creatorContentFormat" value="Livestreams" /> Livestreams</label>
+            <label><input type="checkbox" name="creatorContentFormat" value="Custom content" /> Custom content</label>
+            <label><input type="checkbox" name="creatorContentFormat" value="Messaging" /> Messaging</label>
+          </div>
+        </fieldset>
+
+        <p class="directory-choice-note">Selected formats appear on your public Creator profile.</p>
+      </section>
+
+      <!-- 4. Content specialties -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Offering</p>
+            <h2>Content specialties</h2>
+          </div>
+          <p>Select every specialty that describes your content.</p>
+        </div>
+
+        <fieldset class="directory-choice-group">
+          <legend class="visually-hidden">Content specialties</legend>
+          <div class="directory-choice-grid">
+            <label><input type="checkbox" name="creatorContentSpecialty" value="General adult content" /> General adult content</label>
+            <label><input type="checkbox" name="creatorContentSpecialty" value="Solo" /> Solo</label>
+            <label><input type="checkbox" name="creatorContentSpecialty" value="Couples" /> Couples</label>
+            <label><input type="checkbox" name="creatorContentSpecialty" value="Fetish and kink" /> Fetish and kink</label>
+            <label><input type="checkbox" name="creatorContentSpecialty" value="Lingerie" /> Lingerie</label>
+            <label><input type="checkbox" name="creatorContentSpecialty" value="Glamour" /> Glamour</label>
+            <label><input type="checkbox" name="creatorContentSpecialty" value="Roleplay" /> Roleplay</label>
+            <label><input type="checkbox" name="creatorContentSpecialty" value="Custom requests" /> Custom requests</label>
+            <label><input type="checkbox" name="creatorContentSpecialty" value="Educational" /> Educational</label>
+            <label><input type="checkbox" name="creatorContentSpecialty" value="Other" /> Other</label>
+          </div>
+        </fieldset>
+
+        <p class="directory-choice-note">Selected specialties appear on your public Creator profile.</p>
+      </section>
+
+      <!-- 5. Offering toggles -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Offering</p>
+            <h2>Custom content &amp; livestreams</h2>
+          </div>
+          <p>Let visitors know whether you take custom requests or offer livestreams.</p>
+        </div>
+
+        <label class="setting-row">
+          <span>
+            <strong>Accepts custom content requests</strong>
+            <small>Enabled means visitors can see that you take custom content requests.</small>
+          </span>
+          <input id="creatorAcceptsCustomContent" type="checkbox" />
+        </label>
+
+        <label class="setting-row">
+          <span>
+            <strong>Offers livestreams</strong>
+            <small>Enabled means visitors can see that you offer livestreams.</small>
+          </span>
+          <input id="creatorOffersLivestreams" type="checkbox" />
+        </label>
+      </section>
+
+      <!-- 6. Links & location -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Links</p>
+            <h2>Links &amp; location</h2>
+          </div>
+          <p>Optional links to your other platforms, and a broad public location.</p>
+        </div>
+
+        <label class="settings-text-field">
+          <span>Primary link</span>
+          <input type="url" id="creatorPrimaryUrl" maxlength="300" placeholder="https://" />
+        </label>
+
+        <label class="settings-text-field">
+          <span>Secondary link</span>
+          <input type="url" id="creatorSecondaryUrl" maxlength="300" placeholder="https://" />
+        </label>
+
+        <label class="settings-text-field">
+          <span>Location</span>
+          <input type="text" id="creatorLocation" maxlength="100" placeholder="Sydney, NSW" />
+        </label>
+      </section>
+
+      <!-- 7. Visibility -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Privacy</p>
+            <h2>Profile visibility</h2>
+          </div>
+          <p>Control whether your Creator profile can be seen by the public.</p>
+        </div>
+
+        <label class="setting-row">
+          <span>
+            <strong>Public Creator profile</strong>
+            <small>Enabled means your Creator profile can appear publicly. Disabled means the public profile page remains hidden.</small>
+          </span>
+          <input id="creatorIsVisible" type="checkbox" />
+        </label>
+      </section>
+
+      <div class="settings-save-bar">
+        <p id="creatorProfileStatus" aria-live="polite"></p>
+        <button type="submit">Save profile</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="script.js?v=20260703-08"></script>
+  <script src="creator-profile.js?v=20260718-01"></script>
+</body>
+</html>

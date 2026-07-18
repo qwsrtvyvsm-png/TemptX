@@ -497,6 +497,155 @@ const cleanBusinessProfilePatch = (body) => {
   return updates;
 };
 
+// Fixed server-side allow-list for Creator profile fields — kept separate from
+// DIRECTORY_OPTIONS (provider directory) and the Xync questionnaire option lists,
+// since these back a distinct, independently-moderated profile object.
+//
+// Categories/content-niche tagging was deliberately left out of this foundation —
+// the taxonomy reviewed for it mixed content niche, creator arrangement, and
+// pricing/positioning concepts and wasn't coherent enough to store as permanent
+// profile data. It will be added later as its own considered field, not as a
+// stand-in list here.
+const CREATOR_CONTENT_FORMAT_OPTIONS = [
+  "Photos",
+  "Videos",
+  "Livestreams",
+  "Custom content",
+  "Messaging"
+];
+
+const CREATOR_CONTENT_FORMATS_MAX_SELECTIONS = 5;
+
+// Primary Creator category — a single required selection, not a checkbox set.
+const CREATOR_TYPE_OPTIONS = [
+  "Solo creator",
+  "Couple or shared account",
+  "Cam model",
+  "Adult performer",
+  "Custom content creator",
+  "Fetish or kink creator",
+  "Adult studio or production account"
+];
+
+const CREATOR_CONTENT_SPECIALTY_OPTIONS = [
+  "General adult content",
+  "Solo",
+  "Couples",
+  "Fetish and kink",
+  "Lingerie",
+  "Glamour",
+  "Roleplay",
+  "Custom requests",
+  "Educational",
+  "Other"
+];
+
+// Same "validate against a fixed allow-list, dedupe, clamp" approach as
+// cleanDirectorySelections, kept as its own helper because Creator content
+// formats are a distinct allow-list from the provider directory options.
+const cleanCreatorSelections = (values, allowedValues, maxSelections) => {
+  if (!Array.isArray(values)) return [];
+  return [...new Set(values.filter((value) => allowedValues.includes(value)))].slice(0, maxSelections);
+};
+
+// A single value from a fixed allow-list — anything else (wrong type, unknown
+// value) sanitises to "" rather than being stored.
+const cleanCreatorSingleSelect = (value, allowedValues) =>
+  typeof value === "string" && allowedValues.includes(value) ? value : "";
+
+// Optional URL fields — blank is always allowed. A non-blank value must be a
+// well-formed http:// or https:// URL or it sanitises to "" (never thrown as
+// an error, matching every other field in this helper).
+const cleanCreatorUrl = (value) => {
+  const trimmed = String(value ?? "").trim();
+  if (!trimmed) return "";
+  if (!/^https?:\/\//i.test(trimmed)) return "";
+  try {
+    new URL(trimmed);
+  } catch {
+    return "";
+  }
+  return trimmed.slice(0, 300);
+};
+
+/**
+ * Sanitises Creator profile input into the shape stored at user.creatorProfile.
+ * Mirrors the cleanProfile()/cleanBusinessProfilePatch() conventions but is kept
+ * entirely separate from provider (user.profile) and business
+ * (user.businessProfile) data — no shared object, no shared visibility flag.
+ *
+ * existingProfile is the user's current user.creatorProfile (if any). Every
+ * field is treated as a true partial-update value: when a property is omitted
+ * from input, the existing stored value is preserved (re-sanitised
+ * defensively) rather than being cleared. This keeps the helper safe for a
+ * PATCH-style route where callers may only send one changed field at a time.
+ *
+ * Only the fields listed below are ever read from `input` — every other key
+ * on the request body (arbitrary/unexpected fields) is silently ignored, so
+ * nothing outside this allow-list can ever merge into the user record.
+ */
+const cleanCreatorProfile = (input, existingProfile = {}) => {
+  const source = input && typeof input === "object" ? input : {};
+  const previous = existingProfile && typeof existingProfile === "object" ? existingProfile : {};
+  const has = (key) => Object.prototype.hasOwnProperty.call(source, key);
+
+  const displayName = cleanText(has("displayName") ? source.displayName : previous.displayName, 80);
+
+  const creatorType = has("creatorType")
+    ? cleanCreatorSingleSelect(source.creatorType, CREATOR_TYPE_OPTIONS)
+    : cleanCreatorSingleSelect(previous.creatorType, CREATOR_TYPE_OPTIONS);
+
+  const headline = cleanText(has("headline") ? source.headline : previous.headline, 120);
+
+  const bio = cleanText(has("bio") ? source.bio : previous.bio, 500);
+
+  const contentFormats = cleanCreatorSelections(
+    has("contentFormats") ? source.contentFormats : previous.contentFormats,
+    CREATOR_CONTENT_FORMAT_OPTIONS,
+    CREATOR_CONTENT_FORMATS_MAX_SELECTIONS
+  );
+
+  const contentSpecialties = cleanCreatorSelections(
+    has("contentSpecialties") ? source.contentSpecialties : previous.contentSpecialties,
+    CREATOR_CONTENT_SPECIALTY_OPTIONS,
+    CREATOR_CONTENT_SPECIALTY_OPTIONS.length
+  );
+
+  // Reject non-boolean values (e.g. "true", 1) instead of coercing them —
+  // only a strict boolean true turns each toggle on.
+  const acceptsCustomContent = has("acceptsCustomContent")
+    ? source.acceptsCustomContent === true
+    : previous.acceptsCustomContent === true;
+
+  const offersLivestreams = has("offersLivestreams")
+    ? source.offersLivestreams === true
+    : previous.offersLivestreams === true;
+
+  const primaryUrl = cleanCreatorUrl(has("primaryUrl") ? source.primaryUrl : previous.primaryUrl);
+  const secondaryUrl = cleanCreatorUrl(has("secondaryUrl") ? source.secondaryUrl : previous.secondaryUrl);
+
+  const location = cleanText(has("location") ? source.location : previous.location, 100);
+
+  const isVisible = has("isVisible") ? source.isVisible === true : previous.isVisible === true;
+
+  return {
+    displayName,
+    creatorType,
+    headline,
+    bio,
+    contentFormats,
+    contentSpecialties,
+    acceptsCustomContent,
+    offersLivestreams,
+    primaryUrl,
+    secondaryUrl,
+    location,
+    isVisible,
+    // Always server-set — a client-supplied updatedAt is never trusted.
+    updatedAt: new Date().toISOString()
+  };
+};
+
 const XYNC_TYPES = new Set(["provider", "creator"]);
 const XYNC_MULTI_SELECT_KEYS = new Set([
   "bedroomPreferences",
@@ -1657,6 +1806,57 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
       return json(response, 200, { message: "Profile saved.", profile: saved.profile });
     }
 
+    if (pathname === "/api/creators/profile" && request.method === "GET") {
+      const user = getAuthenticatedUser(request);
+      if (!user) return json(response, 401, { error: "Sign in to view your Creator profile." });
+      if (user.role !== "creator") return json(response, 403, { error: "Only creators have a Creator profile." });
+      // Safe defaults for a Creator with no saved profile yet — updatedAt stays
+      // null here (unlike cleanCreatorProfile's PATCH path, which always
+      // server-stamps a fresh updatedAt on save).
+      const existing = user.creatorProfile || {};
+      return json(response, 200, {
+        profile: {
+          displayName: existing.displayName || "",
+          creatorType: cleanCreatorSingleSelect(existing.creatorType, CREATOR_TYPE_OPTIONS),
+          headline: existing.headline || "",
+          bio: existing.bio || "",
+          contentFormats: Array.isArray(existing.contentFormats) ? existing.contentFormats : [],
+          contentSpecialties: Array.isArray(existing.contentSpecialties) ? existing.contentSpecialties : [],
+          acceptsCustomContent: existing.acceptsCustomContent === true,
+          offersLivestreams: existing.offersLivestreams === true,
+          primaryUrl: existing.primaryUrl || "",
+          secondaryUrl: existing.secondaryUrl || "",
+          location: existing.location || "",
+          isVisible: existing.isVisible === true,
+          updatedAt: existing.updatedAt || null
+        }
+      });
+    }
+
+    if (pathname === "/api/creators/profile" && request.method === "PATCH") {
+      const authenticatedUser = getAuthenticatedUser(request);
+      if (!authenticatedUser) return json(response, 401, { error: "Sign in to save your Creator profile." });
+      if (authenticatedUser.role !== "creator") {
+        return json(response, 403, { error: "Only creators can save a Creator profile." });
+      }
+
+      const body = await readJsonBody(request);
+
+      // Scoped to authenticatedUser.id inside the queue — a creator can only ever
+      // update their own record, never another account's profile.
+      const saved = await usersQueue(() => {
+        const users = readUsers();
+        const user = users.find((item) => item.id === authenticatedUser.id);
+        if (!user) return { notFound: true };
+        user.creatorProfile = cleanCreatorProfile(body, user.creatorProfile || {});
+        writeUsers(users);
+        return { profile: user.creatorProfile };
+      });
+
+      if (saved.notFound) return json(response, 404, { error: "Account not found." });
+      return json(response, 200, { message: "Creator profile saved.", profile: saved.profile });
+    }
+
     const providerProfileMatch = pathname.match(/^\/api\/providers\/([^/]+)\/profile$/);
     if (providerProfileMatch && request.method === "GET") {
       const targetId = providerProfileMatch[1];
@@ -1677,6 +1877,35 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
           locations: cleanDirectorySelections(user.settings?.locations, DIRECTORY_OPTIONS.locations),
           services: cleanDirectorySelections(user.settings?.services, DIRECTORY_OPTIONS.services),
           attributes: cleanDirectorySelections(user.settings?.attributes, DIRECTORY_OPTIONS.attributes),
+        },
+      });
+    }
+
+    // Public Creator profile — mirrors providerProfileMatch's "single .find() with
+    // every gating condition combined, one generic 404" convention so a visitor
+    // can never distinguish "doesn't exist" from "exists but hidden".
+    const creatorProfileMatch = pathname.match(/^\/api\/creators\/([^/]+)\/profile$/);
+    if (creatorProfileMatch && request.method === "GET") {
+      const targetId = creatorProfileMatch[1];
+      const user = readUsers().find(
+        (u) =>
+          u.id === targetId &&
+          u.role === "creator" &&
+          !u.deactivatedAt &&
+          u.creatorProfile &&
+          u.creatorProfile.isVisible === true
+      );
+      if (!user) return json(response, 404, { error: "Creator not found." });
+
+      return json(response, 200, {
+        creator: {
+          id: user.id,
+          workingName: user.workingName || null,
+          accountCategory: user.accountCategory || null,
+          bio: user.creatorProfile.bio || "",
+          contentFormats: Array.isArray(user.creatorProfile.contentFormats)
+            ? user.creatorProfile.contentFormats
+            : [],
         },
       });
     }

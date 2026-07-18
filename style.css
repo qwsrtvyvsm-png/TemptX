@@ -7692,6 +7692,175 @@ body[data-auth-role] .account-type-switch {
   font-size: 0.76rem;
 }
 
+/* ── Setup checklist (provider profile edit page + creator dashboard) ────── */
+.setup-checklist {
+  padding: clamp(30px, 5vw, 48px);
+  margin-bottom: 18px;
+}
+
+.setup-checklist-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 26px;
+  margin-bottom: 22px;
+}
+
+.setup-checklist-heading h2 {
+  margin: 5px 0 0;
+  font-size: clamp(1.8rem, 3.6vw, 2.6rem);
+  line-height: 1.05;
+}
+
+.setup-checklist-heading > p {
+  max-width: 30ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.setup-checklist-progress {
+  margin-bottom: 26px;
+}
+
+.setup-checklist-progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(var(--cream-rgb), 0.1);
+  border: 1px solid var(--line);
+}
+
+.setup-checklist-progress-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--btn-gold-gradient, var(--gold));
+  transition: width var(--duration-mid, 0.3s) var(--ease-soft, ease);
+}
+
+.setup-checklist-progress-label {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.setup-checklist-list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.setup-checklist-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  border: 1px solid rgba(var(--champagne-rgb), 0.24);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.setup-checklist-row.is-complete {
+  border-color: rgba(var(--gold-rgb), 0.5);
+  background: rgba(var(--gold-rgb), 0.08);
+}
+
+.setup-checklist-row-text {
+  min-width: 0;
+}
+
+.setup-checklist-row-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.setup-checklist-row-title strong {
+  color: var(--cream);
+  font-size: 0.92rem;
+}
+
+.setup-checklist-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--gold-rgb), 0.5);
+  color: var(--gold);
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.setup-checklist-row.is-complete .setup-checklist-check {
+  background: rgba(var(--gold-rgb), 0.24);
+}
+
+.setup-checklist-row-description {
+  margin: 6px 0 10px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  max-width: 52ch;
+}
+
+.setup-checklist-row-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.setup-checklist-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--champagne-rgb), 0.32);
+  color: var(--muted);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.setup-checklist-badge--status-complete {
+  border-color: rgba(var(--gold-rgb), 0.55);
+  color: var(--gold);
+}
+
+.setup-checklist-action {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 820px) {
+  .setup-checklist {
+    padding: 30px 20px;
+  }
+
+  .setup-checklist-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 620px) {
+  .setup-checklist-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .setup-checklist-action {
+    width: 100%;
+  }
+}
+
 .settings-text-field {
   display: grid;
   gap: 8px;
@@ -10011,6 +10180,7 @@ body.directory-body::after {
 .profile-details,
 .profile-enquiry,
 .settings-section,
+.setup-checklist,
 .chat-sidebar,
 .chat-panel,
 .chat-details,
