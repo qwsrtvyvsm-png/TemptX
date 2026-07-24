@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TemptX District | Australia's trusted adult business district</title>
   <meta name="description" content="Discover verified adult-industry businesses, services, venues and experiences across Australia." />
-  <link rel="stylesheet" href="style.css?v=20260723-02" />
+  <link rel="stylesheet" href="style.css?v=20260723-03" />
 </head>
 <body class="district-page">
   <div id="ageGate" class="age-gate"><div class="age-box"><h1>Tempt<span>X</span></h1><p>This website is intended for adults aged 18+ only.</p><p class="small-text">By entering, you confirm you are at least 18 years old and agree to view adult industry related content.</p><p class="age-policy-links"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="safety-hub.html">Safety</a></p><div class="age-buttons"><button id="enterSite">I am 18+</button><button id="leaveSite" class="outline-btn">Leave</button></div></div></div>
@@ -19,25 +19,120 @@
   </header>
   <main class="district-main">
     <section class="district-hero" aria-labelledby="districtTitle">
-      <div class="district-hero-copy"><p class="district-kicker">TemptX <span>District</span></p><h1 id="districtTitle">Welcome to the <em>District.</em></h1><p class="district-lead">Australia's <em>trusted</em> adult business district.</p><p class="district-support">Discover verified businesses, services, venues and experiences built for our industry. <strong>Shop. Book. Visit. Connect.</strong></p>
-        <form class="district-search" id="districtSearchForm" role="search"><label class="sr-only" for="districtSearch">Search the District</label><input id="districtSearch" type="search" placeholder="Search businesses, services, products and more…" autocomplete="off" /><label class="sr-only" for="districtLocation">Location</label><select id="districtLocation"><option value="">Near me (Australia)</option><option>Adelaide</option><option>Brisbane</option><option>Melbourne</option><option>Perth</option><option>Sydney</option></select><button type="submit">Search <span aria-hidden="true">→</span></button></form>
-        <nav class="district-intent-tabs" aria-label="Browse District options"><a href="#businesses" data-district-query="products">Shop products</a><a href="#businesses" data-district-query="service">Book a service</a><a href="#businesses" data-district-query="venue">Visit a place</a><a href="safety-hub.html">Find support</a></nav>
+      <div class="district-hero-copy">
+        <p class="district-kicker">The District</p>
+        <h1 id="districtTitle">The District</h1>
+        <p class="district-support">Discover trusted businesses, services and places across Australia’s adult industry.</p>
+        <form class="district-search" id="districtSearchForm" role="search">
+          <label class="sr-only" for="districtSearch">Search the District</label>
+          <div class="district-search-field">
+            <span class="district-search-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="6.5"/><path d="M16.2 16.2 21 21"/></svg>
+            </span>
+            <input id="districtSearch" type="search" placeholder="Search business, service or location." autocomplete="off" />
+          </div>
+          <label class="sr-only" for="districtLocation">Location</label>
+          <select id="districtLocation" class="district-location-select" hidden aria-hidden="true" tabindex="-1">
+            <option value="">Near me (Australia)</option><option>Adelaide</option><option>Brisbane</option><option>Melbourne</option><option>Perth</option><option>Sydney</option>
+          </select>
+          <button type="submit" class="sr-only">Search</button>
+          <a class="district-browse-btn" href="#districtCategories">
+            <span class="district-browse-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="3.5" width="6" height="6"/><rect x="14.5" y="3.5" width="6" height="6"/><rect x="3.5" y="14.5" width="6" height="6"/><rect x="14.5" y="14.5" width="6" height="6"/></svg>
+            </span>
+            Browse categories
+          </a>
+        </form>
       </div>
-      <aside class="district-status" aria-label="District status"><p class="district-panel-label">District status</p><div class="district-status-grid"><div><strong id="districtBusinessCount">—</strong><span>Verified<br />Businesses</span></div><div><strong id="districtCityCount">—</strong><span>Australian<br />Cities</span></div><div><strong id="districtCategoryCount">—</strong><span>Categories</span></div><div><strong>Live</strong><span>Today</span></div></div></aside>
-    </section>
-    <div class="district-workspace">
-      <aside class="district-sidebar"><nav class="district-sidebar-menu" aria-label="Browse District categories"><p class="district-panel-label">Browse District</p><a href="#businesses" data-district-category="" class="is-current">All Categories</a><a href="#businesses" data-district-query="products">Products</a><a href="#businesses" data-district-query="services">Services</a><a href="#businesses" data-district-query="experiences">Experiences</a><a href="#businesses" data-district-query="wellness">Wellness</a><a href="#businesses" data-district-query="photography">Photography &amp; Media</a><a href="educational-hub.html">Education &amp; Training</a><a href="#businesses" data-district-query="legal">Legal &amp; Professional</a><a href="#businesses" data-district-query="retail">Retail Stores</a><a href="#businesses" data-district-query="studios">Studios &amp; Creatives</a><a href="#businesses" data-district-query="venues">Venues &amp; Entertainment</a></nav>
-        <form class="district-filters" id="districtFilters"><div class="district-filter-title"><span>Filters</span><button id="districtClear" type="reset">Clear filters</button></div><label>Location<select id="districtSideLocation"><option value="">Australia</option><option>Adelaide</option><option>Brisbane</option><option>Melbourne</option><option>Perth</option><option>Sydney</option></select></label><label>Category<select id="districtCategory"><option value="">All categories</option><option value="adult business">Adult business</option><option value="adult venue">Adult venue</option><option value="photography">Photography</option><option value="support services">Support services</option></select></label><label>Search services<input id="districtServices" type="search" placeholder="Massage, legal, venue…" /></label><label class="district-toggle"><input id="districtVerified" type="checkbox" /><span></span>Verified only</label></form>
-        <section class="district-why"><p class="district-panel-label">Why TemptX District?</p><p><strong>Verified businesses</strong>Approved before appearing.</p><p><strong>Verified reviews</strong>Designed for trusted discovery.</p><p><strong>Safety first</strong>Clear reporting and support.</p><p><strong>Australian focused</strong>Built for our industry.</p></section>
+      <aside class="district-hero-visual" aria-hidden="true">
+        <div class="district-hero-frame">
+          <div class="district-hero-arch"></div>
+          <p class="district-hero-engraving">The District</p>
+        </div>
       </aside>
-      <div class="district-content">
-        <section class="district-precinct-section" aria-labelledby="districtPrecincts"><div class="district-section-heading"><div><p class="district-kicker">Explore the District</p><h2 id="districtPrecincts">A precinct for every pursuit.</h2></div></div><div class="district-precincts"><a class="district-precinct precinct-retail" href="#businesses" data-district-query="retail"><span>◇</span><strong>Retail Quarter</strong><small>Products, brands &amp; online stores</small><b>Shop the edit</b></a><a class="district-precinct precinct-wellness" href="#businesses" data-district-query="wellness"><span>◌</span><strong>Wellness District</strong><small>Wellness, beauty &amp; personal care</small><b>Find your ritual</b></a><a class="district-precinct precinct-entertainment" href="#businesses" data-district-query="venue"><span>✦</span><strong>Entertainment Precinct</strong><small>Venues, events &amp; experiences</small><b>Plan a night out</b></a><a class="district-precinct precinct-creator" href="#businesses" data-district-query="photography"><span>◉</span><strong>Creator Lane</strong><small>Creators, studios &amp; media services</small><b>Meet the makers</b></a><a class="district-precinct precinct-professional" href="#businesses" data-district-query="support"><span>□</span><strong>Professional Row</strong><small>Legal, accounting &amp; professional support</small><b>Find expertise</b></a><a class="district-precinct precinct-education" href="educational-hub.html"><span>⌁</span><strong>Education Hub</strong><small>Courses, training &amp; development</small><b>Keep learning</b></a></div></section>
-        <section class="district-moments" aria-labelledby="districtMoments"><div class="district-section-heading"><div><p class="district-kicker">District Moments</p><h2 id="districtMoments">Always something new.</h2></div></div><div class="district-moment-grid"><a href="news.html"><span>New this week</span><strong>Fresh arrivals to explore</strong></a><a href="models.html"><span>Featured creator</span><strong>New perspectives, beautifully made</strong></a><a href="news.html"><span>Local events</span><strong>What’s on near you</strong></a><a href="educational-hub.html"><span>Education spotlight</span><strong>Learn from the industry</strong></a><a href="news.html"><span>Seasonal picks</span><strong>The current edit</strong></a></div></section>
-        <section class="district-businesses" id="businesses" aria-labelledby="districtBusinesses"><div class="district-section-heading"><div><p class="district-kicker">Featured businesses</p><h2 id="districtBusinesses">Hand-picked, highly trusted.</h2></div><p id="districtResults" aria-live="polite">Loading businesses…</p></div><div id="districtBusinessCards" class="district-business-cards"></div><p id="districtEmpty" class="district-empty" hidden>No businesses match those filters yet.</p></section>
+    </section>
+
+    <nav class="district-category-row" id="districtCategories" aria-label="District categories">
+      <a href="#businesses" data-district-query="retail" class="district-category-item">
+        <span class="district-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.35"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V7a3 3 0 0 1 6 0v1"/><path d="M9 12h6"/></svg></span>
+        <strong>Retail</strong><small>Shop products</small>
+      </a>
+      <a href="#businesses" data-district-query="services" class="district-category-item">
+        <span class="district-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.35"><path d="M12 21s-6.5-4.2-8.5-8A4.8 4.8 0 0 1 12 7.2 4.8 4.8 0 0 1 20.5 13c-2 3.8-8.5 8-8.5 8Z"/><path d="M8.5 12.5h7"/></svg></span>
+        <strong>Services</strong><small>Find providers</small>
+      </a>
+      <a href="#businesses" data-district-query="venues" class="district-category-item">
+        <span class="district-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.35"><path d="M8 10c0-2.5 1.8-4.5 4-4.5s4 2 4 4.5c0 3-4 6.5-4 6.5S8 13 8 10Z"/><path d="M9 21h6"/><path d="M12 16.5V21"/></svg></span>
+        <strong>Venues</strong><small>Visit in person</small>
+      </a>
+      <a href="#businesses" data-district-query="photography" class="district-category-item">
+        <span class="district-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.35"><rect x="3.5" y="6.5" width="17" height="12" rx="1.5"/><circle cx="12" cy="12.5" r="3.2"/><path d="M8 6.5 9.2 4.5h5.6L16 6.5"/></svg></span>
+        <strong>Creative</strong><small>Studios &amp; media</small>
+      </a>
+      <a href="#businesses" data-district-query="legal" class="district-category-item">
+        <span class="district-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.35"><path d="M8 8h8v11H8V8Z"/><path d="M10 8V6.5A2.5 2.5 0 0 1 12.5 4h0A2.5 2.5 0 0 1 15 6.5V8"/><path d="M7 19h10"/></svg></span>
+        <strong>Professional</strong><small>Experts &amp; advice</small>
+      </a>
+      <a href="#businesses" data-district-query="wellness" class="district-category-item">
+        <span class="district-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.35"><path d="M12 20c0-6 4-8 4-12a4 4 0 0 0-8 0c0 4 4 6 4 12Z"/><path d="M8.5 9.5c-2 .8-3.5 2.6-3.5 5"/><path d="M15.5 9.5c2 .8 3.5 2.6 3.5 5"/></svg></span>
+        <strong>Wellness</strong><small>Care &amp; wellbeing</small>
+      </a>
+    </nav>
+
+    <section class="district-featured" id="districtFeatured" aria-labelledby="districtFeaturedLabel" hidden>
+      <p class="district-kicker" id="districtFeaturedLabel">Featured business</p>
+      <article class="district-featured-banner" id="districtFeaturedBanner"></article>
+    </section>
+
+    <section class="district-precinct-section" aria-labelledby="districtPrecincts">
+      <div class="district-section-heading">
+        <h2 id="districtPrecincts">Explore the District</h2>
+        <a class="district-section-link" href="#businesses">View all businesses <span aria-hidden="true">→</span></a>
       </div>
-      <aside class="district-rail"><section class="district-owner-panel"><p class="district-kicker">For business owners</p><h2>Own a business?</h2><p>Join Australia’s most trusted adult marketplace.</p><ul><li>Verified &amp; trusted</li><li>Reach more customers</li><li>Built for your industry</li></ul><a class="district-gold-button" href="business-signup.html">Open your storefront <span>→</span></a></section><section class="district-trending"><p class="district-panel-label">Trending searches</p><a href="#businesses" data-district-query="massage">Massage</a><a href="#businesses" data-district-query="lingerie">Lingerie</a><a href="#businesses" data-district-query="photography">Photography</a><a href="#businesses" data-district-query="adult toys">Adult Toys</a><a href="#businesses" data-district-query="bdsm">BDSM Furniture</a><a href="#businesses" data-district-query="waxing">Waxing</a><a href="#businesses" data-district-query="couples">Couples Retreats</a><a href="#businesses" data-district-query="workshops">Workshops</a><a href="#businesses" data-district-query="legal">Legal Services</a><a href="#businesses" data-district-query="accounting">Accounting</a></section></aside>
-    </div>
+      <div class="district-precincts">
+        <a class="district-precinct precinct-retail" href="#businesses" data-district-query="retail"><span aria-hidden="true">◇</span><strong>Retail Quarter</strong><small>Products, brands &amp; stores</small></a>
+        <a class="district-precinct precinct-wellness" href="#businesses" data-district-query="wellness"><span aria-hidden="true">◌</span><strong>Wellness District</strong><small>Beauty, care &amp; ritual</small></a>
+        <a class="district-precinct precinct-entertainment" href="#businesses" data-district-query="venue"><span aria-hidden="true">✦</span><strong>Entertainment Precinct</strong><small>Venues, events &amp; nights out</small></a>
+        <a class="district-precinct precinct-creator" href="#businesses" data-district-query="photography"><span aria-hidden="true">◉</span><strong>Creator Lane</strong><small>Studios &amp; media</small></a>
+        <a class="district-precinct precinct-professional" href="#businesses" data-district-query="support"><span aria-hidden="true">□</span><strong>Professional Row</strong><small>Legal &amp; expert support</small></a>
+        <a class="district-precinct precinct-education" href="educational-hub.html"><span aria-hidden="true">⌁</span><strong>Education Hub</strong><small>Courses &amp; training</small></a>
+      </div>
+    </section>
+
+    <section class="district-businesses" id="businesses" aria-labelledby="districtBusinesses">
+      <div class="district-section-heading">
+        <div>
+          <p class="district-kicker">Storefronts</p>
+          <h2 id="districtBusinesses">In the District</h2>
+        </div>
+        <p id="districtResults" aria-live="polite">Loading businesses…</p>
+      </div>
+      <details class="district-filters-panel">
+        <summary>Refine results</summary>
+        <form class="district-filters" id="districtFilters">
+          <div class="district-filter-title"><span>Filters</span><button id="districtClear" type="reset">Clear filters</button></div>
+          <label>Location<select id="districtSideLocation"><option value="">Australia</option><option>Adelaide</option><option>Brisbane</option><option>Melbourne</option><option>Perth</option><option>Sydney</option></select></label>
+          <label>Category<select id="districtCategory"><option value="">All categories</option><option value="adult business">Adult business</option><option value="adult venue">Adult venue</option><option value="photography">Photography</option><option value="support services">Support services</option></select></label>
+          <label>Search services<input id="districtServices" type="search" placeholder="Massage, legal, venue…" /></label>
+          <label class="district-toggle"><input id="districtVerified" type="checkbox" /><span></span>Verified only</label>
+        </form>
+      </details>
+      <div id="districtBusinessCards" class="district-business-cards"></div>
+      <p id="districtEmpty" class="district-empty" hidden>No businesses match those filters yet.</p>
+    </section>
+
+    <section class="district-owner-strip" aria-labelledby="districtOwnerTitle">
+      <div>
+        <p class="district-kicker">For business owners</p>
+        <h2 id="districtOwnerTitle">Own a business?</h2>
+        <p>Join Australia’s most trusted adult marketplace. Verified storefronts. Industry-ready tools.</p>
+      </div>
+      <a class="district-gold-button" href="business-signup.html">Open your storefront <span aria-hidden="true">→</span></a>
+    </section>
+
+    <p class="district-stats-sr sr-only" aria-hidden="true"><span id="districtBusinessCount">—</span><span id="districtCityCount">—</span><span id="districtCategoryCount">—</span></p>
   </main>
   <footer class="footer home-footer district-footer"><div class="home-footer-brand"><div class="logo">Tempt<span>X</span> <small>District</small></div><p class="home-footer-tagline">Australia's trusted adult business district. Shop. Book. Visit. Connect.</p><div class="district-social-links"><a href="https://www.instagram.com/" aria-label="Instagram">◎</a><a href="https://www.tiktok.com/" aria-label="TikTok">♪</a><a href="mailto:support@temptx.com.au" aria-label="Email TemptX">✉</a></div></div><div class="home-footer-columns"><div class="home-footer-col"><span class="home-footer-col-title">Explore</span><a href="district.html">District</a><a href="directory.html">Provider Directory</a><a href="xync.html">Xync</a><a href="membership.html">Membership</a></div><div class="home-footer-col"><span class="home-footer-col-title">Businesses</span><a href="business-signup.html">Open a Storefront</a><a href="friendly-businesses.html">Business Directory</a><a href="business-dashboard.html">Business Dashboard</a><a href="pricing.html">Advertising</a></div><div class="home-footer-col"><span class="home-footer-col-title">Support</span><a href="safety-hub.html">Safety Hub</a><a href="community-support.html">Community Support</a><a href="report.html?type=profile">Report</a><a href="educational-hub.html">Education</a></div><div class="home-footer-col"><span class="home-footer-col-title">Company</span><a href="about-temptx.html">About TemptX</a><a href="our-team.html">Our Team</a><a href="news.html">News</a><a href="report.html?type=general">Contact</a></div></div><form class="district-footer-signup" action="mailto:support@temptx.com.au" method="post" enctype="text/plain"><label for="districtNewsletter">Stay in the loop</label><p>New businesses, features and updates.</p><div><input id="districtNewsletter" name="email" type="email" placeholder="Enter your email" required /><button type="submit" aria-label="Join the TemptX mailing list">→</button></div></form><div class="home-footer-bottom"><p class="home-footer-legal">© 2026 TEMPTX. All rights reserved. For adults aged 18+ only.</p><div class="home-footer-links"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="privacy.html">Cookies</a><span>Australia (AU)</span></div></div></footer>
-  <script src="script.js?v=20260703-08"></script><script src="district.js?v=20260723-01"></script>
-</body></html>
+  <script src="script.js?v=20260703-08"></script><script src="district.js?v=20260723-02"></script>
+</body>
+</html>
