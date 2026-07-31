@@ -363,5 +363,98 @@
 
   <script src="script.js?v=20260703-08"></script>
   <script src="profile-public.js?v=20260702-01"></script>
+
+  <script>
+    // ─── Featured/demo profile fallback ───
+    // profile.html?provider=<id> is the real mechanism (see profile-public.js):
+    // it fetches /api/directory/providers and /api/providers/:id/profile and
+    // fills this page in for genuine accounts. Ava/Mila/Sienna on the homepage
+    // aren't real accounts yet, so those fetches quietly fail to find a match
+    // and the page is left showing its raw placeholder text.
+    //
+    // This fallback only fills in demo content for those three specific IDs,
+    // and only if the real fetch didn't already populate the name field. The
+    // moment real accounts exist with these IDs, profile-public.js's fetch
+    // succeeds first and this fallback never touches the page.
+    (function () {
+      const demoProfiles = {
+        ava: {
+          name: "Ava",
+          locations: "Adelaide, SA",
+          locationFact: "Adelaide, SA",
+          age: "27",
+          height: "165 cm",
+          orientation: "Straight",
+          hair: "Blonde",
+          eyes: "Blue",
+          attribute: "Incall / Outcall",
+          bodyType: "Slim",
+          noteHeading: "Respectful messages only",
+          note: "Elegant conversation and unhurried private appointments. Screening required for new clients."
+        },
+        mila: {
+          name: "Mila",
+          locations: "Sydney, NSW",
+          locationFact: "Sydney, NSW",
+          age: "29",
+          height: "170 cm",
+          orientation: "Bisexual",
+          hair: "Brunette",
+          eyes: "Brown",
+          attribute: "Incall / Outcall",
+          bodyType: "Athletic",
+          noteHeading: "Respectful messages only",
+          note: "Polished city companion with a calm, discreet approach. Advance bookings preferred."
+        },
+        sienna: {
+          name: "Sienna",
+          locations: "Melbourne, VIC",
+          locationFact: "Melbourne, VIC",
+          age: "26",
+          height: "168 cm",
+          orientation: "Bisexual",
+          hair: "Redhead",
+          eyes: "Green",
+          attribute: "Incall / Outcall",
+          bodyType: "Curvy",
+          noteHeading: "Respectful messages only",
+          note: "Warm presence, refined style, and clear boundaries. Please read profile notes before messaging."
+        }
+      };
+
+      function applyDemoFallback() {
+        const providerId = new URLSearchParams(window.location.search).get("provider");
+        const data = demoProfiles[providerId];
+        if (!data) return; // not one of the known demo IDs — leave the page alone
+
+        const nameEl = document.getElementById("publicProviderName");
+        // If profile-public.js already found a real account and rendered it,
+        // the name field will no longer read the raw placeholder — bail out.
+        if (nameEl && nameEl.textContent.trim() !== "Advertiser Name") return;
+
+        const setText = (id, value) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = value;
+        };
+
+        document.title = data.name + " | TEMPTX";
+        setText("publicProviderName", data.name);
+        setText("publicProviderLocations", data.locations);
+        setText("publicProviderLocationFact", data.locationFact);
+        setText("factAge", data.age);
+        setText("factHeight", data.height);
+        setText("factOrientation", data.orientation);
+        setText("factHair", data.hair);
+        setText("factEyes", data.eyes);
+        setText("publicProviderAttributeFact", data.attribute);
+        setText("factBodyType", data.bodyType);
+        setText("publicProviderNoteHeading", data.noteHeading);
+        setText("publicProviderNote", data.note);
+      }
+
+      // Give profile-public.js's async fetches a chance to resolve first.
+      window.addEventListener("load", () => setTimeout(applyDemoFallback, 600));
+    })();
+  </script>
 </body>
 </html>
