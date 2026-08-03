@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Provider Dashboard | TEMPTX</title>
+  <meta
+    name="description"
+    content="Manage booking requests, your schedule, and your private client history in one TEMPTX provider workspace."
+  />
+  <script>
+    if (window.location.protocol === "file:") {
+      window.location.replace("auth.html?mode=login&role=provider&next=%2Fprovider-dashboard.html");
+    }
+  </script>
+  <link rel="stylesheet" href="style.css?v=20260703-07" />
+  <link rel="stylesheet" href="creator-dashboard.css?v=20260629-02" />
+  <link rel="stylesheet" href="provider-dashboard.css?v=20260803-01" />
+</head>
+
+<body class="creator-dashboard-body cinematic-background">
+  <div id="ageGate" class="age-gate">
+    <div class="age-box">
+      <h1>Tempt<span>X</span></h1>
+      <p>This website is intended for adults aged 18+ only.</p>
+      <p class="small-text">By entering, you confirm you are at least 18 years old.</p>
+      <p class="age-policy-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="safety-hub.html">Safety</a>
+      </p>
+      <div class="age-buttons">
+        <button id="enterSite">I am 18+</button>
+        <button id="leaveSite" class="outline-btn">Leave</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="chat-header dashboard-header">
+    <a class="brand-mark chat-brand" href="index.html">
+      <span class="chat-brand-wordmark">
+        <span class="brand-word">TEMPT</span>
+        <span class="brand-x">X</span>
+      </span>
+      <small>Provider operations</small>
+    </a>
+
+    <nav class="chat-top-nav" aria-label="Provider dashboard navigation">
+      <a href="provider-dashboard.html" aria-current="page">Dashboard</a>
+      <a href="provider-profile.html">Edit Profile</a>
+      <a href="chat.html">Messages</a>
+      <a href="settings.html">Settings</a>
+    </nav>
+
+    <div class="account-dropdown hover-dropdown">
+      <a href="settings.html" class="header-tool profile-tool" aria-label="Account settings">
+        <span></span>
+      </a>
+      <div class="dropdown-menu account-menu">
+        <a href="provider-dashboard.html">Provider Dashboard</a>
+        <a href="provider-profile.html">Edit Profile</a>
+        <a href="chat.html">Messages</a>
+        <a href="settings.html">Settings</a>
+        <a href="provider-login.html" data-login>Provider Log In</a>
+        <a href="auth.html" data-logout hidden>Log Out</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="creator-dashboard-shell">
+    <section class="dashboard-hero" aria-labelledby="dashboardTitle">
+      <div>
+        <p class="eyebrow">Provider dashboard</p>
+        <h1 id="dashboardTitle">Manage your bookings.</h1>
+        <p id="dashboardWelcome">
+          Review requests, track your schedule, and keep a private record of your clients — all in one workspace.
+        </p>
+      </div>
+      <div class="dashboard-actions" aria-label="Dashboard actions">
+        <a class="outline-btn" href="provider-profile.html">Edit profile</a>
+        <a class="outline-btn" id="viewPublicProfileLink" href="#" hidden>View public profile</a>
+      </div>
+    </section>
+
+    <div id="dashboardSignedOut" class="dashboard-panel" hidden>
+      <p class="eyebrow">Sign in required</p>
+      <h2>This workspace is for providers only.</h2>
+      <p>Sign in with your provider account to see your bookings and clients.</p>
+      <a class="outline-btn" href="auth.html?mode=login&amp;role=provider&amp;next=%2Fprovider-dashboard.html">Provider log in</a>
+    </div>
+
+    <div id="dashboardContent" hidden>
+      <div class="provider-tabs" role="tablist" aria-label="Provider dashboard sections">
+        <button type="button" role="tab" id="bookingsTabButton" aria-controls="bookingsTab" aria-selected="true" class="is-active" data-tab="bookings">Bookings</button>
+        <button type="button" role="tab" id="clientsTabButton" aria-controls="clientsTab" aria-selected="false" data-tab="clients">Clients</button>
+      </div>
+
+      <section class="dashboard-panel provider-tab-panel" id="bookingsTab" role="tabpanel" aria-labelledby="bookingsTabButton">
+        <div class="dashboard-panel-heading">
+          <div>
+            <p class="eyebrow">Bookings</p>
+            <h2>Your booking requests and schedule</h2>
+          </div>
+        </div>
+
+        <p class="pending-banner" id="pendingBanner" hidden></p>
+
+        <div class="booking-filter-chips" role="tablist" aria-label="Filter bookings">
+          <button type="button" class="filter-chip is-active" data-filter="today">Today</button>
+          <button type="button" class="filter-chip" data-filter="upcoming">Upcoming</button>
+          <button type="button" class="filter-chip" data-filter="pending">Pending</button>
+          <button type="button" class="filter-chip" data-filter="past">Past</button>
+          <button type="button" class="filter-chip" data-filter="disputed">Disputed</button>
+        </div>
+
+        <div id="bookingsList" class="booking-list"></div>
+        <p class="dashboard-empty-state" id="bookingsEmptyState" hidden>No bookings in this view yet.</p>
+      </section>
+
+      <section class="dashboard-panel provider-tab-panel" id="clientsTab" role="tabpanel" aria-labelledby="clientsTabButton" hidden>
+        <div class="dashboard-panel-heading">
+          <div>
+            <p class="eyebrow">Clients</p>
+            <h2>Your private client history</h2>
+          </div>
+          <input type="search" id="clientSearchInput" class="client-search-input" placeholder="Search clients" aria-label="Search clients" />
+        </div>
+
+        <p class="dashboard-empty-state" id="crmUpsellNote" hidden>
+          Upgrade to Standard or above to see private notes, tags, and full booking history for each client.
+        </p>
+
+        <div id="clientsList" class="client-list"></div>
+        <p class="dashboard-empty-state" id="clientsEmptyState" hidden>No clients yet — they'll appear here once someone books you.</p>
+      </section>
+    </div>
+  </main>
+
+  <script src="script.js?v=20260703-08"></script>
+  <script src="provider-dashboard.js?v=20260803-01"></script>
+</body>
+</html>
