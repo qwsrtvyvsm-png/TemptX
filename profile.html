@@ -49,6 +49,7 @@
       <a href="community-support.html">Community</a>
       <a href="join.html">Join Us</a>
       <a href="chat.html" data-authenticated hidden>Messages</a>
+      <a href="my-bookings.html" data-authenticated hidden>My Bookings</a>
     </nav>
       <div class="account-dropdown hover-dropdown">
         <a href="profile.html" class="header-tool profile-tool" aria-label="Profile">
@@ -79,7 +80,9 @@
 
         <div class="profile-actions">
           <a href="chat.html?conversation=advertiser" class="light-btn" data-message-cta>Message now</a>
+          <button class="light-btn" type="button" data-book-now hidden>Book now</button>
           <a href="provider-profile.html" class="light-btn" data-edit-profile hidden>Edit Profile</a>
+          <a href="provider-dashboard.html" class="outline-btn" data-view-dashboard hidden>View Dashboard</a>
           <a href="#my-gallery" class="outline-btn">View gallery</a>
           <button
             class="outline-btn favourite-provider-button"
@@ -360,6 +363,39 @@
       </div>
     </div>
   </footer>
+
+  <div class="auth-modal" id="bookingModal" hidden>
+    <section class="auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="bookingModalTitle">
+      <button class="auth-modal-close" type="button" id="closeBookingModal">Close</button>
+      <p class="eyebrow">Request a booking</p>
+      <h2 id="bookingModalTitle">Book <span id="bookingModalProviderName">this provider</span></h2>
+
+      <form id="bookingRequestForm" class="auth-form">
+        <label class="auth-field">
+          <span>Location</span>
+          <select id="bookingLocationType">
+            <option value="outcall">Outcall</option>
+            <option value="incall">Incall</option>
+          </select>
+        </label>
+        <label class="auth-field">
+          <span>Session length</span>
+          <select id="bookingDurationKey">
+            <option value="oneHour">1 hour</option>
+            <option value="twoHours">2 hours</option>
+            <option value="overnight">Overnight</option>
+          </select>
+        </label>
+        <label class="auth-field">
+          <span>Date and time</span>
+          <input type="datetime-local" id="bookingScheduledFor" required />
+        </label>
+        <button class="auth-submit" type="submit">Send request</button>
+      </form>
+
+      <div class="auth-status" id="bookingModalStatus" aria-live="polite"></div>
+    </section>
+  </div>
 
   <script src="script.js?v=20260703-08"></script>
   <script src="profile-public.js?v=20260702-01"></script>

@@ -30,6 +30,8 @@ if (authForm) {
   const accountCategoryField = document.querySelector("#accountCategoryField");
   const businessAbnField = document.querySelector("#businessAbnField");
   const phoneField = document.querySelector("#phoneField");
+  const personalPhoneField = document.querySelector("#personalPhoneField");
+  const personalPhoneNote = document.querySelector("#personalPhoneNote");
   const authWorkingName = document.querySelector("#authWorkingName");
   const clientIdField = document.querySelector("#clientIdField");
   const authEmail = document.querySelector("#authEmail");
@@ -37,8 +39,15 @@ if (authForm) {
   const authAccountCategory = document.querySelector("#authAccountCategory");
   const authBusinessAbn = document.querySelector("#authBusinessAbn");
   const authBusinessPhone = document.querySelector("#authBusinessPhone");
+  const authPersonalPhone = document.querySelector("#authPersonalPhone");
   const authClientId = document.querySelector("#authClientId");
   const authPassword = document.querySelector("#authPassword");
+  const confirmPasswordField = document.querySelector("#confirmPasswordField");
+  const authConfirmPassword = document.querySelector("#authConfirmPassword");
+  const authSteps = document.querySelector("#authSteps");
+  const authNextHint = document.querySelector("#authNextHint");
+  const txSideTitle = document.querySelector("#tx-side-title");
+  const txSideSubtitle = document.querySelector("#tx-side-subtitle");
   const loginOptions = document.querySelector("#loginOptions");
   const authStatus = document.querySelector("#authStatus");
   const authSubmit = document.querySelector("#authSubmit");
@@ -75,6 +84,9 @@ if (authForm) {
   const updateView = () => {
     document.querySelectorAll("button[data-auth-mode]").forEach((button) => {
       button.classList.toggle("is-active", button.dataset.authMode === mode);
+      // Only the "switch to the other mode" prompt should show — e.g. in signup
+      // mode, show "Already a member? Sign in" and hide "New here? Sign up".
+      button.hidden = button.dataset.authMode === mode;
     });
     document.querySelectorAll("button[data-account-role]").forEach((button) => {
       button.classList.toggle("is-active", button.dataset.accountRole === role);
@@ -92,16 +104,31 @@ if (authForm) {
     workingNameField.hidden = !(isWorkerSignup || isBusinessSignup);
     emailField.hidden = !isEmailAccount;
     if (genderField) genderField.hidden = !isWorkerSignup;
+    if (personalPhoneField) personalPhoneField.hidden = !isWorkerSignup;
+    if (personalPhoneNote) personalPhoneNote.hidden = !isWorkerSignup;
     accountCategoryField.hidden = !(isWorkerSignup || isBusinessSignup);
     if (businessAbnField) businessAbnField.hidden = !isBusinessSignup;
     if (phoneField) phoneField.hidden = !isBusinessSignup;
+    if (confirmPasswordField) confirmPasswordField.hidden = !isSignup;
+    if (authSteps) authSteps.hidden = !isSignup;
+    if (authNextHint) authNextHint.hidden = !isSignup;
     clientIdField.hidden = isEmailAccount || isSignup;
     authWorkingName.required = isWorkerSignup || isBusinessSignup;
     authEmail.required = isEmailAccount;
     if (authGender) authGender.required = isWorkerSignup;
+    if (authPersonalPhone) authPersonalPhone.required = isWorkerSignup;
+    if (authConfirmPassword) authConfirmPassword.required = isSignup;
     authAccountCategory.required = isWorkerSignup || isBusinessSignup;
     if (authBusinessAbn) authBusinessAbn.required = isBusinessSignup;
     if (authBusinessPhone) authBusinessPhone.required = isBusinessSignup;
+    if (txSideTitle) {
+      txSideTitle.textContent = isSignup ? "Create your TEMPTX account" : "Welcome back.";
+    }
+    if (txSideSubtitle) {
+      txSideSubtitle.textContent = isSignup
+        ? "Choose the option that best describes you to get started."
+        : "Sign in with the account type you registered with.";
+    }
     authEmail.placeholder =
       role === "creator"
         ? "creator@example.com"
@@ -185,6 +212,12 @@ if (authForm) {
 
   authForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+
+    if (mode === "signup" && authConfirmPassword && authConfirmPassword.value !== authPassword.value) {
+      setStatus(authStatus, "Passwords don't match.", "error");
+      return;
+    }
+
     setStatus(authStatus, "Checking your details…");
     authSubmit.disabled = true;
 
@@ -198,6 +231,7 @@ if (authForm) {
     if ((role === "provider" || role === "creator") && mode === "signup") {
       payload.workingName = authWorkingName.value;
       payload.gender = authGender.value;
+      payload.phone = authPersonalPhone?.value || "";
       payload.accountCategory = authAccountCategory.value;
     }
     if (role === "business" && mode === "signup") {

@@ -401,6 +401,57 @@
         <button type="submit">Save profile</button>
       </div>
     </form>
+
+    <form class="settings-form" id="bookingSettingsForm" novalidate>
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Bookings</p>
+            <h2>Booking settings</h2>
+          </div>
+          <p>Choose how clients can book you, and whether a deposit is required. See requests on your <a href="provider-dashboard.html">Provider Dashboard</a>.</p>
+        </div>
+
+        <div class="profile-details-grid">
+          <label class="settings-text-field">
+            <span><input type="checkbox" id="acceptsRequestToBook" /> Accept request-to-book</span>
+          </label>
+
+          <label class="settings-text-field">
+            <span><input type="checkbox" id="acceptsInstantBook" /> Accept instant book</span>
+          </label>
+
+          <label class="settings-text-field">
+            <span><input type="checkbox" id="depositRequired" /> Require a deposit</span>
+          </label>
+
+          <label class="settings-text-field">
+            <span>Deposit type</span>
+            <select id="depositType">
+              <option value="fixed">Fixed amount</option>
+              <option value="percentage">Percentage of rate</option>
+            </select>
+          </label>
+
+          <label class="settings-text-field">
+            <span>Deposit amount</span>
+            <input type="number" id="depositAmount" min="0" step="0.01" placeholder="50" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>No-show grace period (minutes)</span>
+            <input type="number" id="noShowGracePeriodMinutes" min="0" max="240" placeholder="30" />
+          </label>
+        </div>
+
+        <p class="directory-choice-note">You can enable request-to-book, instant book, or both — but never neither.</p>
+      </section>
+
+      <div class="settings-save-bar">
+        <p id="bookingSettingsStatus" aria-live="polite"></p>
+        <button type="submit">Save booking settings</button>
+      </div>
+    </form>
   </main>
 
   <script src="script.js?v=20260703-08"></script>
