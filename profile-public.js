@@ -1,6 +1,7 @@
 const providerId = new URLSearchParams(window.location.search).get("provider");
 const messageCtas = document.querySelectorAll("[data-message-cta]");
 const editProfileLinks = document.querySelectorAll("[data-edit-profile]");
+const verificationCtaLinks = document.querySelectorAll("[data-verification-cta]");
 const favouriteButtons = document.querySelectorAll("[data-favourite-provider]");
 
 const convertXyncKeyToLabel = (key) => key
@@ -218,6 +219,7 @@ const applyOwnerControls = (viewerRole, viewerId, profileIsProvider) => {
   if (isOwnProfile) {
     messageCtas.forEach((btn) => { btn.hidden = true; });
     editProfileLinks.forEach((link) => { link.hidden = false; });
+    verificationCtaLinks.forEach((link) => { link.hidden = false; });
     favouriteButtons.forEach((btn) => { btn.hidden = true; });
     return;
   }
