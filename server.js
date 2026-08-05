@@ -1620,6 +1620,15 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
         const users = readUsers();
         const record = users.find((item) => item.id === user.id);
         if (!record) return null;
+
+        const conflict = users.some(
+          (item) =>
+            item.id !== user.id &&
+            ((item.verification?.email?.status === "verified" && item.verification?.email?.address === pending.target) ||
+              item.email === pending.target)
+        );
+        if (conflict) return "conflict";
+
         record.verification = record.verification || {};
         record.verification.email = {
           status: "verified",
@@ -1633,8 +1642,10 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
         return publicUser(record);
       });
 
+      if (result === "conflict") {
+        return json(response, 409, { error: "That email is already verified on another account." });
+      }
       if (!result) return json(response, 404, { error: "Account not found." });
-
       await recordVerificationEvent(request, {
         userId: user.id,
         channel: "email",
