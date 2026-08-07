@@ -746,7 +746,7 @@ const computeTrustLevel = (user) => {
 
 #### Exposure
 
-- `publicUser()` in `server.js` (used by `/api/auth/me`, signup, login responses) gains `trustLevel` and `tierLabel`. It must **not** gain the `verification` object — that is Verification-Centre-only, delivered by `/api/verification/status`.
+- `publicUser()` in `server.js` (used by `/api/auth/me`, signup, login responses) gains `trustLevel` and `tierLabel`. Phase 1 currently also returns a per-user `verification` summary in `publicUser()`; if that is kept, treat it as authenticated-only and avoid returning it from any public directory/profile projections.
 - `publicDirectoryBusiness()` and the provider directory projection gain `trustLevel` + `tierLabel` only (Phase 4, §4.17).
 
 #### Audit
