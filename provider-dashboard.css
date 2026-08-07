@@ -1,0 +1,222 @@
+/* Provider Dashboard — Bookings + Clients (CRM) tabs.
+   Builds on the shared .dashboard-panel/.status-pill idioms in creator-dashboard.css;
+   only adds what that file doesn't already cover: tab switching, filter chips,
+   booking/client cards, and status-colour variants. */
+
+.provider-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.provider-tabs button {
+  flex: 0 0 auto;
+  padding: 10px 22px;
+  border-radius: var(--radius-pill, 999px);
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--text-secondary, var(--muted));
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background var(--duration-fast, 180ms) var(--ease-soft, ease),
+    color var(--duration-fast, 180ms) var(--ease-soft, ease);
+}
+
+.provider-tabs button.is-active {
+  background: var(--gold);
+  color: #15110c;
+  border-color: var(--gold);
+}
+
+.provider-tab-panel[hidden] {
+  display: none;
+}
+
+.pending-banner {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid rgba(var(--gold-rgb), 0.4);
+  background: rgba(var(--gold-rgb), 0.12);
+  color: var(--champagne);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.booking-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.filter-chip {
+  padding: 7px 16px;
+  border-radius: var(--radius-pill, 999px);
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text-secondary, var(--muted));
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.filter-chip.is-active {
+  background: rgba(var(--cream-rgb), 0.12);
+  border-color: rgba(var(--champagne-rgb), 0.5);
+  color: var(--cream);
+}
+
+.booking-list,
+.client-list {
+  display: grid;
+  gap: 14px;
+}
+
+.booking-card,
+.client-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg, 12px);
+  background: rgba(var(--cream-rgb), 0.03);
+  padding: 16px 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.booking-card-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.booking-card-title {
+  font-weight: 700;
+  color: var(--cream);
+}
+
+.booking-card-meta {
+  color: var(--text-secondary, var(--muted));
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+.booking-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.booking-card-actions button,
+.booking-card-actions a {
+  padding: 8px 16px;
+  border-radius: var(--radius-pill, 999px);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--cream);
+}
+
+.booking-card-actions .btn-accept {
+  background: var(--gold);
+  color: #15110c;
+  border-color: var(--gold);
+}
+
+.booking-card-actions .btn-decline,
+.booking-card-actions .btn-cancel {
+  border-color: rgba(var(--wine-rgb), 0.6);
+  color: #e2a79b;
+}
+
+/* Status colours — like .auth-status's is-error/is-success, these are intentional
+   semantic hues outside the design-token palette (no token distinguishes
+   pending/active/terminal/disputed well enough on its own). */
+.status-pill.is-amber { background: var(--gold); color: #15110c; }
+.status-pill.is-green { background: #8fae86; color: #0f1a0d; }
+.status-pill.is-grey { background: rgba(var(--cream-rgb), 0.18); color: var(--cream); }
+.status-pill.is-red { background: #c46a5c; color: #2a0d08; }
+
+.client-card-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.client-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.client-tag {
+  padding: 3px 10px;
+  border-radius: var(--radius-pill, 999px);
+  background: rgba(var(--champagne-rgb), 0.16);
+  color: var(--champagne);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.client-note-box {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md, 8px);
+  padding: 10px 12px;
+  color: var(--text-secondary, var(--muted));
+  font-size: 0.85rem;
+}
+
+.client-search-input {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill, 999px);
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--cream);
+  padding: 8px 16px;
+  font-size: 0.82rem;
+}
+
+.client-card-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.client-card-actions button {
+  padding: 7px 14px;
+  border-radius: var(--radius-pill, 999px);
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--cream);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.client-card-actions .btn-block {
+  border-color: rgba(var(--wine-rgb), 0.6);
+  color: #e2a79b;
+}
+
+.client-card.is-blocked {
+  opacity: 0.6;
+}
+
+@media (max-width: 640px) {
+  .booking-card-top,
+  .booking-card-actions,
+  .client-card-top,
+  .client-card-actions {
+    justify-content: flex-start;
+  }
+}

@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const { sendEmail, sendSms } = require("./notifications");
+const { canTransition } = require("./lib/booking-transitions");
 
 const host = process.env.HOST || "0.0.0.0";
 const port = Number(process.env.PORT || 5510);
@@ -15,6 +16,8 @@ const membershipsFile = path.join(dataDirectory, "memberships.json");
 const subscriptionsFile = path.join(dataDirectory, "subscriptions.json");
 const transactionsFile = path.join(dataDirectory, "transactions.json");
 const verificationEventsFile = path.join(dataDirectory, "verificationEvents.json");
+const bookingsFile = path.join(dataDirectory, "bookings.json");
+const clientNotesFile = path.join(dataDirectory, "client-notes.json");
 const serverSecretFile = path.join(dataDirectory, "server-secret");
 const sessions = new Map();
 const resetTokens = new Map();
@@ -26,6 +29,7 @@ const clientIdFailures = new Map();
 // userId (one pending code per user per channel); resending overwrites the entry.
 const emailVerificationCodes = new Map();
 const phoneVerificationCodes = new Map();
+const bookingRateLimits = new Map();
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -60,6 +64,14 @@ if (!fs.existsSync(transactionsFile)) {
 
 if (!fs.existsSync(verificationEventsFile)) {
   fs.writeFileSync(verificationEventsFile, "[]\n");
+}
+
+if (!fs.existsSync(bookingsFile)) {
+  fs.writeFileSync(bookingsFile, "[]\n");
+}
+
+if (!fs.existsSync(clientNotesFile)) {
+  fs.writeFileSync(clientNotesFile, "[]\n");
 }
 let serverSecret;
 if (process.env.SERVER_SECRET) {
@@ -178,9 +190,19 @@ const writeVerificationEvents = (events) =>
     `${JSON.stringify(events, null, 2)}\n`
   );
 
+const readBookings = () => JSON.parse(fs.readFileSync(bookingsFile, "utf8"));
+const writeBookings = (bookings) =>
+  atomicWrite(bookingsFile, `${JSON.stringify(bookings, null, 2)}\n`);
+
+const readClientNotes = () => JSON.parse(fs.readFileSync(clientNotesFile, "utf8"));
+const writeClientNotes = (clientNotes) =>
+  atomicWrite(clientNotesFile, `${JSON.stringify(clientNotes, null, 2)}\n`);
+
 const usersQueue = makeQueue();
 const reportsQueue = makeQueue();
 const verificationEventsQueue = makeQueue();
+const bookingsQueue = makeQueue();
+const clientNotesQueue = makeQueue();
 
 // Append-only audit trail for verification actions. Never records the OTP code or
 // its hash — only status transitions — so it's safe to keep indefinitely.
@@ -1001,6 +1023,7 @@ const publicUser = (user) => ({
   clientId: user.clientId || null,
   workingName: user.workingName || null,
   gender: user.gender || null,
+  phone: user.phone || null,
   accountCategory: user.accountCategory || null,
   applicationStatus: user.applicationStatus || null,
   businessProfile: user.businessProfile || null,
@@ -1018,6 +1041,7 @@ const publicUser = (user) => ({
   },
   trustLevel: user.trustLevel || 0,
   trustLevelLabel: TRUST_LEVEL_LABELS[user.trustLevel || 0] || TRUST_LEVEL_LABELS[0],
+  bookingSettings: user.role === "provider" ? bookingSettingsView(user.bookingSettings) : null,
   settings: {
     displayName: user.settings?.displayName || "",
     directMessages: user.settings?.directMessages !== false,
@@ -1051,6 +1075,221 @@ const publicDirectoryBusiness = (user) => ({
     logoDataUrl: user.businessProfile?.logoDataUrl || ""
   }
 });
+
+// ---------------------------------------------------------------------------
+// Booking system + client CRM helpers
+// ---------------------------------------------------------------------------
+
+const BOOKING_RESPONSE_WINDOW_MS = 24 * 60 * 60 * 1000; // fixed platform-wide (spec §1.8)
+const CHECKIN_WINDOW_BEFORE_MS = 60 * 60 * 1000; // check-in window opens 1hr before scheduledFor
+const DISPUTE_WINDOW_MS = 48 * 60 * 60 * 1000; // upper end of the spec's 24-48hr window
+const BOOKING_LOCATION_TYPES = new Set(["incall", "outcall"]);
+const BOOKING_DURATIONS = { oneHour: 60, twoHours: 120, overnight: 720 };
+const ACTIVE_BOOKING_STATUSES = new Set([
+  "REQUESTED", "CONFIRMED", "AWAITING_DEPOSIT", "SCHEDULED", "AWAITING_CHECKIN"
+]);
+
+const defaultBookingSettings = () => ({
+  acceptsRequestToBook: true,
+  acceptsInstantBook: false,
+  depositRequired: false,
+  depositAmount: 0,
+  depositType: "fixed",
+  noShowGracePeriodMinutes: 30
+});
+
+// Safe read view — fills in defaults for a provider who hasn't saved settings yet.
+const bookingSettingsView = (settings) => {
+  const source = settings && typeof settings === "object" ? settings : {};
+  const defaults = defaultBookingSettings();
+  return {
+    acceptsRequestToBook: source.acceptsRequestToBook !== false,
+    acceptsInstantBook: source.acceptsInstantBook === true,
+    depositRequired: source.depositRequired === true,
+    depositAmount: Number.isFinite(source.depositAmount) ? source.depositAmount : defaults.depositAmount,
+    depositType: source.depositType === "percentage" ? "percentage" : "fixed",
+    noShowGracePeriodMinutes: Number.isFinite(source.noShowGracePeriodMinutes)
+      ? Math.min(240, Math.max(0, Math.round(source.noShowGracePeriodMinutes)))
+      : defaults.noShowGracePeriodMinutes
+  };
+};
+
+const cleanBookingSettingsPatch = (body, existing) => {
+  const current = bookingSettingsView(existing);
+  const source = body && typeof body === "object" ? body : {};
+  const has = (key) => Object.prototype.hasOwnProperty.call(source, key);
+
+  const next = {
+    acceptsRequestToBook: has("acceptsRequestToBook") ? source.acceptsRequestToBook === true : current.acceptsRequestToBook,
+    acceptsInstantBook: has("acceptsInstantBook") ? source.acceptsInstantBook === true : current.acceptsInstantBook,
+    depositRequired: has("depositRequired") ? source.depositRequired === true : current.depositRequired,
+    depositAmount: has("depositAmount") && Number.isFinite(Number(source.depositAmount))
+      ? Math.max(0, Number(source.depositAmount))
+      : current.depositAmount,
+    depositType: has("depositType") ? (source.depositType === "percentage" ? "percentage" : "fixed") : current.depositType,
+    noShowGracePeriodMinutes: has("noShowGracePeriodMinutes") && Number.isFinite(Number(source.noShowGracePeriodMinutes))
+      ? Math.min(240, Math.max(0, Math.round(Number(source.noShowGracePeriodMinutes))))
+      : current.noShowGracePeriodMinutes
+  };
+
+  // Provider can enable either mode, or both — never both false.
+  if (!next.acceptsRequestToBook && !next.acceptsInstantBook) {
+    next.acceptsRequestToBook = true;
+  }
+
+  return next;
+};
+
+const snapshotProviderRate = (provider, locationType, durationKey) => {
+  const rates = provider.profile?.rates?.[locationType] || {};
+  return cleanText(rates[durationKey], 40) || null;
+};
+
+const bookingsOverlap = (aStart, aEnd, bStart, bEnd) => aStart < bEnd && bStart < aEnd;
+
+const hasConflictingBooking = (bookings, providerId, scheduledForIso, durationMinutes, excludeId = null) => {
+  const start = new Date(scheduledForIso).getTime();
+  const end = start + durationMinutes * 60 * 1000;
+  return bookings.some((booking) => {
+    if (booking.id === excludeId) return false;
+    if (booking.providerId !== providerId) return false;
+    if (!ACTIVE_BOOKING_STATUSES.has(booking.status)) return false;
+    const otherStart = new Date(booking.scheduledFor).getTime();
+    const otherEnd = otherStart + (booking.service?.durationMinutes || 60) * 60 * 1000;
+    return bookingsOverlap(start, end, otherStart, otherEnd);
+  });
+};
+
+const appendStatusHistory = (booking, status, by) => {
+  booking.status = status;
+  booking.statusHistory.push({ status, at: new Date().toISOString(), by });
+  booking.updatedAt = new Date().toISOString();
+};
+
+const actorRoleForBooking = (booking, user) => {
+  if (!user) return null;
+  if (user.id === booking.clientId) return "client";
+  if (user.id === booking.providerId) return "provider";
+  return null;
+};
+
+const emptyTrustSignals = () => ({
+  totalBookings: 0,
+  completedCount: 0,
+  noShowCount: 0,
+  cancelledByClientCount: 0,
+  lastBookingAt: null
+});
+
+const computeTrustSignals = (providerId, clientId, bookings) => {
+  const signals = emptyTrustSignals();
+  for (const booking of bookings) {
+    if (booking.providerId !== providerId || booking.clientId !== clientId) continue;
+    if (booking.status === "CLOSED") {
+      signals.totalBookings += 1;
+      signals.completedCount += 1;
+    } else if (booking.status === "NO_SHOW") {
+      signals.totalBookings += 1;
+      signals.noShowCount += 1;
+    } else if (booking.status === "CANCELLED_BY_CLIENT") {
+      signals.totalBookings += 1;
+      signals.cancelledByClientCount += 1;
+    } else if (booking.status === "CANCELLED_BY_PROVIDER") {
+      signals.totalBookings += 1;
+    } else {
+      continue;
+    }
+    if (!signals.lastBookingAt || booking.scheduledFor > signals.lastBookingAt) {
+      signals.lastBookingAt = booking.scheduledFor;
+    }
+  }
+  return signals;
+};
+
+// Creates a client-notes row the moment a booking exists, so the Clients/CRM tab
+// shows every client who's interacted with the provider — not just ones whose
+// first booking has already closed.
+const ensureClientNote = (providerId, clientId) =>
+  clientNotesQueue(() => {
+    const notes = readClientNotes();
+    let note = notes.find((n) => n.providerId === providerId && n.clientId === clientId);
+    if (!note) {
+      const now = new Date().toISOString();
+      note = {
+        id: `note_${crypto.randomUUID()}`,
+        providerId,
+        clientId,
+        tags: [],
+        privateNote: "",
+        trustSignals: emptyTrustSignals(),
+        blocked: false,
+        blockedReason: null,
+        createdAt: now,
+        updatedAt: now
+      };
+      notes.push(note);
+      writeClientNotes(notes);
+    }
+    return note;
+  });
+
+// trustSignals is server-computed only, recalculated from bookings.json whenever a
+// booking for that client reaches a terminal outcome — never a direct client-editable
+// field, so a provider can never manually inflate a client's record.
+const recomputeTrustSignals = (providerId, clientId) =>
+  clientNotesQueue(() => {
+    const signals = computeTrustSignals(providerId, clientId, readBookings());
+    const notes = readClientNotes();
+    let note = notes.find((n) => n.providerId === providerId && n.clientId === clientId);
+    const now = new Date().toISOString();
+    if (!note) {
+      note = {
+        id: `note_${crypto.randomUUID()}`,
+        providerId,
+        clientId,
+        tags: [],
+        privateNote: "",
+        trustSignals: signals,
+        blocked: false,
+        blockedReason: null,
+        createdAt: now,
+        updatedAt: now
+      };
+      notes.push(note);
+    } else {
+      note.trustSignals = signals;
+      note.updatedAt = now;
+    }
+    writeClientNotes(notes);
+    return note;
+  });
+
+// Tier gate: spec's "Standard and above" vs "Free/PPD/PPW" language maps onto this
+// repo's actual membership tiers (Network/Select/Icon, see membershipData.ts) as
+// "any active membership" — there's no separate PPD/PPW product here, so any paid
+// tier unlocks full CRM and no active membership gets the stripped view.
+const hasFullCrmAccess = (providerId) => Boolean(getMembership(providerId));
+
+const clientNoteView = (note, fullAccess) => {
+  if (!fullAccess) {
+    return {
+      clientId: note.clientId,
+      totalBookings: note.trustSignals?.totalBookings || 0,
+      blocked: note.blocked === true
+    };
+  }
+  return {
+    id: note.id,
+    clientId: note.clientId,
+    tags: Array.isArray(note.tags) ? note.tags : [],
+    privateNote: note.privateNote || "",
+    trustSignals: note.trustSignals || emptyTrustSignals(),
+    blocked: note.blocked === true,
+    blockedReason: note.blockedReason || null,
+    createdAt: note.createdAt,
+    updatedAt: note.updatedAt
+  };
+};
 
 const createSession = (user) => {
   const token = crypto.randomBytes(32).toString("hex");
@@ -1192,6 +1431,473 @@ const handleApi = async (request, response, pathname) => {
 
 } // <-- route ends here
 
+// ---------------------------------------------------------------------------
+// Booking lifecycle routes
+// ---------------------------------------------------------------------------
+
+if (pathname === "/api/bookings" && request.method === "POST") {
+  const client = requireSession(request);
+  if (!client) return json(response, 401, { error: "Sign in to request a booking." });
+  if (client.role !== "client") return json(response, 403, { error: "Only client accounts can request bookings." });
+
+  if (!rateLimit(bookingRateLimits, `create:${client.id}`, 10, 60 * 60 * 1000)) {
+    return json(response, 429, { error: "Too many booking requests. Wait before trying again." });
+  }
+
+  const body = await readJsonBody(request);
+  const providerId = String(body.providerId || "");
+  const locationType = BOOKING_LOCATION_TYPES.has(body.locationType) ? body.locationType : null;
+  const durationKey = Object.prototype.hasOwnProperty.call(BOOKING_DURATIONS, body.durationKey) ? body.durationKey : null;
+  const scheduledFor = new Date(body.scheduledFor);
+
+  if (!providerId) return json(response, 400, { error: "Choose a provider." });
+  if (!locationType) return json(response, 400, { error: "Choose incall or outcall." });
+  if (!durationKey) return json(response, 400, { error: "Choose a session length." });
+  if (!body.scheduledFor || Number.isNaN(scheduledFor.getTime()) || scheduledFor.getTime() <= Date.now()) {
+    return json(response, 400, { error: "Choose a valid future date and time." });
+  }
+
+  const provider = readUsers().find((u) => u.id === providerId && u.role === "provider" && !u.deactivatedAt);
+  if (!provider) return json(response, 404, { error: "Provider not found." });
+
+  const existingNote = readClientNotes().find((n) => n.providerId === providerId && n.clientId === client.id);
+  if (existingNote?.blocked) {
+    return json(response, 403, { error: "This provider isn't accepting requests from your account." });
+  }
+
+  const settings = bookingSettingsView(provider.bookingSettings);
+  const durationMinutes = BOOKING_DURATIONS[durationKey];
+  const rateSnapshot = snapshotProviderRate(provider, locationType, durationKey);
+  const durationLabel = durationKey === "oneHour" ? "1 hour" : durationKey === "twoHours" ? "2 hour" : "Overnight";
+
+  const result = await bookingsQueue(() => {
+    const bookings = readBookings();
+    if (hasConflictingBooking(bookings, providerId, scheduledFor.toISOString(), durationMinutes)) {
+      return { conflict: true };
+    }
+
+    // Instant-book is shown as the default when a provider offers both modes
+    // (spec §1.7) — the client can still explicitly ask for request-to-book instead.
+    let useInstantBook;
+    if (settings.acceptsInstantBook && settings.acceptsRequestToBook) {
+      useInstantBook = body.instantBook !== false;
+    } else {
+      useInstantBook = settings.acceptsInstantBook;
+    }
+
+    const depositRequired = settings.depositRequired === true;
+    const initialStatus = useInstantBook
+      ? (depositRequired ? "AWAITING_DEPOSIT" : "CONFIRMED")
+      : "REQUESTED";
+
+    const now = new Date().toISOString();
+    const booking = {
+      id: `bkg_${crypto.randomUUID()}`,
+      providerId,
+      clientId: client.id,
+      status: initialStatus,
+      statusHistory: [{ status: initialStatus, at: now, by: client.id }],
+      service: {
+        name: `${durationLabel} session`,
+        durationMinutes,
+        rateSnapshot,
+        currency: "AUD"
+      },
+      location: { type: locationType, addressShared: false, addressSharedAt: null },
+      deposit: {
+        required: depositRequired,
+        amount: settings.depositAmount,
+        status: depositRequired ? "pending" : "not_required",
+        paidAt: null
+      },
+      scheduledFor: scheduledFor.toISOString(),
+      checkIn: {
+        windowOpensAt: new Date(scheduledFor.getTime() - CHECKIN_WINDOW_BEFORE_MS).toISOString(),
+        providerCheckedInAt: null,
+        clientCheckedInAt: null
+      },
+      cancellation: { cancelledBy: null, reason: null, cancelledAt: null },
+      dispute: { isDisputed: false, raisedBy: null, reason: null, resolvedAt: null },
+      createdAt: now,
+      updatedAt: now
+    };
+
+    bookings.push(booking);
+    writeBookings(bookings);
+    return { booking };
+  });
+
+  if (result.conflict) return json(response, 409, { error: "That time overlaps another booking for this provider." });
+
+  await ensureClientNote(providerId, client.id);
+
+  return json(response, 201, { message: "Booking request sent.", booking: result.booking });
+}
+
+if (pathname === "/api/bookings" && request.method === "GET") {
+  const user = requireSession(request);
+  if (!user) return json(response, 401, { error: "Sign in to view bookings." });
+  if (user.role !== "client" && user.role !== "provider") {
+    return json(response, 403, { error: "Only client or provider accounts have bookings." });
+  }
+
+  const query = new URL(request.url, "http://localhost").searchParams;
+  const statusFilter = query.get("status");
+  const idField = user.role === "provider" ? "providerId" : "clientId";
+  const users = readUsers();
+
+  const bookings = readBookings()
+    .filter((b) => b[idField] === user.id)
+    .filter((b) => !statusFilter || b.status === statusFilter.toUpperCase())
+    .sort((a, b) => new Date(b.scheduledFor) - new Date(a.scheduledFor))
+    .map((booking) => {
+      if (user.role === "provider") {
+        const clientUser = users.find((u) => u.id === booking.clientId);
+        return { ...booking, clientLabel: clientUser?.clientId || null };
+      }
+      const providerUser = users.find((u) => u.id === booking.providerId);
+      return { ...booking, providerLabel: providerUser?.settings?.displayName || providerUser?.workingName || null };
+    });
+
+  return json(response, 200, { bookings });
+}
+
+const bookingStatusMatch = pathname.match(/^\/api\/bookings\/([^/]+)\/status$/);
+if (bookingStatusMatch && request.method === "PATCH") {
+  const user = requireSession(request);
+  if (!user) return json(response, 401, { error: "Sign in to update this booking." });
+
+  const body = await readJsonBody(request);
+  const toStatus = String(body.toStatus || "").toUpperCase();
+  const reason = cleanText(body.reason, 300);
+
+  const result = await bookingsQueue(() => {
+    const bookings = readBookings();
+    const booking = bookings.find((b) => b.id === bookingStatusMatch[1]);
+    if (!booking) return { notFound: true };
+
+    const actorRole = actorRoleForBooking(booking, user);
+    if (!actorRole) return { forbidden: true };
+
+    if (
+      (toStatus === "CANCELLED_BY_CLIENT" && actorRole !== "client") ||
+      (toStatus === "CANCELLED_BY_PROVIDER" && actorRole !== "provider")
+    ) {
+      return { forbidden: true };
+    }
+
+    const check = canTransition(booking.status, toStatus, actorRole);
+    if (!check.ok) return { badTransition: check.reason };
+
+    appendStatusHistory(booking, toStatus, user.id);
+
+    if (toStatus === "CANCELLED_BY_CLIENT" || toStatus === "CANCELLED_BY_PROVIDER") {
+      booking.cancellation = { cancelledBy: actorRole, reason: reason || null, cancelledAt: booking.updatedAt };
+    } else if (toStatus === "CONFIRMED") {
+      // Accepting a request auto-advances to the correct next step — whether a
+      // deposit gate applies is the provider's own setting, not a manual choice.
+      const nextStatus = booking.deposit.required ? "AWAITING_DEPOSIT" : "SCHEDULED";
+      if (canTransition("CONFIRMED", nextStatus, "system").ok) {
+        appendStatusHistory(booking, nextStatus, "system");
+      }
+    }
+
+    writeBookings(bookings);
+    return { booking };
+  });
+
+  if (result.notFound) return json(response, 404, { error: "Booking not found." });
+  if (result.forbidden) return json(response, 403, { error: "You can't make this change to this booking." });
+  if (result.badTransition) return json(response, 400, { error: result.badTransition });
+
+  if (["CANCELLED_BY_CLIENT", "CANCELLED_BY_PROVIDER", "NO_SHOW", "CLOSED"].includes(toStatus)) {
+    await recomputeTrustSignals(result.booking.providerId, result.booking.clientId);
+  }
+
+  return json(response, 200, { message: "Booking updated.", booking: result.booking });
+}
+
+const bookingCheckinMatch = pathname.match(/^\/api\/bookings\/([^/]+)\/checkin$/);
+if (bookingCheckinMatch && request.method === "POST") {
+  const user = requireSession(request);
+  if (!user) return json(response, 401, { error: "Sign in to check in." });
+
+  const result = await bookingsQueue(() => {
+    const bookings = readBookings();
+    const booking = bookings.find((b) => b.id === bookingCheckinMatch[1]);
+    if (!booking) return { notFound: true };
+    const actorRole = actorRoleForBooking(booking, user);
+    if (!actorRole) return { forbidden: true };
+    if (booking.status !== "AWAITING_CHECKIN") return { badTransition: "Check-in isn't open for this booking." };
+    if (Date.now() < new Date(booking.checkIn.windowOpensAt).getTime()) {
+      return { badTransition: "The check-in window hasn't opened yet." };
+    }
+
+    const now = new Date().toISOString();
+    if (actorRole === "provider") booking.checkIn.providerCheckedInAt = now;
+    else booking.checkIn.clientCheckedInAt = now;
+    booking.updatedAt = now;
+
+    writeBookings(bookings);
+    return { booking };
+  });
+
+  if (result.notFound) return json(response, 404, { error: "Booking not found." });
+  if (result.forbidden) return json(response, 403, { error: "You can't check in on this booking." });
+  if (result.badTransition) return json(response, 400, { error: result.badTransition });
+
+  return json(response, 200, { message: "Checked in.", booking: result.booking });
+}
+
+const bookingDisputeMatch = pathname.match(/^\/api\/bookings\/([^/]+)\/dispute$/);
+if (bookingDisputeMatch && request.method === "POST") {
+  const user = requireSession(request);
+  if (!user) return json(response, 401, { error: "Sign in to raise a dispute." });
+
+  const body = await readJsonBody(request);
+  const reason = cleanText(body.reason, 500);
+  if (!reason) return json(response, 400, { error: "Describe the issue you're disputing." });
+
+  const result = await bookingsQueue(() => {
+    const bookings = readBookings();
+    const booking = bookings.find((b) => b.id === bookingDisputeMatch[1]);
+    if (!booking) return { notFound: true };
+    const actorRole = actorRoleForBooking(booking, user);
+    if (!actorRole) return { forbidden: true };
+
+    const check = canTransition(booking.status, "DISPUTED", actorRole);
+    if (!check.ok) return { badTransition: check.reason };
+
+    appendStatusHistory(booking, "DISPUTED", user.id);
+    booking.dispute = { isDisputed: true, raisedBy: actorRole, reason, resolvedAt: null };
+    writeBookings(bookings);
+    return { booking };
+  });
+
+  if (result.notFound) return json(response, 404, { error: "Booking not found." });
+  if (result.forbidden) return json(response, 403, { error: "You can't dispute this booking." });
+  if (result.badTransition) return json(response, 400, { error: result.badTransition });
+
+  return json(response, 200, { message: "Dispute raised. Our team will review it.", booking: result.booking });
+}
+
+const bookingDepositMatch = pathname.match(/^\/api\/bookings\/([^/]+)\/deposit$/);
+if (bookingDepositMatch && request.method === "POST") {
+  const user = requireSession(request);
+  if (!user) return json(response, 401, { error: "Sign in to record a deposit." });
+
+  // Manual confirmation only (e.g. after a bank transfer) — spec §1.9 leaves
+  // payment-processor integration as an explicit open decision, not made here.
+  const result = await bookingsQueue(() => {
+    const bookings = readBookings();
+    const booking = bookings.find((b) => b.id === bookingDepositMatch[1]);
+    if (!booking) return { notFound: true };
+    const actorRole = actorRoleForBooking(booking, user);
+    if (!actorRole) return { forbidden: true };
+    if (booking.status !== "AWAITING_DEPOSIT") return { badTransition: "This booking isn't awaiting a deposit." };
+
+    const check = canTransition("AWAITING_DEPOSIT", "SCHEDULED", "system");
+    if (!check.ok) return { badTransition: check.reason };
+
+    const now = new Date().toISOString();
+    booking.deposit.status = "paid";
+    booking.deposit.paidAt = now;
+    appendStatusHistory(booking, "SCHEDULED", user.id);
+
+    writeBookings(bookings);
+    return { booking };
+  });
+
+  if (result.notFound) return json(response, 404, { error: "Booking not found." });
+  if (result.forbidden) return json(response, 403, { error: "You can't record a deposit on this booking." });
+  if (result.badTransition) return json(response, 400, { error: result.badTransition });
+
+  return json(response, 200, { message: "Deposit recorded.", booking: result.booking });
+}
+
+const bookingIdMatch = pathname.match(/^\/api\/bookings\/([^/]+)$/);
+if (bookingIdMatch && request.method === "GET") {
+  const user = requireSession(request);
+  if (!user) return json(response, 401, { error: "Sign in to view this booking." });
+  const booking = readBookings().find((b) => b.id === bookingIdMatch[1]);
+  if (!booking) return json(response, 404, { error: "Booking not found." });
+  if (booking.providerId !== user.id && booking.clientId !== user.id) {
+    return json(response, 404, { error: "Booking not found." });
+  }
+  return json(response, 200, { booking });
+}
+
+// ---------------------------------------------------------------------------
+// Provider booking settings
+// ---------------------------------------------------------------------------
+
+const bookingSettingsMatch = pathname.match(/^\/api\/providers\/([^/]+)\/booking-settings$/);
+if (bookingSettingsMatch && request.method === "GET") {
+  const provider = readUsers().find((u) => u.id === bookingSettingsMatch[1] && u.role === "provider" && !u.deactivatedAt);
+  if (!provider) return json(response, 404, { error: "Provider not found." });
+  return json(response, 200, { bookingSettings: bookingSettingsView(provider.bookingSettings) });
+}
+
+if (bookingSettingsMatch && request.method === "PATCH") {
+  const authenticatedUser = requireSession(request);
+  if (!authenticatedUser) return json(response, 401, { error: "Sign in to update booking settings." });
+  if (authenticatedUser.id !== bookingSettingsMatch[1] || authenticatedUser.role !== "provider") {
+    return json(response, 403, { error: "Only a provider can update their own booking settings." });
+  }
+
+  const body = await readJsonBody(request);
+  const saved = await usersQueue(() => {
+    const users = readUsers();
+    const user = users.find((item) => item.id === authenticatedUser.id);
+    if (!user) return { notFound: true };
+    user.bookingSettings = cleanBookingSettingsPatch(body, user.bookingSettings);
+    writeUsers(users);
+    return { bookingSettings: user.bookingSettings };
+  });
+
+  if (saved.notFound) return json(response, 404, { error: "Account not found." });
+  return json(response, 200, { message: "Booking settings saved.", bookingSettings: saved.bookingSettings });
+}
+
+// ---------------------------------------------------------------------------
+// Client management (provider-private CRM)
+// ---------------------------------------------------------------------------
+
+const clientsListMatch = pathname.match(/^\/api\/providers\/([^/]+)\/clients$/);
+if (clientsListMatch && request.method === "GET") {
+  const authenticatedUser = requireSession(request);
+  if (!authenticatedUser) return json(response, 401, { error: "Sign in to view your clients." });
+  if (authenticatedUser.id !== clientsListMatch[1] || authenticatedUser.role !== "provider") {
+    return json(response, 403, { error: "Only a provider can view their own client list." });
+  }
+
+  const fullAccess = hasFullCrmAccess(authenticatedUser.id);
+  const notes = readClientNotes().filter((n) => n.providerId === authenticatedUser.id);
+  const users = readUsers();
+
+  const clients = notes.map((note) => ({
+    ...clientNoteView(note, fullAccess),
+    clientLabel: users.find((u) => u.id === note.clientId)?.clientId || null
+  }));
+
+  return json(response, 200, { clients, fullAccess });
+}
+
+const clientBlockMatch = pathname.match(/^\/api\/providers\/([^/]+)\/clients\/([^/]+)\/block$/);
+if (clientBlockMatch && request.method === "POST") {
+  const authenticatedUser = requireSession(request);
+  if (!authenticatedUser) return json(response, 401, { error: "Sign in to block a client." });
+  const [, providerId, clientId] = clientBlockMatch;
+  if (authenticatedUser.id !== providerId || authenticatedUser.role !== "provider") {
+    return json(response, 403, { error: "Only a provider can block their own clients." });
+  }
+
+  const body = await readJsonBody(request);
+  const reason = cleanText(body.reason, 300);
+
+  await clientNotesQueue(() => {
+    const notes = readClientNotes();
+    let note = notes.find((n) => n.providerId === providerId && n.clientId === clientId);
+    const now = new Date().toISOString();
+    if (!note) {
+      note = {
+        id: `note_${crypto.randomUUID()}`,
+        providerId,
+        clientId,
+        tags: [],
+        privateNote: "",
+        trustSignals: emptyTrustSignals(),
+        blocked: true,
+        blockedReason: reason || null,
+        createdAt: now,
+        updatedAt: now
+      };
+      notes.push(note);
+    } else {
+      note.blocked = true;
+      note.blockedReason = reason || null;
+      note.updatedAt = now;
+    }
+    writeClientNotes(notes);
+    return note;
+  });
+
+  // Blocking auto-declines any pending requests from that client — isolated in its
+  // own route (rather than folded into the PATCH below) for audit clarity.
+  const declined = await bookingsQueue(() => {
+    const bookings = readBookings();
+    let count = 0;
+    bookings.forEach((booking) => {
+      if (booking.providerId === providerId && booking.clientId === clientId && booking.status === "REQUESTED") {
+        appendStatusHistory(booking, "DECLINED", providerId);
+        count += 1;
+      }
+    });
+    if (count) writeBookings(bookings);
+    return count;
+  });
+
+  return json(response, 200, { message: "Client blocked.", declinedBookings: declined });
+}
+
+const clientDetailMatch = pathname.match(/^\/api\/providers\/([^/]+)\/clients\/([^/]+)$/);
+if (clientDetailMatch && request.method === "GET") {
+  const authenticatedUser = requireSession(request);
+  if (!authenticatedUser) return json(response, 401, { error: "Sign in to view this client." });
+  const [, providerId, clientId] = clientDetailMatch;
+  if (authenticatedUser.id !== providerId || authenticatedUser.role !== "provider") {
+    return json(response, 403, { error: "Only a provider can view their own client records." });
+  }
+
+  const note = readClientNotes().find((n) => n.providerId === providerId && n.clientId === clientId);
+  if (!note) return json(response, 404, { error: "No record for this client yet." });
+
+  const fullAccess = hasFullCrmAccess(providerId);
+  const bookingHistory = fullAccess
+    ? readBookings()
+        .filter((b) => b.providerId === providerId && b.clientId === clientId)
+        .sort((a, b) => new Date(b.scheduledFor) - new Date(a.scheduledFor))
+    : [];
+
+  return json(response, 200, { client: clientNoteView(note, fullAccess), bookingHistory, fullAccess });
+}
+
+if (clientDetailMatch && request.method === "PATCH") {
+  const authenticatedUser = requireSession(request);
+  if (!authenticatedUser) return json(response, 401, { error: "Sign in to update this client." });
+  const [, providerId, clientId] = clientDetailMatch;
+  if (authenticatedUser.id !== providerId || authenticatedUser.role !== "provider") {
+    return json(response, 403, { error: "Only a provider can update their own client records." });
+  }
+  if (!hasFullCrmAccess(providerId)) {
+    return json(response, 403, { error: "Upgrade to Standard or above to add notes and tags." });
+  }
+
+  const body = await readJsonBody(request);
+  const saved = await clientNotesQueue(() => {
+    const notes = readClientNotes();
+    const note = notes.find((n) => n.providerId === providerId && n.clientId === clientId);
+    if (!note) return { notFound: true };
+
+    if (Object.prototype.hasOwnProperty.call(body, "privateNote")) {
+      note.privateNote = cleanText(body.privateNote, 1000);
+    }
+    if (Object.prototype.hasOwnProperty.call(body, "tags")) {
+      note.tags = Array.isArray(body.tags) ? body.tags.slice(0, 10).map((t) => cleanText(t, 30)).filter(Boolean) : note.tags;
+    }
+    if (Object.prototype.hasOwnProperty.call(body, "blocked")) {
+      note.blocked = body.blocked === true;
+      note.blockedReason = note.blocked ? cleanText(body.blockedReason, 300) : null;
+    }
+    note.updatedAt = new Date().toISOString();
+    writeClientNotes(notes);
+    return { note };
+  });
+
+  if (saved.notFound) return json(response, 404, { error: "No record for this client yet." });
+  return json(response, 200, { message: "Client updated.", client: clientNoteView(saved.note, true) });
+}
+
 // PASTE NEW BLOCK HERE
 if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
   if (process.env.PAYMENT_PROVIDER !== "dev") {
@@ -1232,7 +1938,7 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
       }
 
       // Validate email-account fields before the expensive scrypt call.
-      let email, workingName, gender, accountCategory, businessAbn;
+      let email, workingName, gender, accountCategory, businessAbn, phone;
       let businessPhone = "";
       if (isEmailAccount(role)) {
         email = normaliseEmail(body.email);
@@ -1261,6 +1967,8 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
           if (!workerCategories.has(accountCategory)) {
             return json(response, 400, { error: "Choose a valid provider or creator category." });
           }
+          phone = cleanText(body.phone, 40);
+          if (!phone) return json(response, 400, { error: "Enter your phone number." });
         }
       }
 
@@ -1306,6 +2014,10 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
             };
           } else {
             user.gender = gender;
+            user.phone = phone;
+            if (role === "provider") {
+              user.bookingSettings = defaultBookingSettings();
+            }
           }
         } else {
           user.clientId = makeClientId(users);
@@ -2336,6 +3048,86 @@ const serveStatic = (request, response, pathname) => {
     fs.createReadStream(filePath).pipe(response);
   });
 };
+
+// ---------------------------------------------------------------------------
+// Booking sweep job — keeps time-based transitions out of request handlers,
+// since there's no cron-equivalent DB trigger in this single-process server.
+// Scans for: REQUESTED past the response window -> EXPIRED; SCHEDULED past its
+// check-in window opening -> AWAITING_CHECKIN; AWAITING_CHECKIN past its
+// per-provider grace period with no check-in -> NO_SHOW; COMPLETED -> the
+// DISPUTE_WINDOW; and DISPUTE_WINDOW past its window with no dispute -> CLOSED.
+// ---------------------------------------------------------------------------
+
+const SWEEP_INTERVAL_MS = 5 * 60 * 1000;
+
+const runBookingSweep = async () => {
+  let closedPairs = [];
+  try {
+    closedPairs = await bookingsQueue(() => {
+      const bookings = readBookings();
+      const users = readUsers();
+      const now = Date.now();
+      let changed = false;
+      const pairs = [];
+
+      for (const booking of bookings) {
+        if (booking.status === "REQUESTED") {
+          const requestedAt = new Date(booking.statusHistory[0]?.at || booking.createdAt).getTime();
+          if (now - requestedAt >= BOOKING_RESPONSE_WINDOW_MS && canTransition("REQUESTED", "EXPIRED", "system").ok) {
+            appendStatusHistory(booking, "EXPIRED", "system");
+            changed = true;
+          }
+        } else if (booking.status === "SCHEDULED") {
+          if (now >= new Date(booking.checkIn.windowOpensAt).getTime() && canTransition("SCHEDULED", "AWAITING_CHECKIN", "system").ok) {
+            appendStatusHistory(booking, "AWAITING_CHECKIN", "system");
+            changed = true;
+          }
+        } else if (booking.status === "AWAITING_CHECKIN") {
+          const provider = users.find((u) => u.id === booking.providerId);
+          const graceMinutes = bookingSettingsView(provider?.bookingSettings).noShowGracePeriodMinutes;
+          const deadline = new Date(booking.scheduledFor).getTime() + graceMinutes * 60 * 1000;
+          const neitherCheckedIn = !booking.checkIn.providerCheckedInAt && !booking.checkIn.clientCheckedInAt;
+          if (now >= deadline && neitherCheckedIn && canTransition("AWAITING_CHECKIN", "NO_SHOW", "system").ok) {
+            appendStatusHistory(booking, "NO_SHOW", "system");
+            pairs.push([booking.providerId, booking.clientId]);
+            changed = true;
+          }
+        } else if (booking.status === "COMPLETED") {
+          if (canTransition("COMPLETED", "DISPUTE_WINDOW", "system").ok) {
+            appendStatusHistory(booking, "DISPUTE_WINDOW", "system");
+            changed = true;
+          }
+        } else if (booking.status === "DISPUTE_WINDOW") {
+          const enteredAt = new Date(
+            [...booking.statusHistory].reverse().find((h) => h.status === "DISPUTE_WINDOW")?.at || booking.updatedAt
+          ).getTime();
+          if (now - enteredAt >= DISPUTE_WINDOW_MS && canTransition("DISPUTE_WINDOW", "CLOSED", "system").ok) {
+            appendStatusHistory(booking, "CLOSED", "system");
+            pairs.push([booking.providerId, booking.clientId]);
+            changed = true;
+          }
+        }
+      }
+
+      if (changed) writeBookings(bookings);
+      return pairs;
+    });
+  } catch (error) {
+    console.error("[booking-sweep]", error);
+    return;
+  }
+
+  for (const [providerId, clientId] of closedPairs) {
+    try {
+      await recomputeTrustSignals(providerId, clientId);
+    } catch (error) {
+      console.error("[booking-sweep] trust signal recompute failed", error);
+    }
+  }
+};
+
+setInterval(runBookingSweep, SWEEP_INTERVAL_MS);
+runBookingSweep();
 
 const server = http.createServer((request, response) => {
   const url = new URL(request.url, `http://${request.headers.host || `${host}:${port}`}`);

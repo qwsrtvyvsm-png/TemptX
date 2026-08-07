@@ -436,6 +436,20 @@ if (profileEditForm) {
       serviceCheckboxes.forEach((cb) => {
         cb.checked = savedServices.includes(cb.value);
       });
+
+      const bookingSettings = user.bookingSettings || {};
+      const acceptsRequestToBookEl = document.querySelector("#acceptsRequestToBook");
+      const acceptsInstantBookEl = document.querySelector("#acceptsInstantBook");
+      const depositRequiredEl = document.querySelector("#depositRequired");
+      const depositTypeEl = document.querySelector("#depositType");
+      const depositAmountEl = document.querySelector("#depositAmount");
+      const noShowGracePeriodMinutesEl = document.querySelector("#noShowGracePeriodMinutes");
+      if (acceptsRequestToBookEl) acceptsRequestToBookEl.checked = bookingSettings.acceptsRequestToBook !== false;
+      if (acceptsInstantBookEl) acceptsInstantBookEl.checked = bookingSettings.acceptsInstantBook === true;
+      if (depositRequiredEl) depositRequiredEl.checked = bookingSettings.depositRequired === true;
+      if (depositTypeEl) depositTypeEl.value = bookingSettings.depositType === "percentage" ? "percentage" : "fixed";
+      if (depositAmountEl) depositAmountEl.value = bookingSettings.depositAmount || 0;
+      if (noShowGracePeriodMinutesEl) noShowGracePeriodMinutesEl.value = bookingSettings.noShowGracePeriodMinutes ?? 30;
     } catch {
       setStatus("Unable to load profile data.", "error");
       return;
@@ -535,6 +549,46 @@ if (profileEditForm) {
       setStatus(error.message || "Profile could not be saved.", "error");
     } finally {
       submitButton.disabled = false;
+    }
+  });
+
+  const bookingSettingsForm = document.querySelector("#bookingSettingsForm");
+  const bookingSettingsStatusEl = document.querySelector("#bookingSettingsStatus");
+
+  bookingSettingsForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!currentUser) return;
+    const bookingSubmitButton = bookingSettingsForm.querySelector('button[type="submit"]');
+    bookingSubmitButton.disabled = true;
+    bookingSettingsStatusEl.textContent = "Saving…";
+    bookingSettingsStatusEl.className = "";
+
+    try {
+      const response = await fetch(`/api/providers/${encodeURIComponent(currentUser.id)}/booking-settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          acceptsRequestToBook: document.querySelector("#acceptsRequestToBook").checked,
+          acceptsInstantBook: document.querySelector("#acceptsInstantBook").checked,
+          depositRequired: document.querySelector("#depositRequired").checked,
+          depositType: document.querySelector("#depositType").value,
+          depositAmount: Number(document.querySelector("#depositAmount").value) || 0,
+          noShowGracePeriodMinutes: Number(document.querySelector("#noShowGracePeriodMinutes").value) || 0
+        })
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Booking settings could not be saved.");
+
+      currentUser.bookingSettings = result.bookingSettings;
+      document.querySelector("#acceptsRequestToBook").checked = result.bookingSettings.acceptsRequestToBook;
+      document.querySelector("#acceptsInstantBook").checked = result.bookingSettings.acceptsInstantBook;
+      bookingSettingsStatusEl.textContent = "Booking settings saved.";
+      bookingSettingsStatusEl.className = "is-success";
+    } catch (error) {
+      bookingSettingsStatusEl.textContent = error.message || "Booking settings could not be saved.";
+      bookingSettingsStatusEl.className = "is-error";
+    } finally {
+      bookingSubmitButton.disabled = false;
     }
   });
 

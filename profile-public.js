@@ -2,7 +2,14 @@ const providerId = new URLSearchParams(window.location.search).get("provider");
 const messageCtas = document.querySelectorAll("[data-message-cta]");
 const editProfileLinks = document.querySelectorAll("[data-edit-profile]");
 const verificationCtaLinks = document.querySelectorAll("[data-verification-cta]");
+const viewDashboardLinks = document.querySelectorAll("[data-view-dashboard]");
 const favouriteButtons = document.querySelectorAll("[data-favourite-provider]");
+const bookNowButtons = document.querySelectorAll("[data-book-now]");
+const bookingModal = document.querySelector("#bookingModal");
+const closeBookingModalButton = document.querySelector("#closeBookingModal");
+const bookingRequestForm = document.querySelector("#bookingRequestForm");
+const bookingModalStatus = document.querySelector("#bookingModalStatus");
+const bookingModalProviderName = document.querySelector("#bookingModalProviderName");
 
 const convertXyncKeyToLabel = (key) => key
   .replace(/([a-z])([A-Z])/g, "$1 $2")
@@ -220,6 +227,7 @@ const applyOwnerControls = (viewerRole, viewerId, profileIsProvider) => {
     messageCtas.forEach((btn) => { btn.hidden = true; });
     editProfileLinks.forEach((link) => { link.hidden = false; });
     verificationCtaLinks.forEach((link) => { link.hidden = false; });
+    viewDashboardLinks.forEach((link) => { link.hidden = false; });
     favouriteButtons.forEach((btn) => { btn.hidden = true; });
     return;
   }
@@ -228,6 +236,76 @@ const applyOwnerControls = (viewerRole, viewerId, profileIsProvider) => {
     messageCtas.forEach((btn) => { btn.hidden = true; });
   }
 };
+
+// Clients viewing someone else's provider profile get a "Book now" CTA; hidden
+// for providers/creators, and for a provider viewing their own profile.
+const applyClientBookingControl = (viewerRole, viewerId, profileIsProvider) => {
+  const canBook = viewerRole === "client" && profileIsProvider && viewerId !== providerId;
+  bookNowButtons.forEach((btn) => { btn.hidden = !canBook; });
+};
+
+const openBookingModal = () => {
+  if (!bookingModal) return;
+  bookingModal.hidden = false;
+  if (bookingModalProviderName) {
+    bookingModalProviderName.textContent = document.querySelector("#publicProviderName")?.textContent || "this provider";
+  }
+  if (bookingModalStatus) {
+    bookingModalStatus.textContent = "";
+    bookingModalStatus.className = "auth-status";
+  }
+};
+
+const closeBookingModal = () => {
+  if (bookingModal) bookingModal.hidden = true;
+};
+
+bookNowButtons.forEach((btn) => btn.addEventListener("click", openBookingModal));
+closeBookingModalButton?.addEventListener("click", closeBookingModal);
+
+bookingRequestForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!providerId) return;
+
+  const locationType = document.querySelector("#bookingLocationType")?.value;
+  const durationKey = document.querySelector("#bookingDurationKey")?.value;
+  const scheduledForLocal = document.querySelector("#bookingScheduledFor")?.value;
+  const submitButton = bookingRequestForm.querySelector(".auth-submit");
+
+  if (!scheduledForLocal) {
+    bookingModalStatus.textContent = "Choose a date and time.";
+    bookingModalStatus.className = "auth-status is-error";
+    return;
+  }
+
+  submitButton.disabled = true;
+  bookingModalStatus.textContent = "Sending request…";
+  bookingModalStatus.className = "auth-status";
+
+  try {
+    const response = await fetch("/api/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        providerId,
+        locationType,
+        durationKey,
+        scheduledFor: new Date(scheduledForLocal).toISOString()
+      })
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || "Couldn't send that booking request.");
+
+    bookingModalStatus.textContent = "Booking request sent. Track it from My Bookings.";
+    bookingModalStatus.className = "auth-status is-success";
+    bookingRequestForm.reset();
+  } catch (error) {
+    bookingModalStatus.textContent = error.message;
+    bookingModalStatus.className = "auth-status is-error";
+  } finally {
+    submitButton.disabled = false;
+  }
+});
 
 const loadPublicProvider = async () => {
   try {
@@ -270,6 +348,7 @@ const loadPublicProvider = async () => {
     if (sessionResponse?.ok) {
       const { user } = await sessionResponse.json();
       applyOwnerControls(user.role, user.id, profileIsProvider);
+      applyClientBookingControl(user.role, user.id, profileIsProvider);
       if (user.role === "client" && profileIsProvider && providerId) {
         try {
           const xyncResponse = await fetch(`/api/xync/provider/${encodeURIComponent(providerId)}`);

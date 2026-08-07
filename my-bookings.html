@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Bookings | TEMPTX</title>
+  <meta name="description" content="Track your upcoming and past TEMPTX bookings, and leave a review once a session is complete." />
+  <link rel="stylesheet" href="style.css?v=20260703-07" />
+  <link rel="stylesheet" href="creator-dashboard.css?v=20260629-02" />
+  <link rel="stylesheet" href="provider-dashboard.css?v=20260803-01" />
+</head>
+
+<body class="settings-body cinematic-background">
+  <div id="ageGate" class="age-gate">
+    <div class="age-box">
+      <h1>Tempt<span>X</span></h1>
+      <p>This website is intended for adults aged 18+ only.</p>
+      <p class="small-text">By entering, you confirm you are at least 18 years old.</p>
+      <p class="age-policy-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="safety-hub.html">Safety</a>
+      </p>
+      <div class="age-buttons">
+        <button id="enterSite">I am 18+</button>
+        <button id="leaveSite" class="outline-btn">Leave</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="chat-header settings-header">
+    <a class="brand-mark chat-brand" href="index.html">
+      <span class="brand-word">TEMPT</span>
+      <span class="brand-x">X</span>
+    </a>
+
+    <nav class="chat-top-nav" aria-label="My Bookings navigation">
+      <a href="directory.html">Directory</a>
+      <a href="chat.html">Messages</a>
+      <a href="my-bookings.html" aria-current="page">My Bookings</a>
+      <a href="settings.html">Settings</a>
+    </nav>
+
+    <div class="account-dropdown hover-dropdown">
+      <a href="profile.html" class="header-tool profile-tool" aria-label="Profile">
+        <span></span>
+      </a>
+      <div class="dropdown-menu account-menu">
+        <a href="my-bookings.html">My Bookings</a>
+        <a href="chat.html">Messages</a>
+        <a href="settings.html">Settings</a>
+        <a href="client-login.html" data-login>Client Log In</a>
+        <a href="auth.html" data-logout hidden>Log Out</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="creator-dashboard-shell">
+    <section class="dashboard-hero" aria-labelledby="myBookingsTitle">
+      <div>
+        <p class="eyebrow">My bookings</p>
+        <h1 id="myBookingsTitle">Track your sessions.</h1>
+        <p>See upcoming bookings, past sessions, and leave a review once a booking is closed.</p>
+      </div>
+    </section>
+
+    <div id="bookingsSignedOut" class="dashboard-panel" hidden>
+      <p class="eyebrow">Sign in required</p>
+      <h2>Sign in to see your bookings.</h2>
+      <a class="outline-btn" href="auth.html?mode=login&amp;role=client&amp;next=%2Fmy-bookings.html">Client log in</a>
+    </div>
+
+    <div id="myBookingsContent" hidden>
+      <section class="dashboard-panel">
+        <div class="dashboard-panel-heading">
+          <div>
+            <p class="eyebrow">Upcoming</p>
+            <h2>Sessions ahead</h2>
+          </div>
+        </div>
+        <div id="upcomingBookingsList" class="booking-list"></div>
+        <p class="dashboard-empty-state" id="upcomingEmptyState" hidden>No upcoming bookings yet — browse the directory to request one.</p>
+      </section>
+
+      <section class="dashboard-panel">
+        <div class="dashboard-panel-heading">
+          <div>
+            <p class="eyebrow">Past</p>
+            <h2>Session history</h2>
+          </div>
+        </div>
+        <div id="pastBookingsList" class="booking-list"></div>
+        <p class="dashboard-empty-state" id="pastEmptyState" hidden>Nothing here yet.</p>
+      </section>
+    </div>
+  </main>
+
+  <script src="script.js?v=20260703-08"></script>
+  <script src="my-bookings.js?v=20260803-01"></script>
+</body>
+</html>

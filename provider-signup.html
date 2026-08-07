@@ -6,9 +6,10 @@
   <title>Provider Sign Up | TEMPTX</title>
   <meta name="description" content="Create an individual TEMPTX provider account with working name, email, gender, password, and category." />
   <link rel="stylesheet" href="style.css?v=20260703-07" />
+  <link rel="stylesheet" href="auth.css?v=20260803-01" />
 </head>
 
-<body class="auth-body cinematic-background" data-auth-mode="signup" data-auth-role="provider">
+<body class="auth-body auth-v2 cinematic-background" data-auth-mode="signup" data-auth-role="provider">
   <div class="auth-announcement">Private &middot; Premium &middot; Australian Industry Network</div>
   <main class="auth-page">
     <div class="auth-logo-block">
@@ -49,6 +50,12 @@
           </select>
         </label>
 
+        <label class="auth-field" id="personalPhoneField">
+          <span>Phone number</span>
+          <input id="authPersonalPhone" type="tel" autocomplete="tel" inputmode="tel" placeholder="e.g. 0412 345 678" required />
+        </label>
+        <p class="tx-field-note" id="personalPhoneNote">🔒 Your phone number stays private and will not be shown publicly.</p>
+
         <label class="auth-field" id="clientIdField" hidden>
           <span>TEMPTX client ID</span>
           <input id="authClientId" type="text" autocomplete="username" placeholder="TX-8F2A1C" />
@@ -63,6 +70,14 @@
           <small class="password-requirements" id="passwordRequirements">
             At least 6 characters with a number or special character.
           </small>
+        </div>
+
+        <div class="auth-field" id="confirmPasswordField">
+          <label for="authConfirmPassword">Confirm password</label>
+          <span class="password-control">
+            <input id="authConfirmPassword" type="password" autocomplete="new-password" placeholder="Re-enter your password" required />
+            <button type="button" class="password-toggle" data-password-target="authConfirmPassword">Show</button>
+          </span>
         </div>
 
         <label class="auth-field" id="accountCategoryField">
@@ -156,6 +171,6 @@
     </section>
   </div>
 
-  <script src="auth.js?v=20260713-01"></script>
+  <script src="auth.js?v=20260803-01"></script>
 </body>
 </html>
