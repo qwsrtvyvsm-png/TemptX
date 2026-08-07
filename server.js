@@ -1680,7 +1680,7 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
       }
 
       const body = await readJsonBody(request);
-      const e164 = cleanText(body.e164, 20);
+      const e164 = cleanText(body.e164, 32).replace(/[\s().-]/g, "");
       if (!E164_PATTERN.test(e164)) {
         return json(response, 400, { error: "Enter a valid phone number, e.g. +61412345678." });
       }
