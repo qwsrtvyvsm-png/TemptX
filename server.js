@@ -3,6 +3,7 @@ const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
+const { sendEmail, sendSms } = require("./notifications");
 const { canTransition } = require("./lib/booking-transitions");
 
 const host = process.env.HOST || "0.0.0.0";
@@ -14,6 +15,7 @@ const reportsFile = path.join(dataDirectory, "reports.json");
 const membershipsFile = path.join(dataDirectory, "memberships.json");
 const subscriptionsFile = path.join(dataDirectory, "subscriptions.json");
 const transactionsFile = path.join(dataDirectory, "transactions.json");
+const verificationEventsFile = path.join(dataDirectory, "verificationEvents.json");
 const bookingsFile = path.join(dataDirectory, "bookings.json");
 const clientNotesFile = path.join(dataDirectory, "client-notes.json");
 const serverSecretFile = path.join(dataDirectory, "server-secret");
@@ -22,6 +24,11 @@ const resetTokens = new Map();
 const reportRateLimits = new Map();
 const authRateLimits = new Map();
 const clientIdFailures = new Map();
+// Short-lived, single-use OTP codes for self-service verification — same in-memory,
+// server-restart-clears-them tradeoff already accepted for resetTokens. Keyed by
+// userId (one pending code per user per channel); resending overwrites the entry.
+const emailVerificationCodes = new Map();
+const phoneVerificationCodes = new Map();
 const bookingRateLimits = new Map();
 
 const mimeTypes = {
@@ -53,6 +60,10 @@ if (!fs.existsSync(subscriptionsFile)) {
 
 if (!fs.existsSync(transactionsFile)) {
   fs.writeFileSync(transactionsFile, "[]\n");
+}
+
+if (!fs.existsSync(verificationEventsFile)) {
+  fs.writeFileSync(verificationEventsFile, "[]\n");
 }
 
 if (!fs.existsSync(bookingsFile)) {
@@ -170,6 +181,15 @@ const writeTransactions = (transactions) =>
     `${JSON.stringify(transactions, null, 2)}\n`
   );
 
+const readVerificationEvents = () =>
+  JSON.parse(fs.readFileSync(verificationEventsFile, "utf8"));
+
+const writeVerificationEvents = (events) =>
+  atomicWrite(
+    verificationEventsFile,
+    `${JSON.stringify(events, null, 2)}\n`
+  );
+
 const readBookings = () => JSON.parse(fs.readFileSync(bookingsFile, "utf8"));
 const writeBookings = (bookings) =>
   atomicWrite(bookingsFile, `${JSON.stringify(bookings, null, 2)}\n`);
@@ -180,8 +200,24 @@ const writeClientNotes = (clientNotes) =>
 
 const usersQueue = makeQueue();
 const reportsQueue = makeQueue();
+const verificationEventsQueue = makeQueue();
 const bookingsQueue = makeQueue();
 const clientNotesQueue = makeQueue();
+
+// Append-only audit trail for verification actions. Never records the OTP code or
+// its hash — only status transitions — so it's safe to keep indefinitely.
+const recordVerificationEvent = (request, entry) =>
+  verificationEventsQueue(() => {
+    const events = readVerificationEvents();
+    events.push({
+      id: crypto.randomUUID(),
+      actor: "user",
+      ipHash: hashPrivateValue(getClientIp(request)),
+      createdAt: new Date().toISOString(),
+      ...entry
+    });
+    writeVerificationEvents(events);
+  });
 
 const json = (response, status, payload, headers = {}) => {
   response.writeHead(status, {
@@ -268,6 +304,24 @@ const makeRecoveryCode = () => {
   return `TXK-${raw.slice(0, 6)}-${raw.slice(6, 12)}-${raw.slice(12, 18)}`;
 };
 
+const makeVerificationCode = () => String(crypto.randomInt(100000, 1000000));
+
+const VERIFICATION_CODE_TTL_MS = 10 * 60 * 1000;
+const VERIFICATION_CODE_MAX_ATTEMPTS = 5;
+const E164_PATTERN = /^\+[1-9]\d{6,14}$/;
+
+// Trust Level: count of independently-verified channels. 0-2 reachable in Phase 1
+// (email, phone); 3-4 are reserved for future identity/face-match tiers so the
+// integer space needs no migration when those ship.
+const TRUST_LEVEL_LABELS = {
+  0: "Unverified",
+  1: "Partially Verified",
+  2: "Fully Verified"
+};
+
+const computeTrustLevel = (user) =>
+  ["email", "phone"].filter((channel) => user.verification?.[channel]?.status === "verified").length;
+
 const rateLimit = (store, key, limit, windowMs) => {
   const now = Date.now();
   const attempts = (store.get(key) || []).filter((timestamp) => now - timestamp < windowMs);
@@ -284,7 +338,9 @@ const requireAuthRateLimit = (request, response, action, identifier = "") => {
     login: [10, 15 * 60 * 1000],
     forgot: [5, 60 * 60 * 1000],
     reset: [5, 60 * 60 * 1000],
-    rotateRecovery: [5, 60 * 60 * 1000]
+    rotateRecovery: [5, 60 * 60 * 1000],
+    verifyEmailSend: [3, 60 * 60 * 1000],
+    verifyPhoneSend: [3, 60 * 60 * 1000]
   };
   const [limit, windowMs] = limits[action];
   if (rateLimit(authRateLimits, key, limit, windowMs)) return true;
@@ -971,6 +1027,20 @@ const publicUser = (user) => ({
   accountCategory: user.accountCategory || null,
   applicationStatus: user.applicationStatus || null,
   businessProfile: user.businessProfile || null,
+  verification: {
+    email: {
+      status: user.verification?.email?.status || "unverified",
+      address: user.verification?.email?.address || null,
+      verifiedAt: user.verification?.email?.verifiedAt || null
+    },
+    phone: {
+      status: user.verification?.phone?.status || "unverified",
+      e164: user.verification?.phone?.e164 || null,
+      verifiedAt: user.verification?.phone?.verifiedAt || null
+    }
+  },
+  trustLevel: user.trustLevel || 0,
+  trustLevelLabel: TRUST_LEVEL_LABELS[user.trustLevel || 0] || TRUST_LEVEL_LABELS[0],
   bookingSettings: user.role === "provider" ? bookingSettingsView(user.bookingSettings) : null,
   settings: {
     displayName: user.settings?.displayName || "",
@@ -2128,6 +2198,322 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
       const user = getAuthenticatedUser(request);
       if (!user) return json(response, 401, { error: "Not signed in." });
       return json(response, 200, { user: publicUser(user) });
+    }
+
+    if (pathname === "/api/verification/status" && request.method === "GET") {
+      const user = getAuthenticatedUser(request);
+      if (!user) return json(response, 401, { error: "Not signed in." });
+
+      const now = Date.now();
+      const cooldownRemaining = (lastSentAt) => {
+        if (!lastSentAt) return 0;
+        const elapsed = now - new Date(lastSentAt).getTime();
+        return Math.max(0, Math.ceil((60 * 1000 - elapsed) / 1000));
+      };
+
+      const recentEvents = readVerificationEvents()
+        .filter((event) => event.userId === user.id)
+        .slice(-10)
+        .reverse()
+        .map((event) => ({
+          channel: event.channel,
+          event: event.event,
+          newStatus: event.newStatus,
+          newTrustLevel: event.newTrustLevel,
+          createdAt: event.createdAt
+        }));
+
+      return json(response, 200, {
+        verification: publicUser(user).verification,
+        trustLevel: user.trustLevel || 0,
+        trustLevelLabel: TRUST_LEVEL_LABELS[user.trustLevel || 0] || TRUST_LEVEL_LABELS[0],
+        trustLevelUpdatedAt: user.trustLevelUpdatedAt || null,
+        cooldowns: {
+          email: cooldownRemaining(user.verification?.email?.lastSentAt),
+          phone: cooldownRemaining(user.verification?.phone?.lastSentAt)
+        },
+        recentEvents
+      });
+    }
+
+    if (pathname === "/api/verification/email/send" && request.method === "POST") {
+      const user = getAuthenticatedUser(request);
+      if (!user) return json(response, 401, { error: "Not signed in." });
+      if (!requireAuthRateLimit(request, response, "verifyEmailSend", user.id)) return;
+      if (user.verification?.email?.status === "verified") {
+        return json(response, 400, { error: "Your email is already verified." });
+      }
+
+      const body = await readJsonBody(request);
+      let targetEmail = user.email || "";
+      if (!targetEmail) {
+        targetEmail = normaliseEmail(body.email);
+        if (!validEmail(targetEmail)) {
+          return json(response, 400, { error: "Enter a valid email address." });
+        }
+      }
+
+      const code = makeVerificationCode();
+      emailVerificationCodes.set(user.id, {
+        codeHash: hashPrivateValue(code),
+        target: targetEmail,
+        expiresAt: Date.now() + VERIFICATION_CODE_TTL_MS,
+        attempts: 0
+      });
+
+      const now = new Date().toISOString();
+      await usersQueue(() => {
+        const users = readUsers();
+        const record = users.find((item) => item.id === user.id);
+        if (!record) return;
+        record.verification = record.verification || {};
+        record.verification.email = {
+          ...(record.verification.email || {}),
+          status: "pending",
+          lastSentAt: now
+        };
+        writeUsers(users);
+      });
+
+      await sendEmail({ to: targetEmail, subject: "Your TEMPTX verification code", code });
+      await recordVerificationEvent(request, {
+        userId: user.id,
+        channel: "email",
+        event: "code_sent",
+        previousStatus: user.verification?.email?.status || "unverified",
+        newStatus: "pending"
+      });
+
+      return json(response, 200, {
+        message: "Verification code sent.",
+        cooldownSeconds: 60,
+        expiresInSeconds: VERIFICATION_CODE_TTL_MS / 1000
+      });
+    }
+
+    if (pathname === "/api/verification/email/confirm" && request.method === "POST") {
+      const user = getAuthenticatedUser(request);
+      if (!user) return json(response, 401, { error: "Not signed in." });
+
+      const body = await readJsonBody(request);
+      const code = cleanText(body.code, 10);
+      const pending = emailVerificationCodes.get(user.id);
+
+      if (!pending || pending.expiresAt < Date.now()) {
+        emailVerificationCodes.delete(user.id);
+        return json(response, 400, { error: "That code has expired. Request a new one." });
+      }
+
+      const submittedHash = Buffer.from(hashPrivateValue(code), "hex");
+      const storedHash = Buffer.from(pending.codeHash, "hex");
+      const matches = crypto.timingSafeEqual(submittedHash, storedHash);
+
+      if (!matches) {
+        pending.attempts += 1;
+        if (pending.attempts >= VERIFICATION_CODE_MAX_ATTEMPTS) {
+          emailVerificationCodes.delete(user.id);
+          await recordVerificationEvent(request, {
+            userId: user.id,
+            channel: "email",
+            event: "code_failed",
+            previousStatus: "pending",
+            newStatus: "pending"
+          });
+          return json(response, 400, { error: "Too many incorrect attempts. Request a new code." });
+        }
+        return json(response, 400, { error: "That code doesn't match. Try again." });
+      }
+
+      emailVerificationCodes.delete(user.id);
+      const previousTrustLevel = user.trustLevel || 0;
+      const now = new Date().toISOString();
+
+      const result = await usersQueue(() => {
+        const users = readUsers();
+        const record = users.find((item) => item.id === user.id);
+        if (!record) return null;
+
+        const conflict = users.some(
+          (item) =>
+            item.id !== user.id &&
+            ((item.verification?.email?.status === "verified" && item.verification?.email?.address === pending.target) ||
+              item.email === pending.target)
+        );
+        if (conflict) return "conflict";
+
+        record.verification = record.verification || {};
+        record.verification.email = {
+          status: "verified",
+          address: pending.target,
+          verifiedAt: now,
+          lastSentAt: record.verification.email?.lastSentAt || now
+        };
+        record.trustLevel = computeTrustLevel(record);
+        record.trustLevelUpdatedAt = now;
+        writeUsers(users);
+        return publicUser(record);
+      });
+
+      if (result === "conflict") {
+        return json(response, 409, { error: "That email is already verified on another account." });
+      }
+      if (!result) return json(response, 404, { error: "Account not found." });
+      await recordVerificationEvent(request, {
+        userId: user.id,
+        channel: "email",
+        event: "code_confirmed",
+        previousStatus: "pending",
+        newStatus: "verified"
+      });
+      if (result.trustLevel !== previousTrustLevel) {
+        await recordVerificationEvent(request, {
+          userId: user.id,
+          channel: "email",
+          event: "trust_level_changed",
+          previousTrustLevel,
+          newTrustLevel: result.trustLevel
+        });
+      }
+
+      return json(response, 200, {
+        message: "Email verified.",
+        verification: result.verification,
+        trustLevel: result.trustLevel,
+        trustLevelLabel: result.trustLevelLabel
+      });
+    }
+
+    if (pathname === "/api/verification/phone/send" && request.method === "POST") {
+      const user = getAuthenticatedUser(request);
+      if (!user) return json(response, 401, { error: "Not signed in." });
+      if (!requireAuthRateLimit(request, response, "verifyPhoneSend", user.id)) return;
+      if (user.verification?.phone?.status === "verified") {
+        return json(response, 400, { error: "Your phone number is already verified." });
+      }
+
+      const body = await readJsonBody(request);
+      const e164 = cleanText(body.e164, 32).replace(/[\s().-]/g, "");
+      if (!E164_PATTERN.test(e164)) {
+        return json(response, 400, { error: "Enter a valid phone number, e.g. +61412345678." });
+      }
+
+      const code = makeVerificationCode();
+      phoneVerificationCodes.set(user.id, {
+        codeHash: hashPrivateValue(code),
+        target: e164,
+        expiresAt: Date.now() + VERIFICATION_CODE_TTL_MS,
+        attempts: 0
+      });
+
+      const now = new Date().toISOString();
+      await usersQueue(() => {
+        const users = readUsers();
+        const record = users.find((item) => item.id === user.id);
+        if (!record) return;
+        record.verification = record.verification || {};
+        record.verification.phone = {
+          ...(record.verification.phone || {}),
+          status: "pending",
+          lastSentAt: now
+        };
+        writeUsers(users);
+      });
+
+      await sendSms({ to: e164, code });
+      await recordVerificationEvent(request, {
+        userId: user.id,
+        channel: "phone",
+        event: "code_sent",
+        previousStatus: user.verification?.phone?.status || "unverified",
+        newStatus: "pending"
+      });
+
+      return json(response, 200, {
+        message: "Verification code sent.",
+        cooldownSeconds: 60,
+        expiresInSeconds: VERIFICATION_CODE_TTL_MS / 1000
+      });
+    }
+
+    if (pathname === "/api/verification/phone/confirm" && request.method === "POST") {
+      const user = getAuthenticatedUser(request);
+      if (!user) return json(response, 401, { error: "Not signed in." });
+
+      const body = await readJsonBody(request);
+      const code = cleanText(body.code, 10);
+      const pending = phoneVerificationCodes.get(user.id);
+
+      if (!pending || pending.expiresAt < Date.now()) {
+        phoneVerificationCodes.delete(user.id);
+        return json(response, 400, { error: "That code has expired. Request a new one." });
+      }
+
+      const submittedHash = Buffer.from(hashPrivateValue(code), "hex");
+      const storedHash = Buffer.from(pending.codeHash, "hex");
+      const matches = crypto.timingSafeEqual(submittedHash, storedHash);
+
+      if (!matches) {
+        pending.attempts += 1;
+        if (pending.attempts >= VERIFICATION_CODE_MAX_ATTEMPTS) {
+          phoneVerificationCodes.delete(user.id);
+          await recordVerificationEvent(request, {
+            userId: user.id,
+            channel: "phone",
+            event: "code_failed",
+            previousStatus: "pending",
+            newStatus: "pending"
+          });
+          return json(response, 400, { error: "Too many incorrect attempts. Request a new code." });
+        }
+        return json(response, 400, { error: "That code doesn't match. Try again." });
+      }
+
+      phoneVerificationCodes.delete(user.id);
+      const previousTrustLevel = user.trustLevel || 0;
+      const now = new Date().toISOString();
+
+      const result = await usersQueue(() => {
+        const users = readUsers();
+        const record = users.find((item) => item.id === user.id);
+        if (!record) return null;
+        record.verification = record.verification || {};
+        record.verification.phone = {
+          status: "verified",
+          e164: pending.target,
+          verifiedAt: now,
+          lastSentAt: record.verification.phone?.lastSentAt || now
+        };
+        record.trustLevel = computeTrustLevel(record);
+        record.trustLevelUpdatedAt = now;
+        writeUsers(users);
+        return publicUser(record);
+      });
+
+      if (!result) return json(response, 404, { error: "Account not found." });
+
+      await recordVerificationEvent(request, {
+        userId: user.id,
+        channel: "phone",
+        event: "code_confirmed",
+        previousStatus: "pending",
+        newStatus: "verified"
+      });
+      if (result.trustLevel !== previousTrustLevel) {
+        await recordVerificationEvent(request, {
+          userId: user.id,
+          channel: "phone",
+          event: "trust_level_changed",
+          previousTrustLevel,
+          newTrustLevel: result.trustLevel
+        });
+      }
+
+      return json(response, 200, {
+        message: "Phone verified.",
+        verification: result.verification,
+        trustLevel: result.trustLevel,
+        trustLevelLabel: result.trustLevelLabel
+      });
     }
 
     if (pathname === "/api/xync/directory/providers" && request.method === "GET") {

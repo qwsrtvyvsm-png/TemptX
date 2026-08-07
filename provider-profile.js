@@ -305,11 +305,16 @@ if (profileEditForm) {
       {
         id: "verification",
         title: "Complete verification",
-        description: "Verify your identity to unlock the verified badge on your profile.",
+        description: "Verify your email and phone to build trust with clients.",
         requirement: "required-verified",
-        status: "not-started",
-        actionLabel: "Start verification",
-        actionHref: "verification.html"
+        status:
+          (currentUser?.trustLevel || 0) >= 2
+            ? "complete"
+            : (currentUser?.trustLevel || 0) >= 1
+            ? "in-progress"
+            : "not-started",
+        actionLabel: "Go to Verification Centre",
+        actionHref: "verification-centre.html"
       },
       {
         id: "xync",
