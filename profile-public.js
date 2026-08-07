@@ -126,8 +126,11 @@ const applyProfileDetails = (profile) => {
     location:       "publicProviderLocationFact",
     age:            "factAge",
     height:         "factHeight",
+    bustSize:       "factBustSize",
     orientation:    "factOrientation",
+    nationality:    "factNationality",
     hairColour:     "factHair",
+    hairLength:     "factHairLength",
     eyeColour:      "factEyes",
     bodyType:       "factBodyType",
     placeOfService: "publicProviderAttributeFact",
@@ -182,6 +185,36 @@ const applyProfileDetails = (profile) => {
         });
         toursTable.appendChild(row);
       });
+    }
+  }
+
+  // Social handles — only shown when the provider has added at least one
+  const socialLabels = {
+    instagram: "Instagram",
+    twitter:   "Twitter / X",
+    tiktok:    "TikTok",
+    snapchat:  "Snapchat",
+    onlyfans:  "OnlyFans",
+  };
+  const socialHandles = profile.socialHandles || {};
+  const activeSocials = Object.entries(socialLabels).filter(([key]) => socialHandles[key]);
+  if (activeSocials.length) {
+    const section = document.querySelector("#publicSocialsSection");
+    const list = document.querySelector("#publicSocialsList");
+    if (section && list) {
+      list.replaceChildren(
+        ...activeSocials.map(([key, label]) => {
+          const chip = document.createElement("span");
+          chip.className = "profile-social-chip";
+          const strong = document.createElement("strong");
+          strong.textContent = label;
+          const span = document.createElement("span");
+          span.textContent = socialHandles[key];
+          chip.append(strong, span);
+          return chip;
+        })
+      );
+      section.hidden = false;
     }
   }
 

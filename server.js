@@ -279,7 +279,8 @@ const workerCategories = new Set([
   "couples",
   "swingers",
   "content creators",
-  "companions"
+  "companions",
+  "online companions"
 ]);
 const businessCategories = new Set([
   "brothel",
@@ -505,11 +506,21 @@ const cleanProfile = (body) => {
       location:       cleanText(details.location,       100),
       age:            cleanText(details.age,             20),
       height:         cleanText(details.height,          20),
+      bustSize:       cleanText(details.bustSize,        20),
       orientation:    cleanText(details.orientation,     40),
+      nationality:    cleanText(details.nationality,     40),
       hairColour:     cleanText(details.hairColour,      40),
+      hairLength:     cleanText(details.hairLength,      40),
       eyeColour:      cleanText(details.eyeColour,       40),
       bodyType:       cleanText(details.bodyType,        40),
       placeOfService: cleanText(details.placeOfService, 100),
+    },
+    socialHandles: {
+      instagram: cleanText(body.socialHandles?.instagram, 60),
+      twitter:   cleanText(body.socialHandles?.twitter,   60),
+      tiktok:    cleanText(body.socialHandles?.tiktok,    60),
+      snapchat:  cleanText(body.socialHandles?.snapchat,  60),
+      onlyfans:  cleanText(body.socialHandles?.onlyfans,  60),
     },
     profileNote: cleanText(body.profileNote, 500),
     rates: {

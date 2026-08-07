@@ -191,11 +191,23 @@ if (profileEditForm) {
     detailLocation:     "location",
     detailAge:          "age",
     detailHeight:       "height",
+    detailBustSize:     "bustSize",
     detailOrientation:  "orientation",
+    detailNationality:  "nationality",
     detailHairColour:   "hairColour",
+    detailHairLength:   "hairLength",
     detailEyeColour:    "eyeColour",
     detailBodyType:     "bodyType",
     detailPlaceOfService: "placeOfService",
+  };
+
+  // ── Social handles field map (edit id → storage key) ─────────────────────────
+  const SOCIAL_FIELDS = {
+    socialInstagram: "instagram",
+    socialTwitter:   "twitter",
+    socialTiktok:    "tiktok",
+    socialSnapchat:  "snapchat",
+    socialOnlyfans:  "onlyfans",
   };
 
   // ── Populate form from profile data ──────────────────────────────────────────
@@ -204,6 +216,12 @@ if (profileEditForm) {
     Object.entries(DETAIL_FIELDS).forEach(([elId, key]) => {
       const el = document.querySelector(`#${elId}`);
       if (el && details[key] !== undefined) el.value = details[key];
+    });
+
+    const socialHandles = data.socialHandles || {};
+    Object.entries(SOCIAL_FIELDS).forEach(([elId, key]) => {
+      const el = document.querySelector(`#${elId}`);
+      if (el && socialHandles[key] !== undefined) el.value = socialHandles[key];
     });
 
     if (profileNoteEl) {
@@ -490,8 +508,15 @@ if (profileEditForm) {
         details[key] = el ? el.value.trim() : "";
       });
 
+      const socialHandles = {};
+      Object.entries(SOCIAL_FIELDS).forEach(([elId, key]) => {
+        const el = document.querySelector(`#${elId}`);
+        socialHandles[key] = el ? el.value.trim() : "";
+      });
+
       const profileData = {
         details,
+        socialHandles,
         profileNote: profileNoteEl?.value.trim() || "",
         rates: {
           incall: {

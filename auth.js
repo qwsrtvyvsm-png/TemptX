@@ -81,6 +81,39 @@ if (authForm) {
     return response.json();
   };
 
+  // Category options differ by worker role (content creators live only under
+  // "creator"; escorts/fetisher/swingers live only under "provider"). Only the
+  // shared auth.html page toggles role at runtime, so the rebuild below is
+  // skipped on the dedicated per-role signup pages, which already ship the
+  // correct static options for their locked role.
+  const PROVIDER_CATEGORIES = [
+    ["escorts", "Escorts"],
+    ["fetisher", "Fetisher"],
+    ["couples", "Couples"],
+    ["swingers", "Swingers"],
+    ["companions", "Companions"],
+  ];
+  const CREATOR_CATEGORIES = [
+    ["couples", "Couples"],
+    ["content creators", "Content creators"],
+    ["online companions", "Online companions"],
+  ];
+
+  const applyCategoryOptions = (currentRole) => {
+    if (lockedRole || !authAccountCategory) return;
+    if (currentRole !== "provider" && currentRole !== "creator") return;
+
+    const categories = currentRole === "provider" ? PROVIDER_CATEGORIES : CREATOR_CATEGORIES;
+    const previousValue = authAccountCategory.value;
+    authAccountCategory.innerHTML = [
+      '<option value="">Choose a category</option>',
+      ...categories.map(([value, label]) => `<option value="${value}">${label}</option>`),
+    ].join("");
+    if (categories.some(([value]) => value === previousValue)) {
+      authAccountCategory.value = previousValue;
+    }
+  };
+
   const updateView = () => {
     document.querySelectorAll("button[data-auth-mode]").forEach((button) => {
       button.classList.toggle("is-active", button.dataset.authMode === mode);
@@ -107,6 +140,7 @@ if (authForm) {
     if (personalPhoneField) personalPhoneField.hidden = !isWorkerSignup;
     if (personalPhoneNote) personalPhoneNote.hidden = !isWorkerSignup;
     accountCategoryField.hidden = !(isWorkerSignup || isBusinessSignup);
+    applyCategoryOptions(role);
     if (businessAbnField) businessAbnField.hidden = !isBusinessSignup;
     if (phoneField) phoneField.hidden = !isBusinessSignup;
     if (confirmPasswordField) confirmPasswordField.hidden = !isSignup;
