@@ -210,12 +210,30 @@ if (profileEditForm) {
     socialOnlyfans:  "onlyfans",
   };
 
+  // Providers saved before the Age field became a range select have a plain
+  // number stored (e.g. "25") — map it onto the closest range bucket so the
+  // select doesn't come up blank and silently wipe that value on next save.
+  const AGE_RANGES = ["18-21", "22-24", "25-29", "30-34", "35-39", "40-49", "50+"];
+  const ageToRangeValue = (value) => {
+    if (AGE_RANGES.includes(value)) return value;
+    const numeric = parseInt(value, 10);
+    if (Number.isNaN(numeric)) return value;
+    if (numeric <= 21) return "18-21";
+    if (numeric <= 24) return "22-24";
+    if (numeric <= 29) return "25-29";
+    if (numeric <= 34) return "30-34";
+    if (numeric <= 39) return "35-39";
+    if (numeric <= 49) return "40-49";
+    return "50+";
+  };
+
   // ── Populate form from profile data ──────────────────────────────────────────
   const populateForm = (data) => {
     const details = data.details || {};
     Object.entries(DETAIL_FIELDS).forEach(([elId, key]) => {
       const el = document.querySelector(`#${elId}`);
-      if (el && details[key] !== undefined) el.value = details[key];
+      if (!el || details[key] === undefined) return;
+      el.value = elId === "detailAge" ? ageToRangeValue(details[key]) : details[key];
     });
 
     const socialHandles = data.socialHandles || {};

@@ -206,6 +206,7 @@ const applyProfileDetails = (profile) => {
         ...activeSocials.map(([key, label]) => {
           const chip = document.createElement("span");
           chip.className = "profile-social-chip";
+          chip.setAttribute("role", "listitem");
           const strong = document.createElement("strong");
           strong.textContent = label;
           const span = document.createElement("span");

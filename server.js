@@ -273,13 +273,16 @@ const normaliseClientId = (clientId) => String(clientId || "").trim().toUpperCas
 const validEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const accountRole = (role) => (["client", "creator", "provider", "business"].includes(role) ? role : null);
 const isEmailAccount = (role) => role === "provider" || role === "creator" || role === "business";
-const workerCategories = new Set([
+const providerCategories = new Set([
   "escorts",
   "fetisher",
   "couples",
   "swingers",
+  "companions"
+]);
+const creatorCategories = new Set([
+  "couples",
   "content creators",
-  "companions",
   "online companions"
 ]);
 const businessCategories = new Set([
@@ -1975,8 +1978,9 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
         } else {
           gender = cleanText(body.gender, 60);
           if (!gender) return json(response, 400, { error: "Enter your gender." });
-          if (!workerCategories.has(accountCategory)) {
-            return json(response, 400, { error: "Choose a valid provider or creator category." });
+          const validCategories = role === "provider" ? providerCategories : creatorCategories;
+          if (!validCategories.has(accountCategory)) {
+            return json(response, 400, { error: `Choose a valid ${role} category.` });
           }
           phone = cleanText(body.phone, 40);
           if (!phone) return json(response, 400, { error: "Enter your phone number." });
