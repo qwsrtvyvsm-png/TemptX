@@ -5,7 +5,8 @@
       "name": "temptx",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["start"],
-      "port": 5510
+      "port": 5510,
+      "autoPort": true
     }
   ]
 }
