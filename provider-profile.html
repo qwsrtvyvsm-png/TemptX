@@ -93,12 +93,26 @@
 
           <label class="settings-text-field">
             <span>Age</span>
-            <input type="number" id="detailAge" placeholder="25" min="18" max="99" />
+            <select id="detailAge">
+              <option value="">Select your age</option>
+              <option value="18-21">18-21</option>
+              <option value="22-24">22-24</option>
+              <option value="25-29">25-29</option>
+              <option value="30-34">30-34</option>
+              <option value="35-39">35-39</option>
+              <option value="40-49">40-49</option>
+              <option value="50+">50+</option>
+            </select>
           </label>
 
           <label class="settings-text-field">
             <span>Height</span>
             <input type="text" id="detailHeight" placeholder="168 cm" maxlength="20" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>Bust size</span>
+            <input type="text" id="detailBustSize" placeholder="34C" maxlength="20" />
           </label>
 
           <label class="settings-text-field">
@@ -115,16 +129,49 @@
           </label>
 
           <label class="settings-text-field">
+            <span>Nationality</span>
+            <select id="detailNationality">
+              <option value="">Select your nationality</option>
+              <option value="Aussie">Aussie</option>
+              <option value="Caucasian">Caucasian</option>
+              <option value="Asian">Asian</option>
+              <option value="Japanese">Japanese</option>
+              <option value="European">European</option>
+              <option value="African">African</option>
+              <option value="Arabian">Arabian</option>
+              <option value="Hispanic">Hispanic</option>
+              <option value="Latina">Latina</option>
+              <option value="Mixed">Mixed</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+
+          <label class="settings-text-field">
             <span>Hair colour</span>
             <select id="detailHairColour">
               <option value="">Select hair colour</option>
               <option value="Blonde">Blonde</option>
               <option value="Brunette">Brunette</option>
-              <option value="Black">Black</option>
               <option value="Red">Red</option>
               <option value="Auburn">Auburn</option>
-              <option value="Silver">Silver</option>
+              <option value="Brown">Brown</option>
+              <option value="Black">Black</option>
+              <option value="Dark">Dark</option>
+              <option value="Bright colored">Bright colored</option>
+              <option value="White">White</option>
               <option value="Other">Other</option>
+            </select>
+          </label>
+
+          <label class="settings-text-field">
+            <span>Hair length</span>
+            <select id="detailHairLength">
+              <option value="">Select hair length</option>
+              <option value="Shaved/Bald">Shaved/Bald</option>
+              <option value="Short">Short</option>
+              <option value="Medium">Medium</option>
+              <option value="Long">Long</option>
+              <option value="Very long">Very long</option>
             </select>
           </label>
 
@@ -165,6 +212,44 @@
               <option value="Incall &amp; Outcall">Incall &amp; Outcall</option>
               <option value="On request">On request</option>
             </select>
+          </label>
+        </div>
+      </section>
+
+      <!-- 1b. Social Handles -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Social</p>
+            <h2>Social handles</h2>
+          </div>
+          <p>Share your social accounts so clients can find you elsewhere.</p>
+        </div>
+
+        <div class="profile-details-grid">
+          <label class="settings-text-field">
+            <span>Instagram</span>
+            <input type="text" id="socialInstagram" placeholder="@yourname" maxlength="60" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>Twitter / X</span>
+            <input type="text" id="socialTwitter" placeholder="@yourname" maxlength="60" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>TikTok</span>
+            <input type="text" id="socialTiktok" placeholder="@yourname" maxlength="60" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>Snapchat</span>
+            <input type="text" id="socialSnapchat" placeholder="@yourname" maxlength="60" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>OnlyFans</span>
+            <input type="text" id="socialOnlyfans" placeholder="@yourname" maxlength="60" />
           </label>
         </div>
       </section>
@@ -457,6 +542,6 @@
   </main>
 
   <script src="script.js?v=20260703-08"></script>
-  <script src="provider-profile.js?v=20260702-01"></script>
+  <script src="provider-profile.js?v=20260808-01"></script>
 </body>
 </html>

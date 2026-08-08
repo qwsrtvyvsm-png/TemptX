@@ -11,7 +11,7 @@
     content="A premium TEMPTX advertiser profile template with gallery, profile details, availability, and private messaging."
   />
 
-  <link rel="stylesheet" href="style.css?v=20260703-07" />
+  <link rel="stylesheet" href="style.css?v=20260808-01" />
 </head>
 
 <body class="cinematic-background">
@@ -99,11 +99,6 @@
     <section id="details" class="profile-details">
       <div class="profile-copy">
         <p class="eyebrow">Profile details</p>
-        <h2>Essential information.</h2>
-        <p>
-          Replace these placeholders with each advertiser's approved details before publishing.
-          Keep fields clear, accurate, and easy for clients to scan.
-        </p>
       </div>
 
       <aside class="profile-facts profile-facts-wide" aria-label="Escort profile facts">
@@ -121,12 +116,24 @@
             <dd id="factHeight">168 cm</dd>
           </div>
           <div>
+            <dt>Bust size</dt>
+            <dd id="factBustSize">34C</dd>
+          </div>
+          <div>
             <dt>Orientation</dt>
             <dd id="factOrientation">Bisexual</dd>
           </div>
           <div>
+            <dt>Nationality</dt>
+            <dd id="factNationality">European</dd>
+          </div>
+          <div>
             <dt>Hair</dt>
             <dd id="factHair">Brunette</dd>
+          </div>
+          <div>
+            <dt>Hair length</dt>
+            <dd id="factHairLength">Medium</dd>
           </div>
           <div>
             <dt>Eyes</dt>
@@ -147,7 +154,6 @@
     <section id="my-gallery" class="profile-section">
       <div class="section-title-row">
         <p class="eyebrow">My Gallery</p>
-        <h2>Private visuals.</h2>
       </div>
 
       <div class="profile-gallery" aria-label="Advertiser gallery placeholders">
@@ -161,15 +167,6 @@
     <section class="profile-details">
       <div class="profile-copy">
         <p class="eyebrow">About me</p>
-        <h2>A refined introduction.</h2>
-        <p>
-          Use this section for a warm, professional bio that introduces the advertiser's
-          personality, style, boundaries, booking preferences, and what makes the experience unique.
-        </p>
-        <p>
-          Keep the tone polished and respectful. This space should help clients understand
-          whether the profile is the right fit before they start a conversation.
-        </p>
       </div>
 
       <div class="profile-note-card">
@@ -202,17 +199,21 @@
     <section class="profile-section provider-xync-section" id="providerXyncSection" hidden>
       <div class="section-title-row">
         <p class="eyebrow">Provider Xync</p>
-        <h2>Compatibility snapshot.</h2>
-        <p class="provider-xync-intro">A closer look at how this provider prefers to connect.</p>
         <a class="outline-btn" href="xync.html">Manage Provider Xync</a>
       </div>
       <div class="provider-xync-results" id="providerXyncResults" aria-live="polite"></div>
     </section>
 
+    <section class="profile-section" id="publicSocialsSection" hidden>
+      <div class="section-title-row">
+        <p class="eyebrow">My socials</p>
+      </div>
+      <div class="profile-socials" id="publicSocialsList" role="list" aria-label="Social media handles"></div>
+    </section>
+
     <section class="profile-table-section" id="publicToursSection">
       <div class="section-title-row">
         <p class="eyebrow">My tours</p>
-        <h2>Tour schedule.</h2>
       </div>
 
       <div class="profile-table" id="publicToursTable">
@@ -237,7 +238,6 @@
     <section class="profile-table-section" id="publicAvailabilitySection">
       <div class="section-title-row">
         <p class="eyebrow">My availability</p>
-        <h2>Booking windows.</h2>
       </div>
 
       <div class="profile-table" id="publicAvailabilityTable">
@@ -262,7 +262,6 @@
     <section class="profile-table-section">
       <div class="section-title-row">
         <p class="eyebrow">My rates</p>
-        <h2>Incall / outcall rates.</h2>
       </div>
 
       <div class="rates-grid">
@@ -309,11 +308,6 @@
     <section id="enquire" class="profile-enquiry">
       <div>
         <p class="eyebrow">Private messaging</p>
-        <h2>Ready to connect?</h2>
-        <p>
-          Keep contact details private and start a secure conversation through TEMPTX.
-          You can return to the chat from your messages hub at any time.
-        </p>
       </div>
 
       <div class="profile-actions">
@@ -399,7 +393,7 @@
   </div>
 
   <script src="script.js?v=20260703-08"></script>
-  <script src="profile-public.js?v=20260702-01"></script>
+  <script src="profile-public.js?v=20260808-01"></script>
 
   <script>
     // ─── Featured/demo profile fallback ───

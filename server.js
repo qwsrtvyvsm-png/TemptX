@@ -273,13 +273,17 @@ const normaliseClientId = (clientId) => String(clientId || "").trim().toUpperCas
 const validEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const accountRole = (role) => (["client", "creator", "provider", "business"].includes(role) ? role : null);
 const isEmailAccount = (role) => role === "provider" || role === "creator" || role === "business";
-const workerCategories = new Set([
+const providerCategories = new Set([
   "escorts",
   "fetisher",
   "couples",
   "swingers",
-  "content creators",
   "companions"
+]);
+const creatorCategories = new Set([
+  "couples",
+  "content creators",
+  "online companions"
 ]);
 const businessCategories = new Set([
   "brothel",
@@ -505,11 +509,21 @@ const cleanProfile = (body) => {
       location:       cleanText(details.location,       100),
       age:            cleanText(details.age,             20),
       height:         cleanText(details.height,          20),
+      bustSize:       cleanText(details.bustSize,        20),
       orientation:    cleanText(details.orientation,     40),
+      nationality:    cleanText(details.nationality,     40),
       hairColour:     cleanText(details.hairColour,      40),
+      hairLength:     cleanText(details.hairLength,      40),
       eyeColour:      cleanText(details.eyeColour,       40),
       bodyType:       cleanText(details.bodyType,        40),
       placeOfService: cleanText(details.placeOfService, 100),
+    },
+    socialHandles: {
+      instagram: cleanText(body.socialHandles?.instagram, 60),
+      twitter:   cleanText(body.socialHandles?.twitter,   60),
+      tiktok:    cleanText(body.socialHandles?.tiktok,    60),
+      snapchat:  cleanText(body.socialHandles?.snapchat,  60),
+      onlyfans:  cleanText(body.socialHandles?.onlyfans,  60),
     },
     profileNote: cleanText(body.profileNote, 500),
     rates: {
@@ -1964,8 +1978,9 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
         } else {
           gender = cleanText(body.gender, 60);
           if (!gender) return json(response, 400, { error: "Enter your gender." });
-          if (!workerCategories.has(accountCategory)) {
-            return json(response, 400, { error: "Choose a valid provider or creator category." });
+          const validCategories = role === "provider" ? providerCategories : creatorCategories;
+          if (!validCategories.has(accountCategory)) {
+            return json(response, 400, { error: `Choose a valid ${role} category.` });
           }
           phone = cleanText(body.phone, 40);
           if (!phone) return json(response, 400, { error: "Enter your phone number." });
