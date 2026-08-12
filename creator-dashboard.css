@@ -424,15 +424,11 @@
 
 .dashboard-button-primary,
 .dashboard-full-button {
-  color: #130b05;
+  color: var(--cream);
   border: 1px solid rgba(var(--champagne-rgb), 0.8);
-  background:
-    linear-gradient(180deg, #ffe7ae 0%, #d9a64a 54%, #9b641d 100%),
-    var(--gold);
-  box-shadow:
-    0 16px 44px rgba(var(--gold-rgb), 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
-  text-shadow: 0 1px 0 rgba(255, 232, 184, 0.42);
+  background: var(--gold);
+  box-shadow: 0 16px 44px rgba(var(--gold-rgb), 0.2);
+  text-shadow: none;
 }
 
 .dashboard-button-ghost {

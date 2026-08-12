@@ -332,27 +332,37 @@ const navCurrent = (key) => {
 
 const nav = `
   <header class="site-header">
-    <div class="announcement">Safety First &nbsp;·&nbsp; Verified Profiles &nbsp;·&nbsp; Community Focused &nbsp;·&nbsp; Australian Owned</div>
+    <div class="announcement">
+      <div class="tx-banner-track">
+        <span class="tx-banner-set">A Place to Connect <span class="tx-dot">&middot;</span> A Space to Create <span class="tx-dot">&middot;</span> A Community to Belong <span class="tx-dot">&middot;</span> A Future to Build <span class="tx-dot">&middot;</span></span>
+        <span class="tx-banner-set">A Place to Connect <span class="tx-dot">&middot;</span> A Space to Create <span class="tx-dot">&middot;</span> A Community to Belong <span class="tx-dot">&middot;</span> A Future to Build <span class="tx-dot">&middot;</span></span>
+      </div>
+    </div>
     <div class="site-header-bar">
-      <a class="brand-mark" href="index.html">
-        <span class="brand-word">TEMPT</span>
-        <span class="brand-x">X</span>
-      </a>
-      <nav class="store-nav home-nav" aria-label="Main navigation">
-        <a href="index.html">Home</a>
-        <a href="directory.html">Directory</a>
-        <a href="safety-hub.html"${supportPages.includes(pageKey) ? ' class="nav-current" aria-current="page"' : ""}>Support</a>
-        <a href="community-support.html"${communityPages.includes(pageKey) ? ' class="nav-current" aria-current="page"' : ""}>Community</a>
-        <a href="join.html"${joinPages.includes(pageKey) ? ' class="nav-current" aria-current="page"' : ""}>Join Us</a>
-        <a href="chat.html" data-authenticated hidden>Messages</a>
-      </nav>
-      <div class="account-dropdown hover-dropdown">
-        <a href="profile.html" class="header-tool profile-tool" aria-label="Profile"><span></span></a>
-        <div class="dropdown-menu account-menu">
-          <a href="provider-login.html" data-login>Provider Log In</a>
-          <a href="client-login.html" data-login>Client Log In</a>
-          <a href="auth.html" data-logout hidden>Log Out</a>
+      <div class="tx-nav-left">
+        <a class="brand-mark" href="index.html">
+          <span class="brand-word">TEMPT</span>
+          <span class="brand-x">X</span>
+        </a>
+        <nav class="store-nav home-nav" aria-label="Main navigation">
+          <a href="index.html">Home</a>
+          <a href="directory.html">Directory</a>
+          <a href="district.html">District</a>
+          <a href="safety-hub.html"${supportPages.includes(pageKey) ? ' class="nav-current" aria-current="page"' : ""}>Support</a>
+          <a href="community-support.html"${communityPages.includes(pageKey) ? ' class="nav-current" aria-current="page"' : ""}>Community</a>
+          <a href="chat.html" data-authenticated hidden>Messages</a>
+        </nav>
+      </div>
+      <div class="site-header-actions">
+        <div class="account-dropdown hover-dropdown">
+          <a href="profile.html" class="header-tool profile-tool" aria-label="Profile"><span></span></a>
+          <div class="dropdown-menu account-menu">
+            <a href="provider-login.html" data-login>Provider Log In</a>
+            <a href="client-login.html" data-login>Client Log In</a>
+            <a href="auth.html" data-logout hidden>Log Out</a>
+          </div>
         </div>
+        <a href="join.html" class="tx-join-btn"${joinPages.includes(pageKey) ? ' aria-current="page"' : ""}>Join</a>
       </div>
     </div>
   </header>`;
