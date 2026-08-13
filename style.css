@@ -2866,12 +2866,12 @@ h2 {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 0.45px rgba(255, 226, 146, 0.42);
+  -webkit-text-stroke: 0.45px rgba(232, 136, 140, 0.42);
   filter: saturate(0.96) contrast(1.18);
   text-shadow:
-    0 1px 0 rgba(255, 244, 190, 0.38),
-    0 2px 0 rgba(86, 52, 14, 0.52),
-    0 0 10px rgba(201, 151, 48, 0.2),
+    0 1px 0 rgba(248, 228, 228, 0.38),
+    0 2px 0 rgba(74, 5, 9, 0.52),
+    0 0 10px rgba(209, 52, 58, 0.2),
     0 12px 26px rgba(0, 0, 0, 0.58);
 }
 
@@ -2895,9 +2895,9 @@ h2 {
   -webkit-text-fill-color: transparent;
   filter: saturate(0.94) contrast(1.14);
   text-shadow:
-    0 1px 0 rgba(255, 244, 190, 0.32),
-    0 2px 0 rgba(86, 52, 14, 0.46),
-    0 0 9px rgba(201, 151, 48, 0.18),
+    0 1px 0 rgba(248, 228, 228, 0.32),
+    0 2px 0 rgba(74, 5, 9, 0.46),
+    0 0 9px rgba(209, 52, 58, 0.18),
     0 8px 20px rgba(0, 0, 0, 0.46);
 }
 
@@ -8547,7 +8547,7 @@ body.cinematic-background::before {
     radial-gradient(ellipse at 50% 100%, rgba(var(--champagne-rgb), 0.18), transparent 28rem),
     radial-gradient(ellipse at 8% 72%, rgba(var(--gold-rgb), 0.12), transparent 18rem),
     radial-gradient(ellipse at 92% 74%, rgba(var(--gold-rgb), 0.1), transparent 18rem),
-    linear-gradient(180deg, transparent 0 58%, rgba(255, 207, 122, 0.08) 72%, rgba(0, 0, 0, 0.44) 100%);
+    linear-gradient(180deg, transparent 0 58%, rgba(var(--gold-rgb), 0.08) 72%, rgba(0, 0, 0, 0.44) 100%);
   mix-blend-mode: screen;
   animation: veilFlow 86s ease-in-out infinite;
 }
