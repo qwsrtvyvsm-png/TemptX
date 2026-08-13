@@ -2855,11 +2855,11 @@ h2 {
     linear-gradient(
       115deg,
       var(--bullion-dark) 0%,
-      #8a5a1d 13%,
+      var(--antique-gold) 13%,
       var(--bullion-rich) 29%,
       var(--bullion-white) 43%,
       var(--bullion-mid) 55%,
-      #7a4b16 72%,
+      var(--antique-gold) 72%,
       var(--bullion-light) 86%,
       var(--bullion-dark) 100%
     );
@@ -2887,7 +2887,7 @@ h2 {
       var(--bullion-mid) 24%,
       var(--bullion-white) 42%,
       var(--bullion-rich) 58%,
-      #7a4b16 78%,
+      var(--antique-gold) 78%,
       var(--bullion-light) 100%
     );
   -webkit-background-clip: text;
