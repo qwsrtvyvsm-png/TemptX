@@ -13760,7 +13760,7 @@ select {
 .tx-banner-track {
   display: flex;
   width: max-content;
-  animation: txBannerScroll 100s linear infinite;
+  animation: txBannerScroll 55s linear infinite;
 }
 
 @keyframes txBannerScroll {
@@ -13776,6 +13776,7 @@ select {
   display: flex;
   align-items: center;
   gap: 14px;
+  min-width: 100vw;
   white-space: nowrap;
   font-family: var(--font-sans);
   font-size: 0.68rem;
@@ -13898,19 +13899,34 @@ select {
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--cream);
   text-decoration: none;
   border: 2px solid var(--gold);
-  padding: 9px 20px;
+  padding: 11px 24px;
   border-radius: 0;
-  background: transparent;
-  transition: color 180ms ease, background 180ms ease;
+  background: var(--gold);
+  transition: background 180ms ease, border-color 180ms ease;
 }
 
 .tx-join-btn:hover,
 .tx-join-btn:focus-visible {
-  color: var(--black);
-  background: var(--gold);
+  color: var(--cream);
+  background: var(--bullion-rich);
+  border-color: var(--bullion-rich);
+}
+
+.tx-signin-link {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--cream);
+  text-decoration: none;
+}
+
+.tx-signin-link:hover,
+.tx-signin-link:focus-visible {
+  color: var(--muted);
 }
 
 /* ─── Footer wordmark now inherits Anton via var(--font-display) already ─── */
