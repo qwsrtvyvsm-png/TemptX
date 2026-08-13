@@ -2437,7 +2437,7 @@ body {
 .cinematic-background::before {
   z-index: -2;
   background:
-    linear-gradient(90deg, rgba(148, 86, 34, 0.26), transparent 12%, transparent 88%, rgba(148, 86, 34, 0.24)),
+    linear-gradient(90deg, rgba(var(--gold-rgb), 0.26), transparent 12%, transparent 88%, rgba(var(--gold-rgb), 0.24)),
     linear-gradient(180deg, rgba(18, 11, 7, 0.08), rgba(18, 11, 7, 0.38)),
     radial-gradient(circle at 16% 10%, rgba(var(--gold-rgb), 0.12), transparent 22rem),
     radial-gradient(circle at 84% 22%, rgba(var(--cream-rgb), 0.06), transparent 26rem),
@@ -8543,7 +8543,7 @@ body.cinematic-background::before {
   z-index: -2;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(148, 86, 34, 0.38), transparent 8%, transparent 92%, rgba(148, 86, 34, 0.36)),
+    linear-gradient(90deg, rgba(var(--gold-rgb), 0.38), transparent 8%, transparent 92%, rgba(var(--gold-rgb), 0.36)),
     radial-gradient(ellipse at 50% 100%, rgba(var(--champagne-rgb), 0.18), transparent 28rem),
     radial-gradient(ellipse at 8% 72%, rgba(var(--gold-rgb), 0.12), transparent 18rem),
     radial-gradient(ellipse at 92% 74%, rgba(var(--gold-rgb), 0.1), transparent 18rem),
@@ -13760,7 +13760,7 @@ select {
 .tx-banner-track {
   display: flex;
   width: max-content;
-  animation: txBannerScroll 34s linear infinite;
+  animation: txBannerScroll 100s linear infinite;
 }
 
 @keyframes txBannerScroll {
