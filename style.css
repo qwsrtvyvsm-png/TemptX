@@ -2850,55 +2850,14 @@ h2 {
 
 .brand-x {
   margin-left: -0.025em;
-  color: var(--bullion-rich);
-  background:
-    linear-gradient(
-      115deg,
-      var(--bullion-dark) 0%,
-      var(--antique-gold) 13%,
-      var(--bullion-rich) 29%,
-      var(--bullion-white) 43%,
-      var(--bullion-mid) 55%,
-      var(--antique-gold) 72%,
-      var(--bullion-light) 86%,
-      var(--bullion-dark) 100%
-    );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 0.45px rgba(232, 136, 140, 0.42);
-  filter: saturate(0.96) contrast(1.18);
-  text-shadow:
-    0 1px 0 rgba(248, 228, 228, 0.38),
-    0 2px 0 rgba(74, 5, 9, 0.52),
-    0 0 10px rgba(209, 52, 58, 0.2),
-    0 12px 26px rgba(0, 0, 0, 0.58);
+  color: var(--gold);
 }
 
 .age-box h1 span,
 .auth-logo strong,
 .footer .logo span,
 .directory-footer-logo span {
-  color: var(--bullion-rich);
-  background:
-    linear-gradient(
-      115deg,
-      var(--bullion-dark) 0%,
-      var(--bullion-mid) 24%,
-      var(--bullion-white) 42%,
-      var(--bullion-rich) 58%,
-      var(--antique-gold) 78%,
-      var(--bullion-light) 100%
-    );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: saturate(0.94) contrast(1.14);
-  text-shadow:
-    0 1px 0 rgba(248, 228, 228, 0.32),
-    0 2px 0 rgba(74, 5, 9, 0.46),
-    0 0 9px rgba(209, 52, 58, 0.18),
-    0 8px 20px rgba(0, 0, 0, 0.46);
+  color: var(--gold);
 }
 
 .auth-logo span {
@@ -13757,6 +13716,10 @@ select {
   padding: 10px 0;
 }
 
+.temptx-home .announcement {
+  border-bottom: 2px solid var(--cream);
+}
+
 .tx-banner-track {
   display: flex;
   width: max-content;
@@ -13920,6 +13883,7 @@ select {
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.03em;
+  text-transform: uppercase;
   color: var(--cream);
   text-decoration: none;
 }
