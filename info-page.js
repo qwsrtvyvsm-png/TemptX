@@ -88,9 +88,9 @@ const pageContent = {
       ["Respect and consent", "Consent is specific, informed, mutual, and reversible. Boundaries must be respected before, during, and after any booking or conversation."],
       ["Platform rules", "TEMPTX is strictly 18+. Underage activity, exploitation, coercion, impersonation, scams, harassment, and privacy abuse are not allowed."],
       ["Use in-platform messaging", "Keep early conversations in TEMPTX so platform safety and reporting tools remain available."],
-      ["Report concerns", "Use conversation reporting tools for suspicious, abusive, coercive, exploitative, or unsafe behaviour."]
+      ["Report concerns", "Use the reporting tools for suspicious, abusive, coercive, exploitative, or unsafe behaviour. Provider accounts can also lodge a private Blacklist report for moderation review."]
     ],
-    action: ["Report a concern", "report.html"]
+    action: ["Provider Blacklist", "blacklist.html"]
   },
   "educational-hub": {
     group: "The Hub",
