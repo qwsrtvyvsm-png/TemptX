@@ -1445,6 +1445,87 @@ const handleApi = async (request, response, pathname) => {
 
 } // <-- route ends here
 
+    // Blacklist reports are deliberately separate from general reports: only an
+    // authenticated provider may lodge one, and only that provider can retrieve
+    // their own submitted cases. They are never exposed in a public listing.
+    if (pathname === "/api/blacklist/reports" && request.method === "POST") {
+      const user = requireSession(request);
+      if (!user) return json(response, 401, { error: "Sign in as a provider to submit a Blacklist report." });
+      if (user.role !== "provider") return json(response, 403, { error: "Blacklist reports are available to provider accounts only." });
+      if (!rateLimit(reportRateLimits, `blacklist:${user.id}`, 3, 60 * 60 * 1000)) {
+        return json(response, 429, { error: "Too many Blacklist reports were submitted. Try again later." });
+      }
+
+      const body = await readJsonBody(request);
+      const incidentTypes = new Set([
+        "time_wasting",
+        "boundary_violation",
+        "harassment_or_stalking",
+        "stealthing_or_health_concern",
+        "assault_or_immediate_safety",
+        "other"
+      ]);
+      const incidentType = cleanText(body.incidentType, 60);
+      const clientReference = cleanText(body.clientReference, 120);
+      const details = cleanText(body.details, 2000);
+      const evidenceSummary = cleanText(body.evidenceSummary, 800);
+
+      if (!incidentTypes.has(incidentType)) {
+        return json(response, 400, { error: "Choose a valid incident type." });
+      }
+      if (!clientReference) return json(response, 400, { error: "Enter a client account or booking reference." });
+      if (details.length < 20) return json(response, 400, { error: "Please provide at least 20 characters about what happened." });
+
+      const reference = `TXB-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
+      const priority =
+        incidentType === "assault_or_immediate_safety" || incidentType === "stealthing_or_health_concern"
+          ? "urgent"
+          : incidentType === "harassment_or_stalking" || incidentType === "boundary_violation"
+          ? "high"
+          : "standard";
+
+      await reportsQueue(() => {
+        const reports = readReports();
+        reports.push({
+          id: crypto.randomUUID(),
+          reference,
+          kind: "blacklist",
+          reporterUserId: user.id,
+          incidentType,
+          clientReference,
+          details,
+          evidenceSummary: evidenceSummary || null,
+          reporterIpHash: hashPrivateValue(getClientIp(request)),
+          priority,
+          status: "received",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+        writeReports(reports);
+      });
+
+      return json(response, 201, { message: "Blacklist report received for private moderation review.", reference });
+    }
+
+    if (pathname === "/api/blacklist/reports" && request.method === "GET") {
+      const user = requireSession(request);
+      if (!user) return json(response, 401, { error: "Sign in as a provider to view Blacklist reports." });
+      if (user.role !== "provider") return json(response, 403, { error: "Blacklist reports are available to provider accounts only." });
+
+      const reports = readReports()
+        .filter((report) => report.kind === "blacklist" && report.reporterUserId === user.id)
+        .map((report) => ({
+          reference: report.reference,
+          incidentType: report.incidentType,
+          status: report.status,
+          priority: report.priority,
+          createdAt: report.createdAt,
+          updatedAt: report.updatedAt
+        }))
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      return json(response, 200, { reports });
+    }
+
 // ---------------------------------------------------------------------------
 // Booking lifecycle routes
 // ---------------------------------------------------------------------------

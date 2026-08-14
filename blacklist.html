@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blacklist | TEMPTX</title>
+  <meta name="description" content="Private, provider-only safety reporting for TEMPTX." />
+  <link rel="stylesheet" href="style.css?v=20260814-02" />
+</head>
+<body class="cinematic-background content-body report-body">
+  <header class="site-header">
+    <div class="announcement"><div class="tx-banner-track"><span class="tx-banner-set">A Place to Connect <span class="tx-dot">&middot;</span> A Space to Create <span class="tx-dot">&middot;</span> A Community to Belong <span class="tx-dot">&middot;</span> A Future to Build <span class="tx-dot">&middot;</span></span><span class="tx-banner-set">A Place to Connect <span class="tx-dot">&middot;</span> A Space to Create <span class="tx-dot">&middot;</span> A Community to Belong <span class="tx-dot">&middot;</span> A Future to Build <span class="tx-dot">&middot;</span></span></div></div>
+    <div class="site-header-bar">
+      <div class="tx-nav-left"><a class="brand-mark" href="index.html"><span class="brand-word">TEMPT</span><span class="brand-x">X</span></a><nav class="store-nav home-nav" aria-label="Main navigation"><a href="index.html">Home</a><a href="directory.html">Directory</a><a href="safety-hub.html" class="nav-current" aria-current="page">Support</a><a href="community-support.html">Community</a><a href="chat.html" data-authenticated hidden>Messages</a></nav></div>
+      <div class="site-header-actions"><div class="account-dropdown hover-dropdown"><a href="profile.html" class="tx-signin-link">Sign In</a><div class="dropdown-menu account-menu"><a href="provider-login.html" data-login>Provider Log In</a><a href="client-login.html" data-login>Client Log In</a><a href="auth.html" data-logout hidden>Log Out</a></div></div><a href="join.html" class="tx-join-btn">Join</a></div>
+    </div>
+  </header>
+  <main class="content-shell report-shell">
+    <section class="content-hero report-hero">
+      <p class="eyebrow">Provider safety tool</p>
+      <h1>Blacklist.</h1>
+      <p>Private reporting for TEMPTX provider accounts. A report starts a moderation review; it is not a public list, a criminal record, or a substitute for emergency services.</p>
+    </section>
+    <section class="report-layout">
+      <form class="report-form" id="blacklistForm" hidden>
+        <div class="report-form-heading"><p class="eyebrow">Private intake</p><h2>Start a report</h2><p>Give factual information only. Do not upload intimate images, identity documents, passwords, payment information, or information you do not have permission to share.</p></div>
+        <label>Client account or booking reference<input id="clientReference" type="text" maxlength="120" required autocomplete="off" /></label>
+        <label>Incident type<select id="incidentType" required><option value="">Choose one</option><option value="time_wasting">Time wasting or price pressure</option><option value="boundary_violation">Boundary violation or disrespectful conduct</option><option value="harassment_or_stalking">Harassment, threats, or stalking</option><option value="stealthing_or_health_concern">Stealthing or sexual-health concern</option><option value="assault_or_immediate_safety">Assault or immediate safety concern</option><option value="other">Other</option></select></label>
+        <label>What happened?<textarea id="blacklistDetails" maxlength="2000" required></textarea></label>
+        <label>Evidence available <span>(optional — describe only)</span><textarea id="evidenceSummary" maxlength="800" placeholder="For example: messages dated 14 August, booking reference, or police event number. File upload is not enabled yet."></textarea></label>
+        <label class="report-consent"><input id="blacklistConsent" type="checkbox" required /><span>I confirm this report is made in good faith and is accurate to the best of my knowledge. I understand false or malicious reports may lead to account action.</span></label>
+        <button type="submit">Submit Blacklist report</button><p class="report-status" id="blacklistStatus" aria-live="polite"></p>
+      </form>
+      <aside class="report-guidance">
+        <p class="eyebrow">Access</p><h2 id="accessTitle">Checking your account</h2><p id="accessMessage">Please wait while TEMPTX confirms private access.</p><a class="outline-btn" id="providerLoginLink" href="provider-login.html?next=%2Fblacklist.html" hidden>Provider log in</a>
+        <div class="report-status-form" id="blacklistHistory" hidden><p class="eyebrow">Your reports</p><h2>Private tracking</h2><div class="report-status-result" id="historyResult"></div></div>
+        <p><strong>Immediate danger:</strong> call 000. TEMPTX may preserve relevant records but does not investigate criminal matters or make police reports on a worker’s behalf.</p>
+      </aside>
+    </section>
+  </main>
+  <script src="script.js?v=20260703-08"></script>
+  <script src="blacklist.js?v=20260814-01"></script>
+</body>
+</html>
