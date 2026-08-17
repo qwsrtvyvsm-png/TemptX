@@ -342,6 +342,10 @@ body.auth-v2 .auth-submit {
   border-radius: var(--radius-md, 8px);
 }
 
+body.auth-v2 .turnstile-field {
+  margin: 4px 0 2px;
+}
+
 body.auth-v2 .tx-next-hint {
   margin: 0;
   text-align: center;

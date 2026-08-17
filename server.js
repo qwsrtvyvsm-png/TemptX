@@ -8,6 +8,8 @@ const { canTransition } = require("./lib/booking-transitions");
 
 const host = process.env.HOST || "0.0.0.0";
 const port = Number(process.env.PORT || 5510);
+const turnstileSiteKey = process.env.TURNSTILE_SITE_KEY || "";
+const turnstileSecretKey = process.env.TURNSTILE_SECRET_KEY || "";
 const root = __dirname;
 const dataDirectory = path.join(root, "data");
 const usersFile = path.join(dataDirectory, "users.json");
@@ -350,6 +352,41 @@ const requireAuthRateLimit = (request, response, action, identifier = "") => {
   if (rateLimit(authRateLimits, key, limit, windowMs)) return true;
   json(response, 429, { error: "Too many attempts. Wait before trying again." });
   return false;
+};
+
+const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+const TURNSTILE_TIMEOUT_MS = 8000;
+
+const verifyTurnstileToken = async (token, remoteIp) => {
+  if (!turnstileSecretKey) {
+    if (process.env.NODE_ENV === "production") {
+      console.error("[turnstile] TURNSTILE_SECRET_KEY not set — refusing signups in production.");
+      return { ok: false, configured: false };
+    }
+    console.warn("[turnstile] TURNSTILE_SECRET_KEY not set — skipping bot verification (dev only).");
+    return { ok: true, configured: true };
+  }
+  if (!token || typeof token !== "string") return { ok: false, configured: true };
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), TURNSTILE_TIMEOUT_MS);
+  try {
+    const params = new URLSearchParams({ secret: turnstileSecretKey, response: token });
+    if (remoteIp) params.set("remoteip", remoteIp);
+    const verifyResponse = await fetch(TURNSTILE_VERIFY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params,
+      signal: controller.signal
+    });
+    const result = await verifyResponse.json();
+    return { ok: result.success === true, configured: true };
+  } catch (error) {
+    console.error("[turnstile] verification request failed", error);
+    return { ok: false, configured: true };
+  } finally {
+    clearTimeout(timeout);
+  }
 };
 
 const CLIENT_ID_LOCKOUT_LIMIT = 5;
@@ -1352,6 +1389,10 @@ const requireRole = (request, role, user = null) => {
 
 const handleApi = async (request, response, pathname) => {
   try {
+    if (pathname === "/api/config" && request.method === "GET") {
+      return json(response, 200, { turnstileSiteKey });
+    }
+
     if (pathname === "/api/reports" && request.method === "POST") {
       const clientKey = hashPrivateValue(getClientIp(request));
       const now = Date.now();
@@ -2066,6 +2107,16 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
           phone = cleanText(body.phone, 40);
           if (!phone) return json(response, 400, { error: "Enter your phone number." });
         }
+      }
+
+      const turnstileCheck = await verifyTurnstileToken(body.turnstileToken, getClientIp(request));
+      if (!turnstileCheck.ok) {
+        return json(response, turnstileCheck.configured === false ? 500 : 400, {
+          error:
+            turnstileCheck.configured === false
+              ? "Signup is temporarily unavailable. Please try again shortly."
+              : "We couldn't verify you're human. Please retry the checkbox and submit again."
+        });
       }
 
       // Hash password outside the queue — scrypt takes ~100 ms and must not hold the write lock.
@@ -3139,7 +3190,7 @@ const serveStatic = (request, response, pathname) => {
       "X-Frame-Options": "DENY",
       "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
       "Content-Security-Policy":
-        "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+        "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
     });
     fs.createReadStream(filePath).pipe(response);
   });
