@@ -360,6 +360,10 @@ if (dashboardContent) {
   clientsTabButton.addEventListener("click", () => switchTab("clients"));
   clientSearchInput.addEventListener("input", renderClients);
 
+  if (window.location.hash === "#clientsTab") {
+    switchTab("clients");
+  }
+
   const init = async () => {
     try {
       const response = await fetch("/api/auth/me");
