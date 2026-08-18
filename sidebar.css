@@ -1,0 +1,374 @@
+/* ══════════════════════════════════════════════════
+   DASHBOARD SIDEBAR — shared across provider / creator /
+   business dashboard, profile, and account pages
+   ══════════════════════════════════════════════════ */
+
+.app-layout {
+  min-height: 100vh;
+  background: var(--black);
+}
+
+.app-content {
+  min-width: 0;
+  min-height: 100vh;
+  margin-left: 260px;
+}
+
+/* Shared pages (chat, settings, membership) also serve roles with no sidebar
+   config, e.g. clients — collapse back to full width for them. */
+.app-layout.no-sidebar .app-content {
+  margin-left: 0;
+}
+
+.app-layout.no-sidebar .sidebar-toggle {
+  display: none;
+}
+
+/* ─── Sidebar shell ───
+   position: fixed (not sticky) — this site sets `body { overflow: hidden
+   auto }` site-wide, which makes body its own scroll container and breaks
+   position: sticky's viewport-relative behavior. Fixed is unaffected. */
+
+.app-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, var(--black) 0%, var(--soft-black) 100%);
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+  z-index: 60;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 20px;
+  border-bottom: 1px solid var(--line);
+  color: var(--cream);
+  flex-shrink: 0;
+}
+
+.sidebar-brand-wordmark {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.sidebar-brand-wordmark .brand-x {
+  color: var(--gold);
+  margin-left: -0.03em;
+}
+
+.sidebar-brand small {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* ─── Nav ─── */
+
+.sidebar-nav {
+  flex: 1;
+  padding: 14px 12px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-link,
+.sidebar-group-trigger {
+  appearance: none;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: background var(--duration-fast) var(--ease-soft),
+    color var(--duration-fast) var(--ease-soft);
+}
+
+a.sidebar-link:hover {
+  background: rgba(var(--cream-rgb), 0.06);
+  color: var(--cream);
+}
+
+.sidebar-link.is-active {
+  background: rgba(var(--gold-rgb), 0.16);
+  color: var(--cream);
+  box-shadow: inset 3px 0 0 var(--gold);
+}
+
+.sidebar-link.is-soon {
+  color: var(--text-tertiary);
+  cursor: default;
+  opacity: 0.6;
+}
+
+.sidebar-soon-tag {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: rgba(var(--cream-rgb), 0.08);
+  color: var(--text-tertiary);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.sidebar-group {
+  margin-top: 8px;
+}
+
+.sidebar-group-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  transition: color var(--duration-fast) var(--ease-soft);
+}
+
+.sidebar-group-trigger:hover {
+  color: var(--cream);
+}
+
+.sidebar-group-chevron {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  transition: transform var(--duration-fast) var(--ease-soft);
+}
+
+.sidebar-group.is-open .sidebar-group-chevron {
+  transform: rotate(180deg);
+}
+
+.sidebar-group-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--duration-mid) var(--ease-soft);
+}
+
+.sidebar-group.is-open .sidebar-group-items {
+  max-height: 640px;
+}
+
+.sidebar-group-items .sidebar-link {
+  padding-left: 32px;
+  font-size: 0.78rem;
+}
+
+.sidebar-group-items .sidebar-link.is-active {
+  box-shadow: inset 3px 0 0 var(--gold);
+}
+
+/* ─── Account footer ─── */
+
+.sidebar-footer {
+  position: relative;
+  flex-shrink: 0;
+  border-top: 1px solid var(--line);
+  padding: 12px;
+}
+
+.sidebar-account-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: var(--radius-md);
+  transition: background var(--duration-fast) var(--ease-soft);
+}
+
+.sidebar-account-btn:hover {
+  background: rgba(var(--cream-rgb), 0.06);
+}
+
+.sidebar-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gold);
+  color: var(--cream);
+  font-size: 0.78rem;
+  font-weight: 700;
+  overflow: hidden;
+}
+
+.sidebar-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sidebar-account-meta {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.sidebar-account-name {
+  display: block;
+  color: var(--cream);
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-account-role {
+  display: block;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.sidebar-account-chevron {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  transition: transform var(--duration-fast) var(--ease-soft);
+}
+
+.sidebar-footer.is-open .sidebar-account-chevron {
+  transform: rotate(180deg);
+}
+
+.sidebar-account-menu {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(100% + 6px);
+  display: none;
+  flex-direction: column;
+  padding: 6px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--luxury-shadow);
+  z-index: 70;
+}
+
+.sidebar-footer.is-open .sidebar-account-menu {
+  display: flex;
+}
+
+.sidebar-account-menu a {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.sidebar-account-menu a:hover {
+  background: rgba(var(--cream-rgb), 0.06);
+  color: var(--cream);
+}
+
+/* ─── Slim top bar (replaces old chat-top-nav) ─── */
+
+.app-topbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 24px;
+}
+
+.sidebar-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: rgba(var(--cream-rgb), 0.04);
+  color: var(--cream);
+  cursor: pointer;
+}
+
+/* Fallback brand/nav shown only when no role-matched sidebar renders
+   (e.g. clients on chat/settings/membership) — pushes account controls
+   (and anything after, e.g. a Join button) to the right of the topbar. */
+.app-topbar .account-dropdown {
+  margin-left: auto;
+}
+
+/* ─── Mobile: off-canvas drawer ─── */
+
+.sidebar-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-mid) var(--ease-soft);
+  z-index: 190;
+}
+
+.sidebar-scrim.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (max-width: 880px) {
+  .app-content {
+    margin-left: 0;
+  }
+
+  .app-sidebar {
+    width: min(280px, 84%);
+    transform: translateX(-100%);
+    transition: transform var(--duration-mid) var(--ease-soft);
+    z-index: 200;
+    box-shadow: 24px 0 70px rgba(0, 0, 0, 0.5);
+  }
+
+  .app-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-toggle {
+    display: inline-flex;
+  }
+}

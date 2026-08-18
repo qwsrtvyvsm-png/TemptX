@@ -11,6 +11,7 @@
     }
   </script>
   <link rel="stylesheet" href="style.css?v=20260814-02" />
+  <link rel="stylesheet" href="sidebar.css?v=20260819-02" />
 </head>
 
 <body class="chat-body cinematic-background">
@@ -54,38 +55,32 @@
     </div>
   </div>
 
-  <header class="chat-header">
-    <a class="brand-mark chat-brand" href="index.html">
-      <span class="chat-brand-wordmark">
-        <span class="brand-word">TEMPT</span>
-        <span class="brand-x">X</span>
-      </span>
-      <small>Australia's Adult Industry Network</small>
-    </a>
+  <div class="app-layout">
+    <aside id="app-sidebar" data-active="engagement-messages"></aside>
 
-    <nav class="chat-top-nav" aria-label="Chat navigation">
-      <a href="index.html">Home</a>
-      <a href="index.html#directory">Browse</a>
-      <a href="chat.html" aria-current="page">Messages</a>
-      <a href="verification-centre.html">Verification</a>
-    </nav>
-
-    <div class="account-dropdown hover-dropdown">
-      <a href="profile.html" class="header-tool profile-tool" aria-label="Profile">
-        <span></span>
-      </a>
-      <div class="dropdown-menu account-menu">
-        <a href="creator-dashboard.html">Creator Dashboard</a>
-        <a href="profile.html">My Profile</a>
-        <a href="settings.html">Settings</a>
-        <a href="verification-centre.html">Verification</a>
-        <a href="client-login.html" data-login>Client Log In</a>
-          <a href="provider-login.html" data-login>Provider Log In</a>
-          <a href="creator-login.html" data-login>Creator Log In</a>
-        <a href="auth.html" data-logout hidden>Log Out</a>
-      </div>
-    </div>
-  </header>
+    <div class="app-content">
+      <header class="app-topbar">
+        <button type="button" class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">
+          <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+        <a class="brand-mark chat-brand" href="index.html" data-topbar-fallback>
+          <span class="chat-brand-wordmark">
+            <span class="brand-word">TEMPT</span>
+            <span class="brand-x">X</span>
+          </span>
+        </a>
+        <div class="account-dropdown hover-dropdown" data-topbar-fallback>
+          <a href="profile.html" class="header-tool profile-tool" aria-label="Profile">
+            <span></span>
+          </a>
+          <div class="dropdown-menu account-menu">
+            <a href="client-login.html" data-login>Client Log In</a>
+            <a href="provider-login.html" data-login>Provider Log In</a>
+            <a href="creator-login.html" data-login>Creator Log In</a>
+            <a href="auth.html" data-logout hidden>Log Out</a>
+          </div>
+        </div>
+      </header>
 
   <main class="chat-shell">
     <aside class="chat-sidebar" aria-label="Conversations">
@@ -167,6 +162,8 @@
       <a class="outline-btn details-action" id="reportConversationLink" href="report.html?type=conversation">Report conversation</a>
     </aside>
   </main>
+    </div>
+  </div>
 
   <div class="group-browser" id="groupBrowser" hidden>
     <div class="group-browser-panel" role="dialog" aria-modal="true" aria-labelledby="groupBrowserTitle">
@@ -244,6 +241,7 @@
     }
   </script>
   <script src="script.js?v=20260703-08"></script>
+  <script src="sidebar.js?v=20260819-02"></script>
   <script src="chat.js?v=20260627-01"></script>
 </body>
 </html>

@@ -15,6 +15,7 @@
   </script>
   <link rel="stylesheet" href="style.css?v=20260814-02" />
   <link rel="stylesheet" href="creator-dashboard.css?v=20260813-01" />
+  <link rel="stylesheet" href="sidebar.css?v=20260819-02" />
 </head>
 
 <body class="creator-dashboard-body cinematic-background">
@@ -35,36 +36,15 @@
     </div>
   </div>
 
-  <header class="chat-header dashboard-header">
-    <a class="brand-mark chat-brand" href="index.html">
-      <span class="chat-brand-wordmark">
-        <span class="brand-word">TEMPT</span>
-        <span class="brand-x">X</span>
-      </span>
-      <small>Business operations</small>
-    </a>
+  <div class="app-layout">
+    <aside id="app-sidebar" data-active="dashboard"></aside>
 
-    <nav class="chat-top-nav" aria-label="Business dashboard navigation">
-      <a href="business-dashboard.html" aria-current="page">Dashboard</a>
-      <a href="friendly-businesses.html">Directory</a>
-      <a href="settings.html">Settings</a>
-      <a href="verification-centre.html">Verification</a>
-    </nav>
-
-    <div class="account-dropdown hover-dropdown">
-      <a href="settings.html" class="header-tool profile-tool" aria-label="Account settings">
-        <span></span>
-      </a>
-      <div class="dropdown-menu account-menu">
-        <a href="business-dashboard.html">Business Dashboard</a>
-        <a href="friendly-businesses.html">Friendly Businesses</a>
-        <a href="settings.html">Settings</a>
-        <a href="verification-centre.html">Verification</a>
-        <a href="auth.html?mode=login&amp;role=business" data-login>Business Log In</a>
-        <a href="auth.html" data-logout hidden>Log Out</a>
-      </div>
-    </div>
-  </header>
+    <div class="app-content">
+      <header class="app-topbar">
+        <button type="button" class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">
+          <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </header>
 
   <main class="creator-dashboard-shell">
     <section class="dashboard-hero" aria-labelledby="dashboardTitle">
@@ -192,7 +172,7 @@
     </section>
 
     <section class="dashboard-lower-grid">
-      <article class="dashboard-panel">
+      <article class="dashboard-panel" id="leads">
         <div class="dashboard-panel-heading">
           <div>
             <p class="eyebrow">Channels <span class="preview-label">(Preview)</span></p>
@@ -218,8 +198,11 @@
       </article>
     </section>
   </main>
+    </div>
+  </div>
 
   <script src="script.js?v=20260703-08"></script>
+  <script src="sidebar.js?v=20260819-02"></script>
   <script src="business-dashboard.js?v=20260709-02"></script>
 </body>
 </html>

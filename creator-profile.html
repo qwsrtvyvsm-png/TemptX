@@ -6,36 +6,19 @@
   <title>Creator Profile | TEMPTX</title>
   <meta name="description" content="Manage your TEMPTX Creator profile — bio, content formats, and public visibility." />
   <link rel="stylesheet" href="style.css?v=20260814-02" />
+  <link rel="stylesheet" href="sidebar.css?v=20260819-02" />
 </head>
 
 <body class="settings-body cinematic-background">
-  <header class="chat-header settings-header">
-    <a class="brand-mark chat-brand" href="index.html">
-      <span class="brand-word">TEMPT</span>
-      <span class="brand-x">X</span>
-    </a>
+  <div class="app-layout">
+    <aside id="app-sidebar" data-active="profile-general"></aside>
 
-    <nav class="chat-top-nav" aria-label="Creator profile navigation">
-      <a href="creator-dashboard.html">Dashboard</a>
-      <a href="creator-profile.html" aria-current="page">Creator Profile</a>
-      <a href="chat.html">Messages</a>
-      <a href="settings.html">Settings</a>
-    </nav>
-
-    <div class="account-dropdown hover-dropdown">
-      <a href="creator-profile.html" class="header-tool profile-tool" aria-label="Creator profile">
-        <span></span>
-      </a>
-      <div class="dropdown-menu account-menu">
-        <a href="creator-dashboard.html">Creator Dashboard</a>
-        <a href="creator-profile.html">Creator Profile</a>
-        <a href="chat.html">Messages</a>
-        <a href="settings.html">Settings</a>
-        <a href="creator-login.html" data-login>Creator Log In</a>
-        <a href="auth.html" data-logout hidden>Log Out</a>
-      </div>
-    </div>
-  </header>
+    <div class="app-content">
+      <header class="app-topbar">
+        <button type="button" class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">
+          <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </header>
 
   <main class="settings-shell">
     <aside class="settings-intro">
@@ -57,7 +40,7 @@
     <form class="settings-form" id="creatorProfileForm" novalidate hidden>
 
       <!-- 1. Basics -->
-      <section class="settings-section">
+      <section class="settings-section" id="basics">
         <div class="settings-section-heading">
           <div>
             <p class="eyebrow">About you</p>
@@ -91,7 +74,7 @@
       </section>
 
       <!-- 2. Bio -->
-      <section class="settings-section">
+      <section class="settings-section" id="bio">
         <div class="settings-section-heading">
           <div>
             <p class="eyebrow">About you</p>
@@ -114,7 +97,7 @@
       </section>
 
       <!-- 3. Content formats -->
-      <section class="settings-section">
+      <section class="settings-section" id="content-formats">
         <div class="settings-section-heading">
           <div>
             <p class="eyebrow">Offering</p>
@@ -194,7 +177,7 @@
       </section>
 
       <!-- 6. Links & location -->
-      <section class="settings-section">
+      <section class="settings-section" id="links-location">
         <div class="settings-section-heading">
           <div>
             <p class="eyebrow">Links</p>
@@ -220,7 +203,7 @@
       </section>
 
       <!-- 7. Visibility -->
-      <section class="settings-section">
+      <section class="settings-section" id="visibility">
         <div class="settings-section-heading">
           <div>
             <p class="eyebrow">Privacy</p>
@@ -244,8 +227,11 @@
       </div>
     </form>
   </main>
+    </div>
+  </div>
 
   <script src="script.js?v=20260703-08"></script>
+  <script src="sidebar.js?v=20260819-02"></script>
   <script src="creator-profile.js?v=20260718-01"></script>
 </body>
 </html>
