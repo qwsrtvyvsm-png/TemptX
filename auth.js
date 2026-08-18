@@ -12,6 +12,7 @@ if (authForm) {
   let role = validRoles.has(pageRole) ? pageRole : validRoles.has(params.get("role")) ? params.get("role") : "client";
   const lockedMode = pageMode === "signup" || pageMode === "login";
   const lockedRole = validRoles.has(pageRole);
+  const turnstileEnabled = pageMode !== "login";
   const requestedNext = params.get("next");
   const safeNext =
     requestedNext &&
@@ -64,6 +65,16 @@ if (authForm) {
   const acceptedPolicies = document.querySelector("#acceptedPolicies");
   const passwordRequirements = document.querySelector("#passwordRequirements");
 
+  const turnstileContainer = document.createElement("div");
+  turnstileContainer.className = "cf-turnstile turnstile-field";
+  turnstileContainer.id = "turnstileField";
+  turnstileContainer.hidden = true;
+  authForm.insertBefore(turnstileContainer, authSubmit);
+
+  let turnstileWidgetId = null;
+  let turnstileSiteKey = "";
+  let turnstileReadyPromise = null;
+
   const setStatus = (element, message = "", type = "") => {
     element.textContent = message;
     element.className = `auth-status${type ? ` is-${type}` : ""}`;
@@ -79,6 +90,41 @@ if (authForm) {
     }
 
     return response.json();
+  };
+
+  const ensureTurnstileReady = () => {
+    if (turnstileReadyPromise) return turnstileReadyPromise;
+    turnstileReadyPromise = (async () => {
+      try {
+        const configResponse = await fetch("/api/config");
+        const config = await configResponse.json();
+        turnstileSiteKey = config.turnstileSiteKey || "";
+      } catch {
+        turnstileSiteKey = "";
+      }
+      if (!turnstileSiteKey) return;
+
+      await new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+        script.async = true;
+        script.defer = true;
+        script.onload = resolve;
+        script.onerror = resolve;
+        document.head.appendChild(script);
+      });
+
+      if (window.turnstile) {
+        turnstileWidgetId = window.turnstile.render(turnstileContainer, {
+          sitekey: turnstileSiteKey,
+          theme: "dark",
+          size: "flexible",
+          "expired-callback": () => setStatus(authStatus, "Verification expired — please tick the box again.", "error"),
+          "error-callback": () => setStatus(authStatus, "Verification failed to load. Refresh the page and try again.", "error")
+        });
+      }
+    })();
+    return turnstileReadyPromise;
   };
 
   // Category options differ by worker role (content creators live only under
@@ -143,6 +189,7 @@ if (authForm) {
     applyCategoryOptions(role);
     if (businessAbnField) businessAbnField.hidden = !isBusinessSignup;
     if (phoneField) phoneField.hidden = !isBusinessSignup;
+    turnstileContainer.hidden = !isSignup;
     if (confirmPasswordField) confirmPasswordField.hidden = !isSignup;
     if (authSteps) authSteps.hidden = !isSignup;
     if (authNextHint) authNextHint.hidden = !isSignup;
@@ -276,6 +323,19 @@ if (authForm) {
     }
     if (role === "client" && mode === "login") payload.clientId = authClientId.value;
 
+    if (mode === "signup") {
+      await ensureTurnstileReady();
+      if (turnstileSiteKey) {
+        const token = turnstileWidgetId !== null && window.turnstile ? window.turnstile.getResponse(turnstileWidgetId) : "";
+        if (!token) {
+          setStatus(authStatus, "Please confirm you're human before continuing.", "error");
+          authSubmit.disabled = false;
+          return;
+        }
+        payload.turnstileToken = token;
+      }
+    }
+
     try {
       const response = await fetch(`/api/auth/${mode}`, {
         method: "POST",
@@ -325,6 +385,9 @@ if (authForm) {
       setStatus(authStatus, error.message, "error");
     } finally {
       authSubmit.disabled = false;
+      if (mode === "signup" && turnstileWidgetId !== null && window.turnstile) {
+        window.turnstile.reset(turnstileWidgetId);
+      }
     }
   });
 
@@ -397,5 +460,6 @@ if (authForm) {
     }
   });
 
+  if (turnstileEnabled) ensureTurnstileReady();
   updateView();
 }
