@@ -144,12 +144,21 @@ if (authForm) {
     ["content creators", "Content creators"],
     ["online companions", "Online companions"],
   ];
+  const BUSINESS_CATEGORIES = [
+    ["brothel", "Brothel"],
+    ["adult venue", "Adult Venue"],
+    ["adult business", "Adult Business"],
+    ["photography", "Photography / Media"],
+    ["support services", "Support Services"],
+    ["other", "Other"],
+  ];
 
   const applyCategoryOptions = (currentRole) => {
     if (lockedRole || !authAccountCategory) return;
-    if (currentRole !== "provider" && currentRole !== "creator") return;
+    if (currentRole !== "provider" && currentRole !== "creator" && currentRole !== "business") return;
 
-    const categories = currentRole === "provider" ? PROVIDER_CATEGORIES : CREATOR_CATEGORIES;
+    const categories =
+      currentRole === "provider" ? PROVIDER_CATEGORIES : currentRole === "creator" ? CREATOR_CATEGORIES : BUSINESS_CATEGORIES;
     const previousValue = authAccountCategory.value;
     authAccountCategory.innerHTML = [
       '<option value="">Choose a category</option>',

@@ -349,7 +349,7 @@ const nav = `
           <a href="directory.html">Directory</a>
           <a href="district.html">District</a>
           <a href="safety-hub.html"${supportPages.includes(pageKey) ? ' class="nav-current" aria-current="page"' : ""}>Support</a>
-          <a href="community-support.html"${communityPages.includes(pageKey) ? ' class="nav-current" aria-current="page"' : ""}>Community</a>
+          <a href="community.html"${communityPages.includes(pageKey) ? ' class="nav-current" aria-current="page"' : ""}>Community</a>
           <a href="chat.html" data-authenticated hidden>Messages</a>
         </nav>
       </div>

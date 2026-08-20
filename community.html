@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Client Pricing | TEMPTX</title>
-  <meta
-    name="description"
-    content="TEMPTX client pricing for private discovery, saved profiles, messaging, safety tools, and premium access."
-  />
+  <title>Community | TEMPTX</title>
+  <meta name="description" content="The TEMPTX community forum — safety and support, local and district chat, and industry talk for clients, providers, creators, and businesses." />
   <link rel="stylesheet" href="style.css?v=20260819-01" />
-  <link rel="stylesheet" href="pricing.css?v=20260627-02" />
+  <link rel="stylesheet" href="community.css?v=20260821-03" />
 </head>
-<body class="cinematic-background pricing-body">
+
+<body class="community-page">
   <div id="ageGate" class="age-gate">
     <div class="age-box">
       <h1>Tempt<span>X</span></h1>
       <p>This website is intended for adults aged 18+ only.</p>
-      <p class="small-text">By entering, you confirm you are at least 18 years old.</p>
+      <p class="small-text">
+        By entering, you confirm you are at least 18 years old and agree to view adult industry related content.
+      </p>
       <p class="age-policy-links">
         <a href="privacy.html">Privacy</a>
         <a href="terms.html">Terms</a>
@@ -29,7 +29,7 @@
     </div>
   </div>
 
-    <header class="site-header">
+  <header class="site-header">
     <div class="announcement">
       <div class="tx-banner-track">
         <span class="tx-banner-set">A Place to Connect <span class="tx-dot">&middot;</span> A Space to Create <span class="tx-dot">&middot;</span> A Community to Belong <span class="tx-dot">&middot;</span> A Future to Build <span class="tx-dot">&middot;</span></span>
@@ -45,6 +45,7 @@
       <nav class="store-nav home-nav" aria-label="Main navigation">
       <a href="index.html">Home</a>
       <a href="directory.html">Directory</a>
+      <a href="district.html">District</a>
       <a href="safety-hub.html">Support</a>
       <a href="community.html">Community</a>
       <a href="chat.html" data-authenticated hidden>Messages</a>
@@ -64,81 +65,72 @@
     </div>
   </header>
 
-  <main class="pricing-shell" aria-labelledby="pricingTitle">
-    <section class="pricing-hero">
-      <p class="eyebrow">Client access plans</p>
-      <h1 id="pricingTitle">Clients</h1>
-      <p>
-        Private access for adults who want better discovery, saved profiles, safer messaging standards, and premium search tools.
-      </p>
-      <div class="pricing-path-links" aria-label="Pricing categories">
-        <a href="pricing.html">Industry listings</a>
-        <a href="creator-pricing.html">Creators</a>
-        <a class="is-active" href="client-pricing.html">Clients</a>
+  <main class="community-main">
+    <section class="community-hero">
+      <p class="community-eyebrow">Australia's Adult Network</p>
+      <h1>Community</h1>
+      <p>Safety, local, and industry conversation — moderated the same way as the rest of TEMPTX. Post under your account name or anonymously, your choice, every time.</p>
+      <p class="community-hero-support">Looking for direct help instead? Visit <a href="community-support.html">Community Support</a>.</p>
+    </section>
+
+    <nav class="community-board-tabs" id="boardTabs" aria-label="Forum boards">
+      <a href="community.html?board=safety-support" data-board="safety-support">Safety &amp; Support</a>
+      <a href="community.html?board=local-district" data-board="local-district">Local / District Chat</a>
+      <a href="community.html?board=industry-talk" data-board="industry-talk">Industry Talk</a>
+    </nav>
+
+    <section id="boardView" class="community-board-view">
+      <div class="community-compose">
+        <form class="report-form community-compose-form" id="threadForm" data-authenticated hidden>
+          <label>
+            Title
+            <input id="threadTitle" type="text" maxlength="150" required />
+          </label>
+          <label>
+            Post
+            <textarea id="threadBody" maxlength="5000" required></textarea>
+          </label>
+          <label class="community-anon-toggle">
+            <input type="checkbox" id="threadAnonymous" />
+            <span>Post anonymously</span>
+          </label>
+          <button type="submit">Start thread</button>
+          <p class="report-status" id="threadFormStatus" aria-live="polite"></p>
+        </form>
+        <p class="community-signin-prompt" id="composeSigninPrompt" hidden>
+          <a href="auth.html?mode=login">Sign in</a> to start a thread.
+        </p>
       </div>
-      <label class="billing-toggle">
-        <input type="checkbox" checked />
-        <span></span>
-        Billed yearly
-      </label>
+
+      <p class="community-list-status" id="threadListStatus" aria-live="polite"></p>
+      <div class="community-thread-list" id="threadList"></div>
     </section>
 
-    <section class="pricing-grid" aria-label="TEMPTX client pricing plans">
-      <article class="pricing-card">
-        <div class="pricing-card-header">
-          <h2>Access</h2>
-          <p><strong>Free</strong><span></span></p>
-        </div>
-        <ul>
-          <li>Browse public listings</li>
-          <li>Create a private client account</li>
-          <li>View safety and consent standards</li>
-          <li>Basic profile access</li>
-          <li>Report concerns to TEMPTX</li>
-        </ul>
-        <a class="pricing-button" href="client-signup.html">Create Client Account</a>
-      </article>
+    <section id="threadView" class="community-thread-view" hidden>
+      <a class="community-back-link" id="backToBoard" href="community.html">&larr; Back to board</a>
+      <article class="community-thread" id="threadDetail"></article>
+      <div class="community-reply-list" id="replyList"></div>
 
-      <article class="pricing-card pricing-card-featured">
-        <div class="pricing-badge">Popular</div>
-        <div class="pricing-card-header">
-          <h2>Private</h2>
-          <p><strong>$14</strong><span>/mo</span></p>
-        </div>
-        <ul>
-          <li>Everything in Access</li>
-          <li>Saved profiles and favourites</li>
-          <li>Search preferences</li>
-          <li>Messaging agreement workflow</li>
-          <li>Private browsing tools</li>
-          <li>Early access to new features</li>
-        </ul>
-        <a class="pricing-button pricing-button-primary" href="client-signup.html">Get Started</a>
-      </article>
-
-      <article class="pricing-card">
-        <div class="pricing-card-header">
-          <h2>Concierge</h2>
-          <p><strong>$39</strong><span>/mo</span></p>
-        </div>
-        <ul>
-          <li>Everything in Private</li>
-          <li>Priority account support</li>
-          <li>Premium discovery filters</li>
-          <li>Booking preparation tools</li>
-          <li>Enhanced privacy controls</li>
-          <li>Invitation-only feature tests</li>
-        </ul>
-        <a class="pricing-button" href="client-signup.html">Upgrade Access</a>
-      </article>
+      <div class="community-compose">
+        <form class="report-form community-compose-form" id="replyForm" data-authenticated hidden>
+          <label>
+            Reply
+            <textarea id="replyBody" maxlength="3000" required></textarea>
+          </label>
+          <label class="community-anon-toggle">
+            <input type="checkbox" id="replyAnonymous" />
+            <span>Post anonymously</span>
+          </label>
+          <button type="submit">Post reply</button>
+          <p class="report-status" id="replyFormStatus" aria-live="polite"></p>
+        </form>
+        <p class="community-signin-prompt" id="replySigninPrompt" hidden>
+          <a href="auth.html?mode=login">Sign in</a> to reply.
+        </p>
+      </div>
     </section>
-
-    <p class="pricing-note">
-      Client access is for adults aged 18+ only. All users must agree to TEMPTX standards for respectful communication, consent, privacy, and no harassment before using messaging features.
-    </p>
   </main>
 
-  <script src="script.js?v=20260703-08"></script>
   <footer class="footer home-footer">
     <div class="home-footer-brand">
       <div class="logo">Tempt<span>X</span></div>
@@ -180,5 +172,8 @@
       </div>
     </div>
   </footer>
+
+  <script src="script.js?v=20260703-08"></script>
+  <script src="community.js?v=20260821-01"></script>
 </body>
 </html>
