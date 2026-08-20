@@ -216,6 +216,7 @@ body.auth-v2 .auth-card {
   border-radius: 0;
   background: rgba(0, 0, 0, 0.18);
   padding: clamp(28px, 4vw, 48px);
+  -webkit-backdrop-filter: none;
   backdrop-filter: none;
   box-shadow: none;
   animation: none;
