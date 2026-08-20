@@ -1083,7 +1083,7 @@
 .directory-primary-button {
   color: #130b05;
   border: 1px solid rgba(var(--champagne-rgb), 0.8);
-  background: linear-gradient(180deg, #ffe7ae 0%, #d9a64a 54%, #9b641d 100%);
+  background: linear-gradient(180deg, color-mix(in oklch, var(--bullion-light) 75%, black) 0%, color-mix(in oklch, var(--bullion-mid) 75%, black) 54%, color-mix(in oklch, var(--bullion-dark) 75%, black) 100%);
   box-shadow:
     0 8px 28px rgba(var(--gold-rgb), 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.42);
@@ -1456,7 +1456,7 @@
 
 .dir-card-badge--featured {
   color: #1a0e04;
-  background: linear-gradient(135deg, #ffe7ae 0%, #e8c06a 48%, #d9a64a 100%);
+  background: linear-gradient(135deg, color-mix(in oklch, var(--bullion-light) 75%, black) 0%, color-mix(in oklch, var(--bullion-rich) 75%, black) 48%, color-mix(in oklch, var(--bullion-mid) 75%, black) 100%);
   box-shadow:
     0 2px 12px rgba(0, 0, 0, 0.4),
     0 0 16px rgba(var(--gold-rgb), 0.2),
@@ -1472,7 +1472,7 @@
 
 .dir-card-badge--new {
   color: #1a0e04;
-  background: linear-gradient(135deg, #ffe7ae 0%, #e8c06a 48%, #d9a64a 100%);
+  background: linear-gradient(135deg, color-mix(in oklch, var(--bullion-light) 75%, black) 0%, color-mix(in oklch, var(--bullion-rich) 75%, black) 48%, color-mix(in oklch, var(--bullion-mid) 75%, black) 100%);
   box-shadow:
     0 2px 12px rgba(0, 0, 0, 0.4),
     0 0 16px rgba(var(--gold-rgb), 0.2),
@@ -10463,7 +10463,7 @@ body.directory-body::after {
   color: var(--text-on-gold);
   border: 1px solid rgba(var(--champagne-rgb), 0.8);
   background:
-    linear-gradient(180deg, #ffe7ae 0%, #d9a64a 54%, #9b641d 100%),
+    linear-gradient(180deg, color-mix(in oklch, var(--bullion-light) 75%, black) 0%, color-mix(in oklch, var(--bullion-mid) 75%, black) 54%, color-mix(in oklch, var(--bullion-dark) 75%, black) 100%),
     var(--gold);
   box-shadow:
     0 16px 44px rgba(var(--gold-rgb), 0.2),
