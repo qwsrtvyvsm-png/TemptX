@@ -206,7 +206,32 @@ const readClientNotes = () => JSON.parse(fs.readFileSync(clientNotesFile, "utf8"
 const writeClientNotes = (clientNotes) =>
   atomicWrite(clientNotesFile, `${JSON.stringify(clientNotes, null, 2)}\n`);
 
-const readCommunityPosts = () => JSON.parse(fs.readFileSync(communityPostsFile, "utf8"));
+const readCommunityPosts = () => {
+  const parsePostsFile = (filePath) => {
+    const posts = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    if (!Array.isArray(posts)) throw new Error("Community posts data must be an array.");
+    return posts;
+  };
+
+  try {
+    return parsePostsFile(communityPostsFile);
+  } catch (error) {
+    const temporaryFile = `${communityPostsFile}.tmp`;
+
+    try {
+      const recoveredPosts = parsePostsFile(temporaryFile);
+      const backupFile = `${communityPostsFile}.corrupt-${Date.now()}`;
+      fs.renameSync(communityPostsFile, backupFile);
+      atomicWrite(communityPostsFile, `${JSON.stringify(recoveredPosts, null, 2)}\n`);
+      console.warn(`[community] Recovered posts from temporary file; preserved invalid data at ${backupFile}`);
+      return recoveredPosts;
+    } catch (recoveryError) {
+      throw new Error(
+        `Unable to read community posts without risking data loss: ${error.message}; recovery failed: ${recoveryError.message}`
+      );
+    }
+  }
+};
 const writeCommunityPosts = (posts) =>
   atomicWrite(communityPostsFile, `${JSON.stringify(posts, null, 2)}\n`);
 
