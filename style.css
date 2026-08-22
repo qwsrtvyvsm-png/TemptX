@@ -766,7 +766,6 @@
 /* ─── Custom Select (shared) ─── */
 
 .directory-filters select {
-  -webkit-appearance: none;
   appearance: none;
 }
 
@@ -1451,8 +1450,8 @@
   font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .dir-card-badge--featured {
@@ -1951,6 +1950,7 @@
     inset: 0;
     z-index: 200;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 0 0 max(56px, env(safe-area-inset-bottom, 0px));
     border-radius: 0;
     border: none;
@@ -3599,8 +3599,8 @@ h2 {
   z-index: 0;
   border-radius: 2px;
   will-change: transform;
-  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   box-shadow:
     inset 0 1px rgba(255, 244, 220, 0.08),
     inset 0 -40px 72px rgba(0, 0, 0, 0.36),
@@ -7318,7 +7318,6 @@ body[data-auth-role] .account-type-switch {
 }
 
 .auth-field select {
-  -webkit-appearance: none;
   appearance: none;
   padding-right: 44px;
   background:
@@ -7714,7 +7713,6 @@ body[data-auth-role] .account-type-switch {
 
 .setup-checklist-progress-bar span {
   display: block;
-  width: 0;
   height: 100%;
   border-radius: inherit;
   background: var(--btn-gold-gradient, var(--gold));
@@ -8064,7 +8062,6 @@ body[data-auth-role] .account-type-switch {
   width: 46px;
   height: 24px;
   flex: 0 0 auto;
-  -webkit-appearance: none;
   appearance: none;
   border: 1px solid rgba(var(--cream-rgb), 0.28);
   border-radius: 999px;
@@ -9437,7 +9434,6 @@ body.cinematic-background {
   border-radius: 0;
   outline: 0;
   background: rgba(255, 255, 255, 0.025);
-  -webkit-appearance: none;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c5a06a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -12255,7 +12251,6 @@ body.creator-dashboard-body {
 /* ─── Select arrow repositioned for underline ─── */
 
 .auth-body .auth-field select {
-  -webkit-appearance: none;
   appearance: none;
   padding-right: 28px;
   background:
@@ -13697,9 +13692,12 @@ select {
   animation: txBannerScroll 55s linear infinite;
 }
 
+/* Loops by exactly one phrase-block's width, however many blocks
+   script.js has cloned in (see "Announcement banner" comment there) —
+   always a clean loop, regardless of how many copies exist. */
 @keyframes txBannerScroll {
   from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  to { transform: translateX(calc(-100% / var(--tx-banner-copies, 8))); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -13710,7 +13708,6 @@ select {
   display: flex;
   align-items: center;
   gap: 14px;
-  min-width: 100vw;
   white-space: nowrap;
   font-family: var(--font-sans);
   font-size: 0.68rem;
@@ -13936,6 +13933,10 @@ button,
 .tx-hero h1 .tx-x-mark {
   font-style: normal;
   color: var(--gold);
+  font-size: 1.18em;
+  display: inline-block;
+  line-height: 1;
+  vertical-align: -0.03em;
 }
 
 .tx-hero-row {
@@ -13998,6 +13999,21 @@ button,
   background:
     radial-gradient(120% 90% at 78% 12%, rgba(var(--gold-rgb), 0.55), transparent 60%),
     linear-gradient(200deg, #1c0f10, #0a0a0a 72%);
+}
+
+/* Hero photo — fades into the dark panel from the right so it reads
+   as part of the page rather than a pasted-in image. */
+.tx-hero-art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(90deg, var(--black) 0%, rgba(10, 10, 10, 0.55) 30%, rgba(10, 10, 10, 0.08) 58%, transparent 78%),
+    url("assets/temptx-hero-photo.jpg");
+  background-size: cover, cover;
+  background-position: center, right center;
+  background-repeat: no-repeat, no-repeat;
 }
 
 .tx-hero-art .tx-grain {
@@ -14116,20 +14132,12 @@ button,
   margin: 0;
 }
 
-.tx-section--flush {
-  border-bottom: none;
-}
-
 .tx-feat-head-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   flex-wrap: wrap;
   gap: 20px;
-}
-
-.tx-feat-head-row .tx-section-head {
-  margin-bottom: 0;
 }
 
 .tx-section-link {
@@ -14289,7 +14297,7 @@ button,
 .site-header .site-header-bar .brand-mark {
   display: inline-flex;
   align-items: baseline;
-  gap: clamp(4px, 0.6vw, 8px);
+  gap: 0;
 }
 
 .brand-bracket {
@@ -14301,6 +14309,15 @@ button,
 
 .site-header .site-header-bar .brand-bracket {
   font-size: 1.35em;
+  font-weight: 400;
+}
+
+.site-header .site-header-bar .brand-bracket-l {
+  margin-right: 0.22em;
+}
+
+.site-header .site-header-bar .brand-bracket-r {
+  margin-left: 0.22em;
 }
 
 .site-header .site-header-bar .brand-word {
@@ -14317,6 +14334,8 @@ button,
 }
 
 .site-header .site-header-bar .brand-x {
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  font-weight: 700;
   color: #d4341f;
 }
 
@@ -14344,16 +14363,19 @@ button,
 .tx-loader-mark {
   display: flex;
   align-items: baseline;
-  gap: clamp(4px, 1.4vw, 10px);
+  gap: 0;
   font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
 }
 .tx-loader-mark .brand-bracket {
   font-size: clamp(1.8rem, 5.4vw, 3.7rem);
+  font-weight: 400;
 }
 .tx-loader-mark .brand-bracket-l {
+  margin-right: 0.2em;
   animation: tx-slide-l 0.9s cubic-bezier(.2, .8, .2, 1) both;
 }
 .tx-loader-mark .brand-bracket-r {
+  margin-left: 0.2em;
   animation: tx-slide-r 0.9s cubic-bezier(.2, .8, .2, 1) both;
 }
 .tx-loader-mark .brand-word {
@@ -14371,6 +14393,7 @@ button,
 }
 .tx-loader-mark .brand-x {
   font-size: clamp(2.6rem, 8vw, 5.5rem);
+  font-weight: 700;
   color: #d4341f;
   transform-style: preserve-3d;
   animation:
@@ -14402,6 +14425,9 @@ button,
 }
 #tx-exit-overlay .brand-x {
   font-size: 2.4rem;
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  font-weight: 700;
+  color: #d4341f;
   display: inline-block;
   transform-style: preserve-3d;
 }
