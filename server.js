@@ -351,9 +351,7 @@ const communityAnonHandle = () => `Anonymous-${crypto.randomBytes(3).toString("h
 const resolveCommunityAuthorName = (user, anonymous) =>
   anonymous
     ? communityAnonHandle()
-    : user.role === "client"
-    ? user.clientId
-    : user.settings?.displayName || user.workingName || "Unnamed";
+    : user.settings?.displayName || user.workingName || (user.role === "client" ? "Client" : "Unnamed");
 
 const makeRecoveryCode = () => {
   const raw = crypto.randomBytes(9).toString("hex").toUpperCase();
@@ -1655,7 +1653,7 @@ const handleApi = async (request, response, pathname) => {
       const replies = posts
         .filter((post) => post.parentId === threadId)
         .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-      const stripAuthorId = ({ authorUserId, ...rest }) => rest;
+      const stripAuthorId = ({ authorUserId, authorRole, ...rest }) => rest;
       return json(response, 200, {
         thread: stripAuthorId(thread),
         replies: replies.map(stripAuthorId)

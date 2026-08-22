@@ -69,7 +69,12 @@
 
   const loader = document.querySelector("#tx-loader");
   const exitOverlay = document.querySelector("#tx-exit-overlay");
-  const seenThisSession = sessionStorage.getItem(SEEN_KEY);
+  let seenThisSession = null;
+  try {
+    seenThisSession = sessionStorage.getItem(SEEN_KEY);
+  } catch (error) {
+    seenThisSession = null;
+  }
 
   if (seenThisSession || REDUCED_MOTION) {
     loader.classList.add("tx-skip");
@@ -80,7 +85,11 @@
       }
     });
   }
-  sessionStorage.setItem(SEEN_KEY, "1");
+  try {
+    sessionStorage.setItem(SEEN_KEY, "1");
+  } catch (error) {
+    // sessionStorage unavailable (e.g. private mode) — treat as unseen next load.
+  }
 
   const isTransitionableLink = (link) => {
     if (!link) return false;
