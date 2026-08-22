@@ -766,6 +766,7 @@
 /* ─── Custom Select (shared) ─── */
 
 .directory-filters select {
+  -webkit-appearance: none;
   appearance: none;
 }
 
@@ -1083,8 +1084,7 @@
 .directory-primary-button {
   color: #130b05;
   border: 1px solid rgba(var(--champagne-rgb), 0.8);
-  background: linear-gradient(180deg, #ae6669 0%, #931d20 54%, #380407 100%);
-  background: linear-gradient(180deg, color-mix(in oklch, var(--bullion-light) 75%, black) 0%, color-mix(in oklch, var(--bullion-mid) 75%, black) 54%, color-mix(in oklch, var(--bullion-dark) 75%, black) 100%);
+  background: linear-gradient(180deg, #ffe7ae 0%, #d9a64a 54%, #9b641d 100%);
   box-shadow:
     0 8px 28px rgba(var(--gold-rgb), 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.42);
@@ -1451,14 +1451,13 @@
   font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 .dir-card-badge--featured {
   color: #1a0e04;
-  background: linear-gradient(135deg, #ae6669 0%, #9d272c 48%, #931d20 100%);
-  background: linear-gradient(135deg, color-mix(in oklch, var(--bullion-light) 75%, black) 0%, color-mix(in oklch, var(--bullion-rich) 75%, black) 48%, color-mix(in oklch, var(--bullion-mid) 75%, black) 100%);
+  background: linear-gradient(135deg, #ffe7ae 0%, #e8c06a 48%, #d9a64a 100%);
   box-shadow:
     0 2px 12px rgba(0, 0, 0, 0.4),
     0 0 16px rgba(var(--gold-rgb), 0.2),
@@ -1474,8 +1473,7 @@
 
 .dir-card-badge--new {
   color: #1a0e04;
-  background: linear-gradient(135deg, #ae6669 0%, #9d272c 48%, #931d20 100%);
-  background: linear-gradient(135deg, color-mix(in oklch, var(--bullion-light) 75%, black) 0%, color-mix(in oklch, var(--bullion-rich) 75%, black) 48%, color-mix(in oklch, var(--bullion-mid) 75%, black) 100%);
+  background: linear-gradient(135deg, #ffe7ae 0%, #e8c06a 48%, #d9a64a 100%);
   box-shadow:
     0 2px 12px rgba(0, 0, 0, 0.4),
     0 0 16px rgba(var(--gold-rgb), 0.2),
@@ -1953,7 +1951,6 @@
     inset: 0;
     z-index: 200;
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
     padding: 0 0 max(56px, env(safe-area-inset-bottom, 0px));
     border-radius: 0;
     border: none;
@@ -3602,8 +3599,8 @@ h2 {
   z-index: 0;
   border-radius: 2px;
   will-change: transform;
-  backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   box-shadow:
     inset 0 1px rgba(255, 244, 220, 0.08),
     inset 0 -40px 72px rgba(0, 0, 0, 0.36),
@@ -5373,12 +5370,6 @@ h3 {
     margin-top: 0;
     border-width: 0 0 1px;
     border-radius: 0;
-  }
-
-  .temptx-home .announcement {
-    padding: 10px 18px;
-    font-size: 0.55rem;
-    letter-spacing: 0.22em;
   }
 
   .brand-row {
@@ -7327,6 +7318,7 @@ body[data-auth-role] .account-type-switch {
 }
 
 .auth-field select {
+  -webkit-appearance: none;
   appearance: none;
   padding-right: 44px;
   background:
@@ -7722,6 +7714,7 @@ body[data-auth-role] .account-type-switch {
 
 .setup-checklist-progress-bar span {
   display: block;
+  width: 0;
   height: 100%;
   border-radius: inherit;
   background: var(--btn-gold-gradient, var(--gold));
@@ -8071,6 +8064,7 @@ body[data-auth-role] .account-type-switch {
   width: 46px;
   height: 24px;
   flex: 0 0 auto;
+  -webkit-appearance: none;
   appearance: none;
   border: 1px solid rgba(var(--cream-rgb), 0.28);
   border-radius: 999px;
@@ -8628,13 +8622,6 @@ body.cinematic-background::after {
     0 0 52px rgba(var(--gold-rgb), 0.08),
     inset 0 1px rgba(255, 244, 220, 0.22),
     inset 0 -40px 72px rgba(0, 0, 0, 0.28);
-}
-
-.temptx-home .announcement {
-  min-height: 52px;
-  color: var(--bullion-light);
-  font-size: 0.78rem;
-  letter-spacing: 0.34em;
 }
 
 .temptx-home .brand-row {
@@ -9450,6 +9437,7 @@ body.cinematic-background {
   border-radius: 0;
   outline: 0;
   background: rgba(255, 255, 255, 0.025);
+  -webkit-appearance: none;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c5a06a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -10466,15 +10454,12 @@ body.directory-body::after {
   color: var(--text-on-gold);
   border: 1px solid rgba(var(--champagne-rgb), 0.8);
   background:
-    linear-gradient(180deg, #ae6669 0%, #931d20 54%, #380407 100%),
-    var(--gold);
-  background:
-    linear-gradient(180deg, color-mix(in oklch, var(--bullion-light) 75%, black) 0%, color-mix(in oklch, var(--bullion-mid) 75%, black) 54%, color-mix(in oklch, var(--bullion-dark) 75%, black) 100%),
+    linear-gradient(180deg, var(--bullion-light) 0%, var(--bullion-mid) 54%, var(--bullion-dark) 100%),
     var(--gold);
   box-shadow:
     0 16px 44px rgba(var(--gold-rgb), 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
-  text-shadow: 0 1px 0 rgba(255, 232, 184, 0.42);
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   transition:
     transform var(--duration-fast) var(--ease-luxury),
     filter var(--duration-fast) ease,
@@ -10630,11 +10615,6 @@ body.directory-body {
   margin-top: clamp(62px, 10vh, 108px);
 }
 
-.temptx-home .announcement {
-  min-height: 46px;
-  font-size: 0.72rem;
-}
-
 .temptx-home .brand-row {
   min-height: clamp(158px, 18vh, 212px);
   padding: clamp(28px, 3.8vw, 46px) clamp(52px, 7vw, 134px) 20px;
@@ -10736,10 +10716,6 @@ body.directory-body {
     background-size: 100% 100%, 100% 100%, auto 92vh, 160% 160%;
   }
 
-  .temptx-home .announcement {
-    min-height: 40px;
-  }
-
   .temptx-home .brand-row {
     min-height: 150px;
     padding: 24px 18px 18px;
@@ -10837,14 +10813,6 @@ body.directory-body {
 
 .temptx-home .store-header::after {
   display: none;
-}
-
-.temptx-home .announcement {
-  min-height: 92px;
-  border-bottom: 0;
-  color: rgba(var(--gold-rgb), 0.72);
-  font-size: 0.8rem;
-  letter-spacing: 0.36em;
 }
 
 .temptx-home .brand-row {
@@ -11050,10 +11018,6 @@ body.directory-body {
   .temptx-home .storefront,
   .temptx-home .site-header {
     width: min(100% - 28px, 1540px);
-  }
-
-  .temptx-home .announcement {
-    min-height: 58px;
   }
 
   .temptx-home .brand-row {
@@ -12291,6 +12255,7 @@ body.creator-dashboard-body {
 /* ─── Select arrow repositioned for underline ─── */
 
 .auth-body .auth-field select {
+  -webkit-appearance: none;
   appearance: none;
   padding-right: 28px;
   background:
@@ -14151,12 +14116,20 @@ button,
   margin: 0;
 }
 
+.tx-section--flush {
+  border-bottom: none;
+}
+
 .tx-feat-head-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   flex-wrap: wrap;
   gap: 20px;
+}
+
+.tx-feat-head-row .tx-section-head {
+  margin-bottom: 0;
 }
 
 .tx-section-link {
@@ -14283,5 +14256,169 @@ button,
 
   .temptx-home .account-dropdown {
     right: auto;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   LOGO FLIP + PAGE-LOAD PRELOADER + QUICK TRANSITIONS
+   Layers motion + the approved bracket wordmark onto the
+   persistent nav logo, splash and transition overlay that
+   script.js injects on every page. Scoped tightly to the
+   header nav mark (.site-header .site-header-bar .brand-mark)
+   plus the splash/exit overlay — the large hero lockup with
+   the tagline, the footer "TemptX", and the age-gate heading
+   are untouched and keep the original gold-gradient treatment.
+   ══════════════════════════════════════════════════ */
+
+.brand-x {
+  display: inline-block;
+  animation: tx-flip 4s cubic-bezier(.6, .05, .2, 1) infinite;
+}
+
+@keyframes tx-flip {
+  0%, 55% { transform: rotateY(0deg); }
+  70%     { transform: rotateY(360deg); }
+  100%    { transform: rotateY(360deg); }
+}
+
+/* ── Bracket wordmark — nav logo only ──
+   "[" / "]" are injected as real DOM spans by script.js rather than
+   ::before/::after, because ::after is already the tagline slot on
+   the large hero brand-mark variant elsewhere in this file — reusing
+   it here would collide with that on any page using both. */
+.site-header .site-header-bar .brand-mark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: clamp(4px, 0.6vw, 8px);
+}
+
+.brand-bracket {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 300;
+  color: var(--cream);
+  line-height: 1;
+}
+
+.site-header .site-header-bar .brand-bracket {
+  font-size: 1.35em;
+}
+
+.site-header .site-header-bar .brand-word {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  -webkit-text-fill-color: initial;
+  -webkit-text-stroke: 0;
+  filter: none;
+  text-shadow: none;
+  color: #e8e8e8;
+  font-weight: 700;
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+
+.site-header .site-header-bar .brand-x {
+  color: #d4341f;
+}
+
+/* Full-screen splash — first page load of a browser session only
+   (see script.js). Reuses .brand-word / .brand-x so it automatically
+   matches the site's real gold-gradient wordmark treatment. */
+#tx-loader {
+  position: fixed;
+  inset: 0;
+  background: var(--black);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: tx-loader-out 700ms ease forwards;
+  animation-delay: 2300ms;
+}
+#tx-loader.tx-skip {
+  display: none !important;
+}
+@keyframes tx-loader-out {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
+}
+
+.tx-loader-mark {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(4px, 1.4vw, 10px);
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+.tx-loader-mark .brand-bracket {
+  font-size: clamp(1.8rem, 5.4vw, 3.7rem);
+}
+.tx-loader-mark .brand-bracket-l {
+  animation: tx-slide-l 0.9s cubic-bezier(.2, .8, .2, 1) both;
+}
+.tx-loader-mark .brand-bracket-r {
+  animation: tx-slide-r 0.9s cubic-bezier(.2, .8, .2, 1) both;
+}
+.tx-loader-mark .brand-word {
+  font-size: clamp(2.6rem, 8vw, 5.5rem);
+  font-weight: 700;
+  color: #e8e8e8;
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  -webkit-text-fill-color: initial;
+  -webkit-text-stroke: 0;
+  filter: none;
+  text-shadow: none;
+  animation: tx-fade-up 0.9s 0.25s ease both;
+}
+.tx-loader-mark .brand-x {
+  font-size: clamp(2.6rem, 8vw, 5.5rem);
+  color: #d4341f;
+  transform-style: preserve-3d;
+  animation:
+    tx-pop-in 0.6s 0.85s cubic-bezier(.34, 1.56, .64, 1) both,
+    tx-flip 4s 1.5s cubic-bezier(.6, .05, .2, 1) infinite;
+}
+@keyframes tx-fade-up { from { transform: translateY(18px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes tx-pop-in  { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes tx-slide-l { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes tx-slide-r { from { transform: translateX(-40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* Quick exit transition — every internal nav click AFTER the first
+   page load this session. See script.js for the sessionStorage logic. */
+#tx-exit-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--black);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 280ms ease;
+}
+#tx-exit-overlay.tx-exit-active {
+  opacity: 1;
+  pointer-events: all;
+}
+#tx-exit-overlay .brand-x {
+  font-size: 2.4rem;
+  display: inline-block;
+  transform-style: preserve-3d;
+}
+#tx-exit-overlay.tx-exit-active .brand-x {
+  animation: tx-flip-once 280ms linear both;
+}
+@keyframes tx-flip-once { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-x,
+  .tx-loader-mark .brand-word,
+  .tx-loader-mark .brand-x,
+  #tx-loader,
+  #tx-exit-overlay .brand-x {
+    animation: none !important;
+  }
+  #tx-loader {
+    display: none !important;
   }
 }

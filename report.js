@@ -9,7 +9,7 @@ if (reportForm) {
   const reportStatusResult = document.querySelector("#reportStatusResult");
 
   const requestedType = params.get("type");
-  if (["profile", "conversation", "account", "technical", "other"].includes(requestedType)) {
+  if (["profile", "conversation", "account", "technical", "community", "other"].includes(requestedType)) {
     reportType.value = requestedType;
   }
   reportReference.value = (params.get("ref") || "").slice(0, 120);

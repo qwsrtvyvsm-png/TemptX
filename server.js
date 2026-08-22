@@ -20,12 +20,14 @@ const transactionsFile = path.join(dataDirectory, "transactions.json");
 const verificationEventsFile = path.join(dataDirectory, "verificationEvents.json");
 const bookingsFile = path.join(dataDirectory, "bookings.json");
 const clientNotesFile = path.join(dataDirectory, "client-notes.json");
+const communityPostsFile = path.join(dataDirectory, "community-posts.json");
 const serverSecretFile = path.join(dataDirectory, "server-secret");
 const sessions = new Map();
 const resetTokens = new Map();
 const reportRateLimits = new Map();
 const authRateLimits = new Map();
 const clientIdFailures = new Map();
+const communityRateLimits = new Map();
 // Short-lived, single-use OTP codes for self-service verification — same in-memory,
 // server-restart-clears-them tradeoff already accepted for resetTokens. Keyed by
 // userId (one pending code per user per channel); resending overwrites the entry.
@@ -74,6 +76,10 @@ if (!fs.existsSync(bookingsFile)) {
 
 if (!fs.existsSync(clientNotesFile)) {
   fs.writeFileSync(clientNotesFile, "[]\n");
+}
+
+if (!fs.existsSync(communityPostsFile)) {
+  fs.writeFileSync(communityPostsFile, "[]\n");
 }
 let serverSecret;
 if (process.env.SERVER_SECRET) {
@@ -200,11 +206,41 @@ const readClientNotes = () => JSON.parse(fs.readFileSync(clientNotesFile, "utf8"
 const writeClientNotes = (clientNotes) =>
   atomicWrite(clientNotesFile, `${JSON.stringify(clientNotes, null, 2)}\n`);
 
+const readCommunityPosts = () => {
+  const parsePostsFile = (filePath) => {
+    const posts = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    if (!Array.isArray(posts)) throw new Error("Community posts data must be an array.");
+    return posts;
+  };
+
+  try {
+    return parsePostsFile(communityPostsFile);
+  } catch (error) {
+    const temporaryFile = `${communityPostsFile}.tmp`;
+
+    try {
+      const recoveredPosts = parsePostsFile(temporaryFile);
+      const backupFile = `${communityPostsFile}.corrupt-${Date.now()}`;
+      fs.renameSync(communityPostsFile, backupFile);
+      atomicWrite(communityPostsFile, `${JSON.stringify(recoveredPosts, null, 2)}\n`);
+      console.warn(`[community] Recovered posts from temporary file; preserved invalid data at ${backupFile}`);
+      return recoveredPosts;
+    } catch (recoveryError) {
+      throw new Error(
+        `Unable to read community posts without risking data loss: ${error.message}; recovery failed: ${recoveryError.message}`
+      );
+    }
+  }
+};
+const writeCommunityPosts = (posts) =>
+  atomicWrite(communityPostsFile, `${JSON.stringify(posts, null, 2)}\n`);
+
 const usersQueue = makeQueue();
 const reportsQueue = makeQueue();
 const verificationEventsQueue = makeQueue();
 const bookingsQueue = makeQueue();
 const clientNotesQueue = makeQueue();
+const communityPostsQueue = makeQueue();
 
 // Append-only audit trail for verification actions. Never records the OTP code or
 // its hash — only status transitions — so it's safe to keep indefinitely.
@@ -295,6 +331,7 @@ const businessCategories = new Set([
   "support services",
   "other"
 ]);
+const communityBoards = new Set(["safety-support", "local-district", "industry-talk"]);
 const normaliseAbn = (abn) => String(abn || "").replace(/\D/g, "");
 const hashPrivateValue = (value) =>
   crypto.createHmac("sha256", serverSecret).update(String(value)).digest("hex");
@@ -304,6 +341,17 @@ const cleanText = (value, maxLength) =>
     .replace(/\0/g, "")
     .trim()
     .slice(0, maxLength);
+
+// Community posts snapshot the author's display name at creation time rather than
+// resolving it live on every read, so GET routes never need to cross-reference
+// users.json. Anonymous posts get a one-off generated handle instead — not tied
+// to a persistent pseudonymous identity, since the same account can freely mix
+// anonymous and attributed posts per the product requirement.
+const communityAnonHandle = () => `Anonymous-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
+const resolveCommunityAuthorName = (user, anonymous) =>
+  anonymous
+    ? communityAnonHandle()
+    : user.settings?.displayName || user.workingName || (user.role === "client" ? "Client" : "Unnamed");
 
 const makeRecoveryCode = () => {
   const raw = crypto.randomBytes(9).toString("hex").toUpperCase();
@@ -1406,7 +1454,7 @@ const handleApi = async (request, response, pathname) => {
       }
 
       const body = await readJsonBody(request);
-      const allowedTypes = new Set(["profile", "conversation", "account", "technical", "other"]);
+      const allowedTypes = new Set(["profile", "conversation", "account", "technical", "community", "other"]);
       const allowedCategories = new Set(["harassment", "coercion", "scam", "privacy", "underage", "other"]);
       const type = cleanText(body.type, 40);
       const category = cleanText(body.category, 40);
@@ -1565,6 +1613,133 @@ const handleApi = async (request, response, pathname) => {
         }))
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
       return json(response, 200, { reports });
+    }
+
+    // ---------------------------------------------------------------------
+    // Community forum — public read, signed-in write (any role), self-serve
+    // moderation via the existing /api/reports pipeline (report type
+    // "community"). Thread/reply bodies are stored raw (cleanText only
+    // trims/truncates, it does not HTML-escape) — the frontend is
+    // responsible for rendering every user-supplied field via textContent,
+    // never innerHTML interpolation.
+    // ---------------------------------------------------------------------
+
+    const communityThreadsListMatch = pathname.match(/^\/api\/community\/boards\/([^/]+)\/threads$/);
+    if (communityThreadsListMatch && request.method === "GET") {
+      const [, board] = communityThreadsListMatch;
+      if (!communityBoards.has(board)) return json(response, 404, { error: "Unknown board." });
+
+      const threads = readCommunityPosts()
+        .filter((post) => post.board === board && post.parentId === null)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .map(({ id, title, authorDisplayName, isAnonymous, createdAt, replyCount }) => ({
+          id,
+          title,
+          authorDisplayName,
+          isAnonymous,
+          createdAt,
+          replyCount
+        }));
+      return json(response, 200, { threads });
+    }
+
+    const communityThreadMatch = pathname.match(/^\/api\/community\/threads\/([^/]+)$/);
+    if (communityThreadMatch && request.method === "GET") {
+      const [, threadId] = communityThreadMatch;
+      const posts = readCommunityPosts();
+      const thread = posts.find((post) => post.id === threadId && post.parentId === null);
+      if (!thread) return json(response, 404, { error: "Thread not found." });
+
+      const replies = posts
+        .filter((post) => post.parentId === threadId)
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      const stripAuthorId = ({ authorUserId, authorRole, ...rest }) => rest;
+      return json(response, 200, {
+        thread: stripAuthorId(thread),
+        replies: replies.map(stripAuthorId)
+      });
+    }
+
+    if (pathname === "/api/community/threads" && request.method === "POST") {
+      const user = requireSession(request);
+      if (!user) return json(response, 401, { error: "Sign in to start a thread." });
+      if (!rateLimit(communityRateLimits, `community:thread:${user.id}`, 10, 60 * 60 * 1000)) {
+        return json(response, 429, { error: "Too many threads posted. Try again later." });
+      }
+
+      const body = await readJsonBody(request);
+      const board = cleanText(body.board, 40);
+      const title = cleanText(body.title, 150);
+      const postBody = cleanText(body.body, 5000);
+      const anonymous = Boolean(body.anonymous);
+
+      if (!communityBoards.has(board)) return json(response, 400, { error: "Choose a valid board." });
+      if (title.length < 3) return json(response, 400, { error: "Title must be at least 3 characters." });
+      if (postBody.length < 10) return json(response, 400, { error: "Post must be at least 10 characters." });
+
+      const thread = {
+        id: crypto.randomUUID(),
+        board,
+        parentId: null,
+        title,
+        body: postBody,
+        authorUserId: user.id,
+        authorRole: user.role,
+        isAnonymous: anonymous,
+        authorDisplayName: resolveCommunityAuthorName(user, anonymous),
+        replyCount: 0,
+        createdAt: new Date().toISOString()
+      };
+
+      await communityPostsQueue(() => {
+        const posts = readCommunityPosts();
+        posts.push(thread);
+        writeCommunityPosts(posts);
+      });
+
+      const { authorUserId, ...publicThread } = thread;
+      return json(response, 201, { thread: publicThread });
+    }
+
+    const communityReplyMatch = pathname.match(/^\/api\/community\/threads\/([^/]+)\/replies$/);
+    if (communityReplyMatch && request.method === "POST") {
+      const user = requireSession(request);
+      if (!user) return json(response, 401, { error: "Sign in to reply." });
+      if (!rateLimit(communityRateLimits, `community:reply:${user.id}`, 30, 60 * 60 * 1000)) {
+        return json(response, 429, { error: "Too many replies posted. Try again later." });
+      }
+
+      const [, threadId] = communityReplyMatch;
+      const body = await readJsonBody(request);
+      const postBody = cleanText(body.body, 3000);
+      const anonymous = Boolean(body.anonymous);
+      if (postBody.length < 2) return json(response, 400, { error: "Reply is too short." });
+
+      let created = null;
+      await communityPostsQueue(() => {
+        const posts = readCommunityPosts();
+        const thread = posts.find((post) => post.id === threadId && post.parentId === null);
+        if (!thread) return;
+        created = {
+          id: crypto.randomUUID(),
+          board: thread.board,
+          parentId: threadId,
+          title: null,
+          body: postBody,
+          authorUserId: user.id,
+          authorRole: user.role,
+          isAnonymous: anonymous,
+          authorDisplayName: resolveCommunityAuthorName(user, anonymous),
+          createdAt: new Date().toISOString()
+        };
+        posts.push(created);
+        thread.replyCount = (thread.replyCount || 0) + 1;
+        writeCommunityPosts(posts);
+      });
+
+      if (!created) return json(response, 404, { error: "Thread not found." });
+      const { authorUserId, ...publicReply } = created;
+      return json(response, 201, { reply: publicReply });
     }
 
 // ---------------------------------------------------------------------------

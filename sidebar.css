@@ -87,6 +87,7 @@
 
 .sidebar-link,
 .sidebar-group-trigger {
+  -webkit-appearance: none;
   appearance: none;
   border: 0;
   background: none;
@@ -177,11 +178,15 @@ a.sidebar-link:hover {
   gap: 2px;
   max-height: 0;
   overflow: hidden;
-  transition: max-height var(--duration-mid) var(--ease-soft);
+  visibility: hidden;
+  transition: max-height var(--duration-mid) var(--ease-soft),
+    visibility 0s linear var(--duration-mid);
 }
 
 .sidebar-group.is-open .sidebar-group-items {
   max-height: 640px;
+  visibility: visible;
+  transition: max-height var(--duration-mid) var(--ease-soft), visibility 0s linear 0s;
 }
 
 .sidebar-group-items .sidebar-link {

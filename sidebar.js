@@ -16,6 +16,24 @@
     profile: '<circle cx="10" cy="6.5" r="3.25" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3.5 17c1-3.4 4-5 6.5-5s5.5 1.6 6.5 5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
     engagement: '<path d="M3 4.5h14v8H8.5L5 15.5V12.5H3v-8Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>',
     marketing: '<path d="M3 8v4l3 .6V7.4L3 8Zm3 4.6 1 3.4h1.5l-.7-3M6 7.4l9-3.4v12l-9-3.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>',
+    xync: '<circle cx="7.5" cy="10" r="5" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="12.5" cy="10" r="5" fill="none" stroke="currentColor" stroke-width="1.4"/>',
+  };
+
+  const safeStorage = {
+    get(key) {
+      try {
+        return window.localStorage.getItem(key);
+      } catch (error) {
+        return null;
+      }
+    },
+    set(key, value) {
+      try {
+        window.localStorage.setItem(key, value);
+      } catch (error) {
+        // Storage unavailable (e.g. Safari private mode) — group state just won't persist.
+      }
+    },
   };
 
   const chevronSvg = () =>
@@ -30,6 +48,7 @@
     provider: [
       { key: "dashboard", label: "Dashboard", href: "provider-dashboard.html", icon: "dashboard" },
       { key: "billing", label: "Subscriptions & Billing", href: "membership.html", icon: "billing" },
+      { key: "xync", label: "Xync", href: "xync.html", icon: "xync" },
       {
         key: "profile",
         label: "Profile",
@@ -72,6 +91,7 @@
     creator: [
       { key: "dashboard", label: "Dashboard", href: "creator-dashboard.html", icon: "dashboard" },
       { key: "billing", label: "Subscriptions & Billing", href: "membership.html", icon: "billing" },
+      { key: "xync", label: "Xync", href: "xync.html", icon: "xync" },
       {
         key: "profile",
         label: "Profile",
@@ -196,7 +216,7 @@
     const wrap = document.createElement("div");
     wrap.className = "sidebar-group";
 
-    const stored = window.localStorage.getItem(`${storageKey}:${group.key}`);
+    const stored = safeStorage.get(`${storageKey}:${group.key}`);
     const isOpen = stored === null ? containsActive : stored === "1";
     wrap.classList.toggle("is-open", isOpen);
 
@@ -209,7 +229,7 @@
       const nowOpen = !wrap.classList.contains("is-open");
       wrap.classList.toggle("is-open", nowOpen);
       trigger.setAttribute("aria-expanded", String(nowOpen));
-      window.localStorage.setItem(`${storageKey}:${group.key}`, nowOpen ? "1" : "0");
+      safeStorage.set(`${storageKey}:${group.key}`, nowOpen ? "1" : "0");
     });
 
     const items = document.createElement("div");
@@ -285,10 +305,10 @@
 
     footer.innerHTML = `
       <button type="button" class="sidebar-account-btn" aria-haspopup="true" aria-expanded="false">
-        <span class="sidebar-avatar">${initials(name)}</span>
+        <span class="sidebar-avatar"></span>
         <span class="sidebar-account-meta">
-          <span class="sidebar-account-name">${name}</span>
-          <span class="sidebar-account-role">${roleLabel}</span>
+          <span class="sidebar-account-name"></span>
+          <span class="sidebar-account-role"></span>
         </span>
         <svg class="sidebar-account-chevron" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 6.5 5 3l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
@@ -298,6 +318,12 @@
         <a href="auth.html" data-logout>Log Out</a>
       </div>
     `;
+
+    // Set via textContent, not interpolated into the innerHTML template above —
+    // name is user-controlled (display name/email) and must never be parsed as markup.
+    footer.querySelector(".sidebar-avatar").textContent = initials(name);
+    footer.querySelector(".sidebar-account-name").textContent = name;
+    footer.querySelector(".sidebar-account-role").textContent = roleLabel;
 
     const btn = footer.querySelector(".sidebar-account-btn");
     btn.addEventListener("click", () => {

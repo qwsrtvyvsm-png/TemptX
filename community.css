@@ -1,0 +1,261 @@
+/* TEMPTX Community Forum — dedicated stylesheet, loaded only by community.html.
+   Reuses the design tokens already defined in style.css :root — no hardcoded
+   colour values. Compose/reply forms reuse style.css's .report-form field and
+   button styling (label/input/select/textarea/button, focus rings); the rules
+   below only override its two-column report-page layout assumptions (padding,
+   border-right) so it reads correctly as a standalone compose box. */
+
+body.community-page .community-main {
+  width: min(880px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: clamp(32px, 5vw, 64px) 0 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+body.community-page .community-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+body.community-page .community-eyebrow {
+  margin: 0;
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+body.community-page .community-hero h1 {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  font-family: var(--font-display, var(--font-serif));
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  line-height: 1;
+  color: var(--cream);
+}
+
+body.community-page .community-hero > p {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--muted);
+}
+
+body.community-page .community-hero-support {
+  font-size: 0.85rem;
+}
+
+body.community-page .community-hero-support a {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* ── Board tabs ─────────────────────────────────────────────────────────── */
+
+body.community-page .community-board-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+body.community-page .community-board-tabs a {
+  padding: 10px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill, 999px);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
+}
+
+body.community-page .community-board-tabs a:hover {
+  border-color: rgba(var(--gold-rgb), 0.5);
+  color: var(--cream);
+}
+
+body.community-page .community-board-tabs a.is-active {
+  border-color: var(--gold);
+  background: rgba(var(--gold-rgb), 0.12);
+  color: var(--gold);
+}
+
+body.community-page .community-board-view,
+body.community-page .community-thread-view {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Compose / reply forms ─────────────────────────────────────────────── */
+
+body.community-page .community-compose-form {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg, 12px);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+body.community-page .community-anon-toggle {
+  display: flex !important;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 400 !important;
+}
+
+body.community-page .community-anon-toggle input {
+  width: 18px;
+  min-height: 18px;
+  accent-color: var(--gold);
+}
+
+body.community-page .community-signin-prompt {
+  margin: 0;
+  padding: 18px 20px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-lg, 12px);
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+body.community-page .community-signin-prompt a {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* ── Thread list ────────────────────────────────────────────────────────── */
+
+body.community-page .community-list-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+body.community-page .community-thread-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body.community-page .community-thread-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg, 12px);
+  background: rgba(0, 0, 0, 0.16);
+  text-decoration: none;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+body.community-page .community-thread-card:hover {
+  border-color: rgba(var(--gold-rgb), 0.45);
+  background: rgba(0, 0, 0, 0.26);
+}
+
+body.community-page .community-thread-card h3 {
+  margin: 0;
+  color: var(--cream);
+  font-size: 1.02rem;
+}
+
+body.community-page .community-thread-meta {
+  margin: 0;
+  display: flex;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+body.community-page .community-thread-author {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+body.community-page .community-thread-replies {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+/* ── Thread detail ──────────────────────────────────────────────────────── */
+
+body.community-page .community-back-link {
+  align-self: flex-start;
+  color: var(--gold);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+body.community-page .community-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg, 12px);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+body.community-page .community-thread h2 {
+  margin: 0;
+  color: var(--cream);
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+}
+
+body.community-page .community-thread-body,
+body.community-page .community-reply-body {
+  margin: 0;
+  color: rgba(var(--cream-rgb), 0.86);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+body.community-page .community-report-link {
+  align-self: flex-start;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+body.community-page .community-reply-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body.community-page .community-reply {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg, 12px);
+  background: rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 640px) {
+  body.community-page .community-main {
+    width: 100%;
+    padding-inline: 18px;
+  }
+
+  body.community-page .community-hero h1 {
+    font-size: clamp(1.9rem, 11vw, 2.6rem);
+  }
+}

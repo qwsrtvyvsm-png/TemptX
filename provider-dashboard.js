@@ -360,9 +360,14 @@ if (dashboardContent) {
   clientsTabButton.addEventListener("click", () => switchTab("clients"));
   clientSearchInput.addEventListener("input", renderClients);
 
-  if (window.location.hash === "#clientsTab") {
-    switchTab("clients");
-  }
+  const syncTabFromHash = () => {
+    if (window.location.hash === "#clientsTab") {
+      switchTab("clients");
+    }
+  };
+
+  syncTabFromHash();
+  window.addEventListener("hashchange", syncTabFromHash);
 
   const init = async () => {
     try {

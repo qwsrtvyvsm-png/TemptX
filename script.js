@@ -1,3 +1,109 @@
+/* ── Logo-flip preloader + quick page transitions ──
+   Full splash plays once per browser session (sessionStorage), on
+   whichever page a visitor lands on first. Every internal nav click
+   after that gets a quick flip/fade instead of the full splash again —
+   see style.css "LOGO FLIP + PAGE-LOAD PRELOADER" section for the
+   animations these elements drive. Injected here (rather than pasted
+   into every .html file) because script.js is the one file every page
+   already loads. */
+/* ── Bracket wordmark — nav logo ──
+   Adds the "[" / "]" glyphs from the approved logo design around the
+   TEMPTX wordmark in the persistent header nav. Injected as real DOM
+   spans (rather than a CSS ::before/::after) because ::after is
+   already used as the tagline slot on the large hero brand-mark
+   variant elsewhere on the site — reusing it here would collide with
+   that on pages using both. See style.css "Bracket wordmark" rules
+   for how these are styled/coloured. */
+(() => {
+  document.querySelectorAll(".site-header .site-header-bar .brand-mark").forEach((mark) => {
+    if (mark.querySelector(".brand-bracket")) return;
+    const open = document.createElement("span");
+    open.className = "brand-bracket brand-bracket-l";
+    open.setAttribute("aria-hidden", "true");
+    open.textContent = "[";
+    const close = document.createElement("span");
+    close.className = "brand-bracket brand-bracket-r";
+    close.setAttribute("aria-hidden", "true");
+    close.textContent = "]";
+    mark.insertBefore(open, mark.firstChild);
+    mark.appendChild(close);
+  });
+})();
+
+(() => {
+  const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const SEEN_KEY = "temptxSeenPreloader";
+
+  document.body.insertAdjacentHTML(
+    "afterbegin",
+    `<div id="tx-loader"><div class="tx-loader-mark"><span class="brand-bracket brand-bracket-l" aria-hidden="true">[</span><span class="brand-word">TEMPT</span><span class="brand-x">X</span><span class="brand-bracket brand-bracket-r" aria-hidden="true">]</span></div></div>` +
+    `<div id="tx-exit-overlay"><span class="brand-x">X</span></div>`
+  );
+
+  const loader = document.querySelector("#tx-loader");
+  const exitOverlay = document.querySelector("#tx-exit-overlay");
+  let seenThisSession = null;
+  try {
+    seenThisSession = sessionStorage.getItem(SEEN_KEY);
+  } catch (error) {
+    seenThisSession = null;
+  }
+
+  if (seenThisSession || REDUCED_MOTION) {
+    loader.classList.add("tx-skip");
+  } else {
+    loader.addEventListener("animationend", (event) => {
+      if (event.animationName === "tx-loader-out") {
+        loader.remove();
+      }
+    });
+  }
+  try {
+    sessionStorage.setItem(SEEN_KEY, "1");
+  } catch (error) {
+    // sessionStorage unavailable (e.g. private mode) — treat as unseen next load.
+  }
+
+  const isTransitionableLink = (link) => {
+    if (!link) return false;
+    if (link.target && link.target !== "_self") return false;
+    if (link.hasAttribute("download")) return false;
+    const rawHref = link.getAttribute("href") || "";
+    if (rawHref === "" || rawHref.startsWith("#")) return false;
+
+    let url;
+    try {
+      url = new URL(link.href, window.location.href);
+    } catch {
+      return false;
+    }
+    if (url.origin !== window.location.origin) return false;
+    if (url.pathname === window.location.pathname && url.search === window.location.search) return false;
+    return true;
+  };
+
+  document.addEventListener("click", (event) => {
+    // No "was this the first page" guard needed here: while the splash is
+    // still up it's a full-screen fixed element with default pointer-events,
+    // so it already absorbs any click itself — nav links underneath simply
+    // can't be reached until it's gone. Once it's gone (or was skipped),
+    // every internal link click gets the quick transition.
+    if (REDUCED_MOTION) return;
+    if (event.defaultPrevented || event.button !== 0) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+    const link = event.target.closest ? event.target.closest("a[href]") : null;
+    if (!isTransitionableLink(link)) return;
+
+    event.preventDefault();
+    const destination = link.href;
+    exitOverlay.classList.add("tx-exit-active");
+    window.setTimeout(() => {
+      window.location.href = destination;
+    }, 320);
+  });
+})();
+
 const ageGate = document.querySelector("#ageGate");
 const pwaScript = document.createElement("script");
 pwaScript.src = "pwa.js";

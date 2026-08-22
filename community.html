@@ -3,18 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>Join TEMPTX | Choose Your Role</title>
-
-  <meta
-    name="description"
-    content="Join TEMPTX — Australia's adult network. Choose your role to get started as a Provider, Client, Business or Content Creator."
-  />
-
+  <title>Community | TEMPTX</title>
+  <meta name="description" content="The TEMPTX community forum — safety and support, local and district chat, and industry talk for clients, providers, creators, and businesses." />
   <link rel="stylesheet" href="style.css?v=20260821-01" />
+  <link rel="stylesheet" href="community.css?v=20260821-03" />
 </head>
 
-<body class="cinematic-background temptx-home">
+<body class="community-page">
   <div id="ageGate" class="age-gate">
     <div class="age-box">
       <h1>Tempt<span>X</span></h1>
@@ -48,12 +43,13 @@
         <span class="brand-x">X</span>
       </a>
       <nav class="store-nav home-nav" aria-label="Main navigation">
-        <a href="index.html">Home</a>
-        <a href="directory.html">Directory</a>
-        <a href="safety-hub.html">Support</a>
-        <a href="community.html">Community</a>
-        <a href="chat.html" data-authenticated hidden>Messages</a>
-      </nav>
+      <a href="index.html">Home</a>
+      <a href="directory.html">Directory</a>
+      <a href="district.html">District</a>
+      <a href="safety-hub.html">Support</a>
+      <a href="community.html">Community</a>
+      <a href="chat.html" data-authenticated hidden>Messages</a>
+    </nav>
       </div>
       <div class="site-header-actions">
         <div class="account-dropdown hover-dropdown">
@@ -64,78 +60,75 @@
           <a href="auth.html" data-logout hidden>Log Out</a>
         </div>
       </div>
-        <a href="join.html" class="tx-join-btn" aria-current="page">Join</a>
+        <a href="join.html" class="tx-join-btn">Join</a>
       </div>
     </div>
   </header>
 
-  <main class="join-select-main">
-    <div class="join-select-wrapper">
-      <div class="join-select-panel">
+  <main class="community-main">
+    <section class="community-hero">
+      <p class="community-eyebrow">Australia's Adult Network</p>
+      <h1>Community</h1>
+      <p>Safety, local, and industry conversation — moderated the same way as the rest of TEMPTX. Post under your account name or anonymously, your choice, every time.</p>
+      <p class="community-hero-support">Looking for direct help instead? Visit <a href="community-support.html">Community Support</a>.</p>
+    </section>
 
-        <p class="join-select-eyebrow">Australia's Adult Network</p>
-        <h1 class="join-select-title">How would you like to join TEMPTX?</h1>
-        <span class="join-select-rule" aria-hidden="true"></span>
-        <p class="join-select-subtitle">Choose your role to continue.</p>
+    <nav class="community-board-tabs" id="boardTabs" aria-label="Forum boards">
+      <a href="community.html?board=safety-support" data-board="safety-support">Safety &amp; Support</a>
+      <a href="community.html?board=local-district" data-board="local-district">Local / District Chat</a>
+      <a href="community.html?board=industry-talk" data-board="industry-talk">Industry Talk</a>
+    </nav>
 
-        <!-- Section 1: Individual Accounts -->
-        <div class="join-select-section">
-          <div class="join-select-section-label">
-            <span class="join-select-section-rule" aria-hidden="true"></span>
-            <h2 class="join-select-section-heading">Individual Accounts</h2>
-            <span class="join-select-section-rule" aria-hidden="true"></span>
-          </div>
-
-          <div class="join-select-grid join-select-grid-3">
-
-            <a href="provider-signup.html" class="join-select-card">
-              <span class="join-select-icon" aria-hidden="true">◇</span>
-              <h3 class="join-select-role">Provider</h3>
-              <p class="join-select-desc">For independent providers offering services on TEMPTX.</p>
-              <span class="join-select-cta">Continue as Provider →</span>
-            </a>
-
-            <a href="client-signup.html" class="join-select-card">
-              <span class="join-select-icon" aria-hidden="true">◈</span>
-              <h3 class="join-select-role">Client</h3>
-              <p class="join-select-desc">For clients browsing, connecting and subscribing on TEMPTX.</p>
-              <span class="join-select-cta">Continue as Client →</span>
-            </a>
-
-            <a href="creator-signup.html" class="join-select-card">
-              <span class="join-select-icon" aria-hidden="true">◎</span>
-              <h3 class="join-select-role">Content Creator</h3>
-              <p class="join-select-desc">For creators building a content-based profile and audience on TEMPTX.</p>
-              <span class="join-select-cta">Continue as Content Creator →</span>
-            </a>
-
-          </div>
-        </div>
-
-        <!-- Section 2: Business Accounts -->
-        <div class="join-select-section join-select-section-biz">
-          <div class="join-select-section-label">
-            <span class="join-select-section-rule" aria-hidden="true"></span>
-            <h2 class="join-select-section-heading">Business Accounts</h2>
-            <span class="join-select-section-rule" aria-hidden="true"></span>
-          </div>
-
-          <div class="join-select-grid join-select-grid-1">
-
-            <a href="business-signup.html" class="join-select-card join-select-card-biz">
-              <span class="join-select-icon" aria-hidden="true">◉</span>
-              <h3 class="join-select-role">Business / Agency</h3>
-              <p class="join-select-desc">For brothels, escort agencies, adult venues, adult businesses and industry organisations.</p>
-              <span class="join-select-cta">Continue as Business / Agency →</span>
-            </a>
-
-          </div>
-        </div>
-
-        <p class="join-select-note">All applications are reviewed before any profile goes live. TEMPTX is strictly for adults aged 18 and over.</p>
-
+    <section id="boardView" class="community-board-view">
+      <div class="community-compose">
+        <form class="report-form community-compose-form" id="threadForm" data-authenticated hidden>
+          <label>
+            Title
+            <input id="threadTitle" type="text" maxlength="150" required />
+          </label>
+          <label>
+            Post
+            <textarea id="threadBody" maxlength="5000" required></textarea>
+          </label>
+          <label class="community-anon-toggle">
+            <input type="checkbox" id="threadAnonymous" />
+            <span>Post anonymously</span>
+          </label>
+          <button type="submit">Start thread</button>
+          <p class="report-status" id="threadFormStatus" aria-live="polite"></p>
+        </form>
+        <p class="community-signin-prompt" id="composeSigninPrompt" hidden>
+          <a href="auth.html?mode=login">Sign in</a> to start a thread.
+        </p>
       </div>
-    </div>
+
+      <p class="community-list-status" id="threadListStatus" aria-live="polite"></p>
+      <div class="community-thread-list" id="threadList"></div>
+    </section>
+
+    <section id="threadView" class="community-thread-view" hidden>
+      <a class="community-back-link" id="backToBoard" href="community.html">&larr; Back to board</a>
+      <article class="community-thread" id="threadDetail"></article>
+      <div class="community-reply-list" id="replyList"></div>
+
+      <div class="community-compose">
+        <form class="report-form community-compose-form" id="replyForm" data-authenticated hidden>
+          <label>
+            Reply
+            <textarea id="replyBody" maxlength="3000" required></textarea>
+          </label>
+          <label class="community-anon-toggle">
+            <input type="checkbox" id="replyAnonymous" />
+            <span>Post anonymously</span>
+          </label>
+          <button type="submit">Post reply</button>
+          <p class="report-status" id="replyFormStatus" aria-live="polite"></p>
+        </form>
+        <p class="community-signin-prompt" id="replySigninPrompt" hidden>
+          <a href="auth.html?mode=login">Sign in</a> to reply.
+        </p>
+      </div>
+    </section>
   </main>
 
   <footer class="footer home-footer">
@@ -181,5 +174,6 @@
   </footer>
 
   <script src="script.js?v=20260703-08"></script>
+  <script src="community.js?v=20260821-01"></script>
 </body>
 </html>

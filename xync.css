@@ -49,6 +49,7 @@
   border-radius: 1.5rem;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
   box-shadow: var(--luxury-shadow);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 
@@ -247,6 +248,7 @@
 }
 
 .button {
+  -webkit-appearance: none;
   appearance: none;
   border: 1px solid transparent;
   border-radius: 999px;
