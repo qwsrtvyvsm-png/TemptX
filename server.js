@@ -351,9 +351,7 @@ const communityAnonHandle = () => `Anonymous-${crypto.randomBytes(3).toString("h
 const resolveCommunityAuthorName = (user, anonymous) =>
   anonymous
     ? communityAnonHandle()
-    : user.role === "client"
-    ? user.clientId
-    : user.settings?.displayName || user.workingName || "Unnamed";
+    : user.settings?.displayName || user.workingName || (user.role === "client" ? "Client" : "Unnamed");
 
 const makeRecoveryCode = () => {
   const raw = crypto.randomBytes(9).toString("hex").toUpperCase();
