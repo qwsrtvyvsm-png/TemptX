@@ -1653,7 +1653,7 @@ const handleApi = async (request, response, pathname) => {
       const replies = posts
         .filter((post) => post.parentId === threadId)
         .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-      const stripAuthorId = ({ authorUserId, ...rest }) => rest;
+      const stripAuthorId = ({ authorUserId, authorRole, ...rest }) => rest;
       return json(response, 200, {
         thread: stripAuthorId(thread),
         replies: replies.map(stripAuthorId)
