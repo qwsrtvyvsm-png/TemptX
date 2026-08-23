@@ -120,7 +120,7 @@ const COMMUNITY_PATHWAY = [
   { key: "prepare", label: "Prepare", title: "Stay safe and ready.", href: "safety-hub.html" },
   { key: "connect", label: "Connect", title: "Meet the right people.", href: "#groups" },
   { key: "participate", label: "Participate", title: "Ask, share, and contribute.", href: "#discussions" },
-  { key: "grow", label: "Grow", title: "Build confidence and recognition.", href: "#contributions" }
+  { key: "grow", label: "Grow", title: "Build confidence and recognition.", href: "#contributions-panel" }
 ];
 
 // Topic key maps to either a board (discussions filtered/searched by tag),
