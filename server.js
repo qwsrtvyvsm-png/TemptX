@@ -120,7 +120,9 @@ if (!fs.existsSync(communityGroupsFile)) {
     ...group,
     createdAt: new Date().toISOString()
   }));
-  fs.writeFileSync(communityGroupsFile, `${JSON.stringify(seededGroups, null, 2)}\n`);
+  const tmp = `${communityGroupsFile}.tmp`;
+  fs.writeFileSync(tmp, `${JSON.stringify(seededGroups, null, 2)}\n`);
+  fs.renameSync(tmp, communityGroupsFile);
 }
 
 let serverSecret;
