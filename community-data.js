@@ -120,7 +120,7 @@ const COMMUNITY_PATHWAY = [
   { key: "prepare", label: "Prepare", title: "Stay safe and ready.", href: "safety-hub.html" },
   { key: "connect", label: "Connect", title: "Meet the right people.", href: "#groups" },
   { key: "participate", label: "Participate", title: "Ask, share, and contribute.", href: "#discussions" },
-  { key: "grow", label: "Grow", title: "Build confidence and recognition.", href: "#contributions" }
+  { key: "grow", label: "Grow", title: "Build confidence and recognition.", href: "#contributions-panel" }
 ];
 
 // Topic key maps to either a board (discussions filtered/searched by tag),
@@ -141,7 +141,7 @@ const COMMUNITY_CONTRIBUTION_CARDS = [
   { title: "Join the Conversation", description: "Jump into discussions, ask questions, and share your experience.", cta: "Start now", href: "community.html?board=discussions#compose" },
   { title: "Find Your Group", description: "Connect with people who get it. Groups for every interest.", cta: "Explore groups", href: "#groups" },
   { title: "Share Your Knowledge", description: "Help others by answering questions in Q&A.", cta: "Answer a question", href: "community.html?board=qna" },
-  { title: "Get Recognised", description: "Contribution badges reward useful participation, not popularity.", cta: "Learn more", href: "#contributions" },
+  { title: "Get Recognised", description: "Contribution badges reward useful participation, not popularity.", cta: "Learn more", href: "#contributions-panel" },
   { title: "Help Shape TemptX", description: "Your feedback drives what we build next.", cta: "Submit an idea", href: "#feedback" }
 ];
 
