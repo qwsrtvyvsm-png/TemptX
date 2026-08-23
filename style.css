@@ -1082,9 +1082,9 @@
 }
 
 .directory-primary-button {
-  color: #130b05;
+  color: var(--text-on-gold);
   border: 1px solid rgba(var(--champagne-rgb), 0.8);
-  background: linear-gradient(180deg, #ffe7ae 0%, #d9a64a 54%, #9b641d 100%);
+  background: linear-gradient(180deg, var(--bullion-light) 0%, var(--bullion-rich) 54%, var(--bullion-dark) 100%);
   box-shadow:
     0 8px 28px rgba(var(--gold-rgb), 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.42);
@@ -1456,8 +1456,8 @@
 }
 
 .dir-card-badge--featured {
-  color: #1a0e04;
-  background: linear-gradient(135deg, #ffe7ae 0%, #e8c06a 48%, #d9a64a 100%);
+  color: var(--text-on-gold);
+  background: linear-gradient(135deg, var(--bullion-light) 0%, var(--bullion-rich) 48%, var(--bullion-dark) 100%);
   box-shadow:
     0 2px 12px rgba(0, 0, 0, 0.4),
     0 0 16px rgba(var(--gold-rgb), 0.2),
@@ -1472,8 +1472,8 @@
 }
 
 .dir-card-badge--new {
-  color: #1a0e04;
-  background: linear-gradient(135deg, #ffe7ae 0%, #e8c06a 48%, #d9a64a 100%);
+  color: var(--text-on-gold);
+  background: linear-gradient(135deg, var(--bullion-light) 0%, var(--bullion-rich) 48%, var(--bullion-dark) 100%);
   box-shadow:
     0 2px 12px rgba(0, 0, 0, 0.4),
     0 0 16px rgba(var(--gold-rgb), 0.2),
@@ -5436,7 +5436,13 @@ h3 {
     transform: translate(-50%, -1px);
   }
 
-  .brand-mark {
+  /* Scoped to the legacy .brand-row layout (superseded by .site-header —
+     see style.css git history / the "Bold Editorial" rebrand — and no
+     longer referenced by any .html or .js file). A bare `.brand-mark`
+     selector here used to leak this absolute-positioning treatment onto
+     the current header's small nav logo at this breakpoint, blowing it up
+     to ~560px wide and centering it over the Sign In/Join buttons. */
+  .brand-row .brand-mark {
     box-sizing: border-box;
     position: absolute;
     top: 50%;
@@ -5453,7 +5459,7 @@ h3 {
     font-size: clamp(2.72rem, 14.6vw, 4.2rem);
   }
 
-  .brand-mark::after {
+  .brand-row .brand-mark::after {
     margin-top: 10px;
     font-size: clamp(0.43rem, 2vw, 0.52rem);
     letter-spacing: 0.12em;
@@ -13892,9 +13898,102 @@ button,
   box-shadow: none;
 }
 
+/* ─── Mobile nav toggle — hamburger button + collapsible nav panel ───
+   Hidden entirely on desktop; below 900px it replaces the always-visible
+   .store-nav link row (which .tx-nav-left .store-nav { display:none }
+   removes outright) with a button that reveals the same links as a
+   full-width dropdown panel. Visibility is driven purely by the button's
+   aria-expanded state via the sibling combinator below, so script.js only
+   has to flip one attribute — no class-name syncing between CSS and JS. */
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.nav-toggle-bar {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--cream);
+  transition: transform 200ms ease, opacity 200ms ease;
+}
+
+.nav-toggle[aria-expanded="true"] .nav-toggle-bar:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.nav-toggle[aria-expanded="true"] .nav-toggle-bar:nth-child(2) {
+  opacity: 0;
+}
+
+.nav-toggle[aria-expanded="true"] .nav-toggle-bar:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.nav-toggle:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: 3px;
+}
+
 @media (max-width: 900px) {
-  .tx-nav-left .store-nav { display: none; }
-  .site-header-bar { flex-wrap: wrap; }
+  .site-header-bar { flex-wrap: nowrap; }
+
+  .nav-toggle { display: inline-flex; }
+
+  .site-header .site-header-bar .store-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 6px 0 18px;
+    margin: 0;
+    background: var(--black);
+    border-bottom: 2px solid var(--cream);
+    z-index: 650;
+    max-height: calc(100vh - 72px);
+    overflow-y: auto;
+  }
+
+  .nav-toggle[aria-expanded="true"] ~ .store-nav {
+    display: flex;
+  }
+
+  .site-header .site-header-bar .store-nav a {
+    justify-content: flex-start;
+    width: 100%;
+    padding: 14px clamp(20px, 6vw, 32px);
+    font-size: 0.92rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .site-header .site-header-bar .store-nav a.nav-current,
+  .site-header .site-header-bar .store-nav a[aria-current="page"] {
+    border-bottom: 1px solid var(--line);
+    box-shadow: inset 3px 0 0 var(--gold);
+    padding-left: calc(clamp(20px, 6vw, 32px) - 3px);
+  }
+}
+
+/* Body-level scroll lock while the mobile nav panel is open (toggled by
+   script.js alongside aria-expanded) — the panel isn't position:fixed, so
+   without this the page can scroll the open panel out from under itself. */
+body.nav-open {
+  overflow: hidden;
 }
 
 /* ══════════════════════════════════════════════════

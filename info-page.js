@@ -344,7 +344,12 @@ const nav = `
           <span class="brand-word">TEMPT</span>
           <span class="brand-x">X</span>
         </a>
-        <nav class="store-nav home-nav" aria-label="Main navigation">
+        <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+      </button>
+      <nav class="store-nav home-nav" id="siteNav" aria-label="Main navigation">
           <a href="index.html">Home</a>
           <a href="directory.html">Directory</a>
           <a href="district.html">District</a>

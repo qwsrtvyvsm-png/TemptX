@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Community | TEMPTX</title>
-  <meta name="description" content="The TEMPTX community forum — safety and support, local and district chat, and industry talk for clients, providers, creators, and businesses." />
-  <link rel="stylesheet" href="style.css?v=20260821-01" />
-  <link rel="stylesheet" href="community.css?v=20260821-03" />
+  <meta name="description" content="Ask, learn, connect, and navigate — the TEMPTX community hub for discussions, Q&A, resources, safety, groups, and events." />
+  <link rel="stylesheet" href="style.css?v=20260824-03" />
+  <link rel="stylesheet" href="community.css?v=20260823-01" />
 </head>
 
 <body class="community-page cinematic-background">
@@ -42,12 +42,17 @@
         <span class="brand-word">TEMPT</span>
         <span class="brand-x">X</span>
       </a>
-      <nav class="store-nav home-nav" aria-label="Main navigation">
+      <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+      </button>
+      <nav class="store-nav home-nav" id="siteNav" aria-label="Main navigation">
       <a href="index.html">Home</a>
       <a href="directory.html">Directory</a>
       <a href="district.html">District</a>
       <a href="safety-hub.html">Support</a>
-      <a href="community.html">Community</a>
+      <a href="community.html" class="nav-current" aria-current="page">Community</a>
       <a href="chat.html" data-authenticated hidden>Messages</a>
     </nav>
       </div>
@@ -66,69 +71,330 @@
   </header>
 
   <main class="community-main">
-    <section class="community-hero">
-      <p class="community-eyebrow">Australia's Adult Network</p>
-      <h1>Community</h1>
-      <p>Safety, local, and industry conversation — moderated the same way as the rest of TEMPTX. Post under your account name or anonymously, your choice, every time.</p>
-      <p class="community-hero-support">Looking for direct help instead? Visit <a href="community-support.html">Community Support</a>.</p>
+
+    <!-- ── Hero ─────────────────────────────────────────────────────── -->
+    <section class="community-hero" aria-labelledby="community-hero-heading">
+      <div class="community-hero-copy">
+        <p class="community-eyebrow">Welcome to</p>
+        <h1 id="community-hero-heading">TEMPTX <span>Community</span></h1>
+        <p class="community-hero-tagline">Ask. Learn. Connect. Navigate.</p>
+        <p class="community-hero-support">
+          Real conversations, trusted resources, and support from people who understand the work —
+          moderated the same way as the rest of TEMPTX. Post under your account or anonymously, your choice, every time.
+        </p>
+        <div class="community-hero-ctas">
+          <a class="community-btn community-btn-primary" href="community.html?board=discussions#compose">Ask the Community</a>
+          <a class="community-btn community-btn-outline" href="#safety-support-cta">Find Help</a>
+          <a class="community-btn community-btn-ghost" href="#resources">Explore Resources</a>
+        </div>
+        <p class="community-hero-stats" id="communityHeroStats" aria-live="polite"></p>
+      </div>
     </section>
 
-    <nav class="community-board-tabs" id="boardTabs" aria-label="Forum boards">
-      <a href="community.html?board=safety-support" data-board="safety-support">Safety &amp; Support</a>
-      <a href="community.html?board=local-district" data-board="local-district">Local / District Chat</a>
-      <a href="community.html?board=industry-talk" data-board="industry-talk">Industry Talk</a>
+    <!-- ── What are you looking for? ───────────────────────────────── -->
+    <section class="community-intent" id="looking-for" aria-labelledby="intent-heading">
+      <div class="community-section-heading">
+        <p class="community-eyebrow">Find your way</p>
+        <h2 id="intent-heading">What are you looking for?</h2>
+      </div>
+      <ul class="community-intent-grid" id="intentGrid"></ul>
+    </section>
+
+    <!-- ── Search ───────────────────────────────────────────────────── -->
+    <section class="community-search-section" id="search" aria-labelledby="search-heading">
+      <div class="community-section-heading">
+        <p class="community-eyebrow">Search</p>
+        <h2 id="search-heading">Search the Community</h2>
+      </div>
+      <form class="community-search-form" id="communitySearchForm" role="search">
+        <label class="community-search-label" for="communitySearchInput">Search discussions, guides, resources, and groups</label>
+        <div class="community-search-row">
+          <input type="search" id="communitySearchInput" placeholder="Search community, guides, resources…" autocomplete="off" />
+          <button type="submit">Search</button>
+        </div>
+      </form>
+      <div class="community-popular-searches" id="popularSearches">
+        <span>Popular:</span>
+      </div>
+      <div class="community-search-results" id="searchResults" hidden>
+        <div class="community-search-results-head">
+          <p id="searchResultsSummary" aria-live="polite"></p>
+          <button type="button" class="community-link-btn" id="clearSearch">Clear search</button>
+        </div>
+        <div id="searchResultsList" class="community-search-results-list"></div>
+      </div>
+    </section>
+
+    <!-- ── Browse Community (categories) ───────────────────────────── -->
+    <nav class="community-browse" id="browse" aria-labelledby="browse-heading">
+      <div class="community-section-heading">
+        <p class="community-eyebrow">Browse</p>
+        <h2 id="browse-heading">Browse Community</h2>
+      </div>
+      <div class="community-browse-grid" id="browseGrid"></div>
     </nav>
 
-    <section id="boardView" class="community-board-view">
-      <div class="community-compose">
-        <form class="report-form community-compose-form" id="threadForm" data-authenticated hidden>
-          <label>
-            Title
-            <input id="threadTitle" type="text" maxlength="150" required />
-          </label>
-          <label>
-            Post
-            <textarea id="threadBody" maxlength="5000" required></textarea>
-          </label>
-          <label class="community-anon-toggle">
-            <input type="checkbox" id="threadAnonymous" />
-            <span>Post anonymously</span>
-          </label>
-          <button type="submit">Start thread</button>
-          <p class="report-status" id="threadFormStatus" aria-live="polite"></p>
-        </form>
-        <p class="community-signin-prompt" id="composeSigninPrompt" hidden>
-          <a href="auth.html?mode=login">Sign in</a> to start a thread.
-        </p>
+    <!-- ── Trending discussions ────────────────────────────────────── -->
+    <section class="community-trending" id="trending" aria-labelledby="trending-heading">
+      <div class="community-section-heading">
+        <p class="community-eyebrow">Happening now</p>
+        <h2 id="trending-heading">Trending Discussions</h2>
       </div>
-
-      <p class="community-list-status" id="threadListStatus" aria-live="polite"></p>
-      <div class="community-thread-list" id="threadList"></div>
+      <p class="community-list-status" id="trendingStatus" aria-live="polite">Loading…</p>
+      <div class="community-thread-list community-thread-list--compact" id="trendingList"></div>
     </section>
 
-    <section id="threadView" class="community-thread-view" hidden>
-      <a class="community-back-link" id="backToBoard" href="community.html">&larr; Back to board</a>
-      <article class="community-thread" id="threadDetail"></article>
-      <div class="community-reply-list" id="replyList"></div>
+    <!-- ── Discussion system ───────────────────────────────────────── -->
+    <section class="community-discussions" id="discussions" aria-labelledby="discussions-heading">
+      <div class="community-section-heading">
+        <p class="community-eyebrow">Discuss</p>
+        <h2 id="discussions-heading">Discussions &amp; Q&amp;A</h2>
+      </div>
 
-      <div class="community-compose">
-        <form class="report-form community-compose-form" id="replyForm" data-authenticated hidden>
-          <label>
-            Reply
-            <textarea id="replyBody" maxlength="3000" required></textarea>
-          </label>
-          <label class="community-anon-toggle">
-            <input type="checkbox" id="replyAnonymous" />
-            <span>Post anonymously</span>
-          </label>
-          <button type="submit">Post reply</button>
-          <p class="report-status" id="replyFormStatus" aria-live="polite"></p>
-        </form>
-        <p class="community-signin-prompt" id="replySigninPrompt" hidden>
-          <a href="auth.html?mode=login">Sign in</a> to reply.
-        </p>
+      <nav class="community-board-tabs" id="boardTabs" aria-label="Forum boards"></nav>
+
+      <div class="community-toolbar">
+        <div class="community-sort-tabs" id="sortTabs" role="group" aria-label="Sort discussions">
+          <button type="button" data-sort="new" aria-pressed="true">New</button>
+          <button type="button" data-sort="trending" aria-pressed="false">Trending</button>
+          <button type="button" data-sort="most-answered" aria-pressed="false">Most Answered</button>
+          <button type="button" data-sort="following" aria-pressed="false" data-authenticated hidden>Following</button>
+        </div>
+      </div>
+
+      <section id="boardView" class="community-board-view">
+        <div class="community-compose" id="compose">
+          <form class="report-form community-compose-form" id="threadForm" data-authenticated hidden>
+            <p class="community-compose-board" id="composeBoardLabel"></p>
+
+            <fieldset class="community-type-toggle">
+              <legend>Post type</legend>
+              <label>
+                <input type="radio" name="threadType" value="discussion" checked />
+                <span>Discussion</span>
+              </label>
+              <label>
+                <input type="radio" name="threadType" value="question" />
+                <span>Question</span>
+              </label>
+            </fieldset>
+
+            <label>
+              Title
+              <input id="threadTitle" type="text" maxlength="150" required />
+            </label>
+            <label>
+              Post
+              <textarea id="threadBody" maxlength="5000" required></textarea>
+            </label>
+            <label>
+              Tags <span>(optional, comma separated)</span>
+              <input id="threadTags" type="text" maxlength="120" placeholder="e.g. verification, melbourne" />
+            </label>
+            <label class="community-anon-toggle">
+              <input type="checkbox" id="threadAnonymous" />
+              <span>Post anonymously</span>
+            </label>
+            <button type="submit">Start thread</button>
+            <p class="report-status" id="threadFormStatus" aria-live="polite"></p>
+          </form>
+          <p class="community-signin-prompt" id="composeSigninPrompt" hidden>
+            <a href="auth.html?mode=login">Sign in</a> to start a thread.
+          </p>
+          <p class="community-staff-only-note" id="composeStaffOnlyNote" hidden>
+            Announcements are posted by the TemptX team. Browse them below, or head to
+            <a href="#discussions">another board</a> to start your own thread.
+          </p>
+        </div>
+
+        <p class="community-list-status" id="threadListStatus" aria-live="polite"></p>
+        <div class="community-thread-list" id="threadList"></div>
+      </section>
+
+      <section id="threadView" class="community-thread-view" hidden>
+        <a class="community-back-link" id="backToBoard" href="community.html">&larr; Back to board</a>
+        <article class="community-thread" id="threadDetail"></article>
+        <div class="community-reply-list" id="replyList"></div>
+
+        <div class="community-compose">
+          <form class="report-form community-compose-form" id="replyForm" data-authenticated hidden>
+            <label>
+              Reply
+              <textarea id="replyBody" maxlength="3000" required></textarea>
+            </label>
+            <label class="community-anon-toggle">
+              <input type="checkbox" id="replyAnonymous" />
+              <span>Post anonymously</span>
+            </label>
+            <button type="submit">Post reply</button>
+            <p class="report-status" id="replyFormStatus" aria-live="polite"></p>
+          </form>
+          <p class="community-signin-prompt" id="replySigninPrompt" hidden>
+            <a href="auth.html?mode=login">Sign in</a> to reply.
+          </p>
+        </div>
+      </section>
+    </section>
+
+    <!-- ── Featured Resources ──────────────────────────────────────── -->
+    <section class="community-resources" id="resources" aria-labelledby="resources-heading">
+      <div class="community-section-heading">
+        <p class="community-eyebrow">Learn</p>
+        <h2 id="resources-heading">Featured Resources</h2>
+      </div>
+      <div class="community-resource-grid" id="featuredResources"></div>
+
+      <details class="community-resource-directory">
+        <summary>Browse the full resource directory</summary>
+        <div class="community-resource-directory-grid" id="resourceDirectory"></div>
+      </details>
+    </section>
+
+    <!-- ── Need help now (safety/support) ──────────────────────────── -->
+    <section class="community-help-now" id="safety-support-cta" aria-labelledby="help-now-heading">
+      <div class="community-help-now-main">
+        <p class="community-eyebrow community-eyebrow--onred">Need help now?</p>
+        <h2 id="help-now-heading">If this is urgent or you're not safe, get support right away.</h2>
+        <p>If anyone is in immediate danger in Australia, call <strong>000</strong>. This page is not monitored as an emergency service.</p>
+        <a class="community-btn community-btn-primary" href="safety-hub.html">Get Immediate Help</a>
+      </div>
+      <div class="community-help-now-categories">
+        <p class="community-help-now-label">Or tell us what's happening</p>
+        <div class="community-help-now-grid" id="supportCategories"></div>
       </div>
     </section>
+
+    <!-- ── Community pathway ───────────────────────────────────────── -->
+    <section class="community-pathway" id="pathway" aria-labelledby="pathway-heading">
+      <div class="community-section-heading">
+        <p class="community-eyebrow">Your path</p>
+        <h2 id="pathway-heading">Community Pathway</h2>
+      </div>
+      <ol class="community-pathway-list" id="pathwayList"></ol>
+    </section>
+
+    <!-- ── Browse by topic ──────────────────────────────────────────── -->
+    <section class="community-topics" id="topics" aria-labelledby="topics-heading">
+      <div class="community-section-heading">
+        <p class="community-eyebrow">Explore</p>
+        <h2 id="topics-heading">Browse by Topic</h2>
+      </div>
+      <div class="community-topics-grid" id="topicsGrid"></div>
+    </section>
+
+    <!-- ── Groups ───────────────────────────────────────────────────── -->
+    <section class="community-groups" id="groups" aria-labelledby="groups-heading">
+      <div class="community-section-heading">
+        <p class="community-eyebrow">Belong</p>
+        <h2 id="groups-heading">Community Groups</h2>
+      </div>
+      <p class="community-list-status" id="groupsStatus" aria-live="polite">Loading…</p>
+      <div class="community-groups-grid" id="groupsGrid"></div>
+    </section>
+
+    <!-- ── Events ───────────────────────────────────────────────────── -->
+    <section class="community-events" id="events" aria-labelledby="events-heading">
+      <div class="community-section-heading">
+        <p class="community-eyebrow">Upcoming</p>
+        <h2 id="events-heading">Upcoming Events</h2>
+      </div>
+      <p class="community-events-note">Illustrative schedule — TemptX's events calendar isn't connected yet, so treat these as a preview of what's coming, not confirmed bookings.</p>
+      <div class="community-events-grid" id="eventsGrid"></div>
+    </section>
+
+    <!-- ── Contribution ─────────────────────────────────────────────── -->
+    <section class="community-contribute" id="contribute" aria-labelledby="contribute-heading">
+      <div class="community-section-heading">
+        <p class="community-eyebrow">Get involved</p>
+        <h2 id="contribute-heading">Help Shape TEMPTX</h2>
+      </div>
+      <div class="community-contribute-grid" id="contributeGrid"></div>
+    </section>
+
+    <!-- ── Feedback / ideas ─────────────────────────────────────────── -->
+    <section class="community-feedback" id="feedback" aria-labelledby="feedback-heading">
+      <div class="community-section-heading">
+        <p class="community-eyebrow">Feedback</p>
+        <h2 id="feedback-heading">Submit an Idea</h2>
+        <p>Ideas move through <strong>Submitted → Considering → Planned → Building → Released</strong> as the team reviews them. Every idea below starts at Submitted.</p>
+      </div>
+
+      <div class="community-feedback-layout">
+        <div class="community-compose">
+          <form class="report-form community-compose-form" id="feedbackForm" data-authenticated hidden>
+            <label>
+              Type
+              <select id="feedbackKind">
+                <option value="idea">Idea</option>
+                <option value="feature">Feature request</option>
+                <option value="resource">Resource suggestion</option>
+                <option value="issue">Community issue</option>
+                <option value="general">General feedback</option>
+              </select>
+            </label>
+            <label>
+              Title
+              <input id="feedbackTitle" type="text" maxlength="120" required />
+            </label>
+            <label>
+              Details
+              <textarea id="feedbackDetails" maxlength="2000" required></textarea>
+            </label>
+            <label class="community-anon-toggle">
+              <input type="checkbox" id="feedbackAnonymous" />
+              <span>Submit anonymously</span>
+            </label>
+            <button type="submit">Submit feedback</button>
+            <p class="report-status" id="feedbackFormStatus" aria-live="polite"></p>
+          </form>
+          <p class="community-signin-prompt" id="feedbackSigninPrompt" hidden>
+            <a href="auth.html?mode=login">Sign in</a> to submit an idea.
+          </p>
+        </div>
+
+        <div class="community-feedback-list-wrap">
+          <p class="community-list-status" id="feedbackListStatus" aria-live="polite">Loading…</p>
+          <div class="community-feedback-list" id="feedbackList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Your Community (personalisation) ─────────────────────────── -->
+    <section class="community-yours" id="your-community" aria-labelledby="yours-heading">
+      <div class="community-section-heading">
+        <p class="community-eyebrow">Just for you</p>
+        <h2 id="yours-heading">Your Community</h2>
+      </div>
+
+      <p class="community-signin-prompt community-signin-prompt--panel" id="yoursSignedOut">
+        <a href="auth.html?mode=login">Sign in</a> to save discussions, follow topics, and track your contributions.
+      </p>
+
+      <div class="community-yours-grid" id="yoursSignedIn" data-authenticated hidden>
+        <div class="community-yours-card">
+          <h3>Saved</h3>
+          <p class="community-list-status" id="savedStatus" aria-live="polite">Loading…</p>
+          <div class="community-yours-list" id="savedList"></div>
+        </div>
+        <div class="community-yours-card">
+          <h3>Following</h3>
+          <p class="community-list-status" id="followingStatus" aria-live="polite">Loading…</p>
+          <div class="community-yours-list" id="followingList"></div>
+        </div>
+        <div class="community-yours-card">
+          <h3>Your Groups</h3>
+          <p class="community-list-status" id="yourGroupsStatus" aria-live="polite">Loading…</p>
+          <div class="community-yours-list" id="yourGroupsList"></div>
+        </div>
+        <div class="community-yours-card" id="contributions-panel">
+          <h3>My Contributions</h3>
+          <p class="community-list-status" id="contributionsStatus" aria-live="polite">Loading…</p>
+          <div class="community-badges" id="contributionsBadges"></div>
+          <div class="community-yours-list" id="contributionsList"></div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <footer class="footer home-footer">
@@ -173,7 +439,8 @@
     </div>
   </footer>
 
-  <script src="script.js?v=20260823-01"></script>
-  <script src="community.js?v=20260821-01"></script>
+  <script src="script.js?v=20260824-02"></script>
+  <script src="community-data.js?v=20260823-01"></script>
+  <script src="community.js?v=20260823-01"></script>
 </body>
 </html>
