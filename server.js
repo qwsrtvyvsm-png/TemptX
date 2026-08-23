@@ -353,6 +353,11 @@ const resolveCommunityAuthorName = (user, anonymous) =>
     ? communityAnonHandle()
     : user.settings?.displayName || user.workingName || (user.role === "client" ? "Client" : "Unnamed");
 
+// authorUserId/authorRole are for server-side use only (rate limiting, moderation) and
+// must never reach the client — authorRole in particular would deanonymize a post made
+// with anonymous:true. Every response that includes a thread or reply must go through this.
+const stripCommunityAuthorFields = ({ authorUserId, authorRole, ...rest }) => rest;
+
 const makeRecoveryCode = () => {
   const raw = crypto.randomBytes(9).toString("hex").toUpperCase();
   return `TXK-${raw.slice(0, 6)}-${raw.slice(6, 12)}-${raw.slice(12, 18)}`;
@@ -1653,10 +1658,9 @@ const handleApi = async (request, response, pathname) => {
       const replies = posts
         .filter((post) => post.parentId === threadId)
         .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-      const stripAuthorId = ({ authorUserId, authorRole, ...rest }) => rest;
       return json(response, 200, {
-        thread: stripAuthorId(thread),
-        replies: replies.map(stripAuthorId)
+        thread: stripCommunityAuthorFields(thread),
+        replies: replies.map(stripCommunityAuthorFields)
       });
     }
 
@@ -1697,8 +1701,7 @@ const handleApi = async (request, response, pathname) => {
         writeCommunityPosts(posts);
       });
 
-      const { authorUserId, ...publicThread } = thread;
-      return json(response, 201, { thread: publicThread });
+      return json(response, 201, { thread: stripCommunityAuthorFields(thread) });
     }
 
     const communityReplyMatch = pathname.match(/^\/api\/community\/threads\/([^/]+)\/replies$/);
@@ -1738,8 +1741,7 @@ const handleApi = async (request, response, pathname) => {
       });
 
       if (!created) return json(response, 404, { error: "Thread not found." });
-      const { authorUserId, ...publicReply } = created;
-      return json(response, 201, { reply: publicReply });
+      return json(response, 201, { reply: stripCommunityAuthorFields(created) });
     }
 
 // ---------------------------------------------------------------------------

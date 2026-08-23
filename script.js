@@ -1,3 +1,30 @@
+/* ── Announcement banner — always-full marquee ──
+   The scrolling banner assumed exactly two copies of the phrase,
+   translated by -50%. That only loops without a visible blank gap if
+   one copy is at least as wide as the screen — on wide monitors it
+   isn't, so a gap flashed through partway around the loop. Clones
+   enough real copies to comfortably outlast the actual viewport width,
+   then loops by exactly one copy's width (see style.css keyframe) so
+   the animation is always seamless, at any screen size. */
+(() => {
+  const track = document.querySelector(".tx-banner-track");
+  if (!track) return;
+  const sets = track.querySelectorAll(".tx-banner-set");
+  if (!sets.length) return;
+
+  const template = sets[0].cloneNode(true);
+  track.innerHTML = "";
+  track.appendChild(template.cloneNode(true));
+
+  const oneCopyWidth = track.firstElementChild.getBoundingClientRect().width || 800;
+  const copiesNeeded = Math.max(3, Math.ceil((window.innerWidth * 2) / oneCopyWidth) + 1);
+
+  for (let i = 1; i < copiesNeeded; i++) {
+    track.appendChild(template.cloneNode(true));
+  }
+  track.style.setProperty("--tx-banner-copies", String(copiesNeeded));
+})();
+
 /* ── Logo-flip preloader + quick page transitions ──
    Full splash plays once per browser session (sessionStorage), on
    whichever page a visitor lands on first. Every internal nav click

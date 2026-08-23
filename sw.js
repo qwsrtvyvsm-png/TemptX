@@ -1,4 +1,4 @@
-const CACHE_NAME = "temptx-v32";
+const CACHE_NAME = "temptx-v33";
 const APP_SHELL = [
   "/",
   "/index.html",
