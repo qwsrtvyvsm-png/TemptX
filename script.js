@@ -180,6 +180,44 @@ headerInteractiveItems.forEach((item) => {
   item.addEventListener("blur", clearPressed);
 });
 
+/* ── Mobile nav toggle ──
+   The hamburger button (.nav-toggle) and the nav it controls are plain
+   siblings in the header markup on every page — style.css shows/hides the
+   nav purely off the button's aria-expanded state (a sibling selector), so
+   this only has to flip that one attribute plus lock body scroll while
+   open. Closes on a nav link click, Escape, or a click/touch outside the
+   panel, since none of those are otherwise guaranteed to unmount it. */
+document.querySelectorAll(".nav-toggle").forEach((toggle) => {
+  const nav = document.getElementById(toggle.getAttribute("aria-controls")) || toggle.nextElementSibling;
+  if (!nav) return;
+
+  const setOpen = (open) => {
+    toggle.setAttribute("aria-expanded", String(open));
+    document.body.classList.toggle("nav-open", open);
+  };
+
+  toggle.addEventListener("click", () => {
+    setOpen(toggle.getAttribute("aria-expanded") !== "true");
+  });
+
+  nav.addEventListener("click", (event) => {
+    if (event.target.closest("a")) setOpen(false);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && toggle.getAttribute("aria-expanded") === "true") {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+
+  document.addEventListener("pointerdown", (event) => {
+    if (toggle.getAttribute("aria-expanded") !== "true") return;
+    if (nav.contains(event.target) || toggle.contains(event.target)) return;
+    setOpen(false);
+  });
+});
+
 const getFavouriteProviders = () => {
   try {
     return JSON.parse(localStorage.getItem(favouritesStorageKey)) || {};

@@ -21,6 +21,11 @@ const verificationEventsFile = path.join(dataDirectory, "verificationEvents.json
 const bookingsFile = path.join(dataDirectory, "bookings.json");
 const clientNotesFile = path.join(dataDirectory, "client-notes.json");
 const communityPostsFile = path.join(dataDirectory, "community-posts.json");
+const communityFollowsFile = path.join(dataDirectory, "community-follows.json");
+const communitySavedFile = path.join(dataDirectory, "community-saved.json");
+const communityGroupsFile = path.join(dataDirectory, "community-groups.json");
+const communityGroupMembersFile = path.join(dataDirectory, "community-group-members.json");
+const communityFeedbackFile = path.join(dataDirectory, "community-feedback.json");
 const serverSecretFile = path.join(dataDirectory, "server-secret");
 const sessions = new Map();
 const resetTokens = new Map();
@@ -81,6 +86,43 @@ if (!fs.existsSync(clientNotesFile)) {
 if (!fs.existsSync(communityPostsFile)) {
   fs.writeFileSync(communityPostsFile, "[]\n");
 }
+
+if (!fs.existsSync(communityFollowsFile)) {
+  fs.writeFileSync(communityFollowsFile, "[]\n");
+}
+
+if (!fs.existsSync(communitySavedFile)) {
+  fs.writeFileSync(communitySavedFile, "[]\n");
+}
+
+if (!fs.existsSync(communityGroupMembersFile)) {
+  fs.writeFileSync(communityGroupMembersFile, "[]\n");
+}
+
+if (!fs.existsSync(communityFeedbackFile)) {
+  fs.writeFileSync(communityFeedbackFile, "[]\n");
+}
+
+// Seeded once on first boot — editorial-owned starter groups, not user-generated,
+// so this is the one community data file allowed to ship with non-empty defaults.
+if (!fs.existsSync(communityGroupsFile)) {
+  const seededGroups = [
+    { key: "providers", name: "Providers", description: "For independent providers to talk shop, screening, and best practice." },
+    { key: "clients", name: "Clients", description: "Respectful discussion for clients navigating the directory and etiquette." },
+    { key: "creators", name: "Creators", description: "Content creators sharing platforms, tools, and growth tactics." },
+    { key: "new-members", name: "New Members", description: "Start here — introductions, orientation, and first-week questions." },
+    { key: "safety", name: "Safety", description: "Screening, red flags, and staying safe on and off platform." },
+    { key: "business", name: "Business & Branding", description: "Pricing, branding, admin, and running an adult-industry business." },
+    { key: "content-creation", name: "Content Creation", description: "Photography, editing, and producing content that converts." },
+    { key: "technology", name: "Technology", description: "Apps, privacy tools, and tech that makes the work easier and safer." }
+  ].map((group) => ({
+    id: crypto.randomUUID(),
+    ...group,
+    createdAt: new Date().toISOString()
+  }));
+  fs.writeFileSync(communityGroupsFile, `${JSON.stringify(seededGroups, null, 2)}\n`);
+}
+
 let serverSecret;
 if (process.env.SERVER_SECRET) {
   serverSecret = process.env.SERVER_SECRET.trim();
@@ -235,12 +277,34 @@ const readCommunityPosts = () => {
 const writeCommunityPosts = (posts) =>
   atomicWrite(communityPostsFile, `${JSON.stringify(posts, null, 2)}\n`);
 
+const readCommunityFollows = () => JSON.parse(fs.readFileSync(communityFollowsFile, "utf8"));
+const writeCommunityFollows = (follows) =>
+  atomicWrite(communityFollowsFile, `${JSON.stringify(follows, null, 2)}\n`);
+
+const readCommunitySaved = () => JSON.parse(fs.readFileSync(communitySavedFile, "utf8"));
+const writeCommunitySaved = (saved) =>
+  atomicWrite(communitySavedFile, `${JSON.stringify(saved, null, 2)}\n`);
+
+const readCommunityGroups = () => JSON.parse(fs.readFileSync(communityGroupsFile, "utf8"));
+
+const readCommunityGroupMembers = () => JSON.parse(fs.readFileSync(communityGroupMembersFile, "utf8"));
+const writeCommunityGroupMembers = (members) =>
+  atomicWrite(communityGroupMembersFile, `${JSON.stringify(members, null, 2)}\n`);
+
+const readCommunityFeedback = () => JSON.parse(fs.readFileSync(communityFeedbackFile, "utf8"));
+const writeCommunityFeedback = (items) =>
+  atomicWrite(communityFeedbackFile, `${JSON.stringify(items, null, 2)}\n`);
+
 const usersQueue = makeQueue();
 const reportsQueue = makeQueue();
 const verificationEventsQueue = makeQueue();
 const bookingsQueue = makeQueue();
 const clientNotesQueue = makeQueue();
 const communityPostsQueue = makeQueue();
+const communityFollowsQueue = makeQueue();
+const communitySavedQueue = makeQueue();
+const communityGroupMembersQueue = makeQueue();
+const communityFeedbackQueue = makeQueue();
 
 // Append-only audit trail for verification actions. Never records the OTP code or
 // its hash — only status transitions — so it's safe to keep indefinitely.
@@ -331,7 +395,23 @@ const businessCategories = new Set([
   "support services",
   "other"
 ]);
-const communityBoards = new Set(["safety-support", "local-district", "industry-talk"]);
+const communityBoards = new Set([
+  "discussions",
+  "qna",
+  "stories-experiences",
+  "tips-advice",
+  "industry-talk",
+  "announcements",
+  "feedback-ideas",
+  "safety-support",
+  "local-district"
+]);
+// No admin/staff account role exists yet (accountRole() only recognises client/
+// creator/provider/business), so there is no authenticated way to post as
+// "TemptX" — locking member-created threads here keeps the "Official" label
+// honest instead of letting anyone post an unlabelled announcement.
+const communityStaffOnlyBoards = new Set(["announcements"]);
+const communityThreadTypes = new Set(["discussion", "question"]);
 const normaliseAbn = (abn) => String(abn || "").replace(/\D/g, "");
 const hashPrivateValue = (value) =>
   crypto.createHmac("sha256", serverSecret).update(String(value)).digest("hex");
@@ -341,6 +421,20 @@ const cleanText = (value, maxLength) =>
     .replace(/\0/g, "")
     .trim()
     .slice(0, maxLength);
+
+// Accepts either an array or a comma-separated string from the client, since the
+// compose form posts a plain text field. Lowercased so "Safety" and "safety"
+// collapse into one tag for filtering.
+const cleanTags = (value) => {
+  const raw = Array.isArray(value) ? value : String(value || "").split(",");
+  const seen = new Set();
+  for (const entry of raw) {
+    const tag = cleanText(entry, 24).toLowerCase();
+    if (tag) seen.add(tag);
+    if (seen.size >= 5) break;
+  }
+  return [...seen];
+};
 
 // Community posts snapshot the author's display name at creation time rather than
 // resolving it live on every read, so GET routes never need to cross-reference
@@ -1629,23 +1723,104 @@ const handleApi = async (request, response, pathname) => {
     // never innerHTML interpolation.
     // ---------------------------------------------------------------------
 
+    if (pathname === "/api/community/stats" && request.method === "GET") {
+      const posts = readCommunityPosts();
+      const threads = posts.filter((post) => post.parentId === null);
+      const boards = {};
+      communityBoards.forEach((board) => {
+        boards[board] = threads.filter((thread) => thread.board === board).length;
+      });
+
+      const members = { client: 0, provider: 0, creator: 0, business: 0 };
+      readUsers().forEach((account) => {
+        if (members[account.role] !== undefined) members[account.role] += 1;
+      });
+
+      const groupMembers = readCommunityGroupMembers();
+      const groups = readCommunityGroups().map(({ id, key, name, description }) => ({
+        id,
+        key,
+        name,
+        description,
+        memberCount: groupMembers.filter((member) => member.groupId === id).length
+      }));
+
+      return json(response, 200, {
+        members: { ...members, total: members.client + members.provider + members.creator + members.business },
+        boards,
+        totalThreads: threads.length,
+        groups
+      });
+    }
+
+    if (pathname === "/api/community/search" && request.method === "GET") {
+      const searchParams = new URL(request.url, "http://localhost").searchParams;
+      const query = cleanText(searchParams.get("q"), 100).toLowerCase();
+      if (query.length < 2) return json(response, 200, { results: [] });
+
+      const results = readCommunityPosts()
+        .filter((post) => post.parentId === null)
+        .filter((thread) => {
+          const haystack = `${thread.title} ${thread.body} ${(thread.tags || []).join(" ")}`.toLowerCase();
+          return haystack.includes(query);
+        })
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .slice(0, 20)
+        .map(({ id, board, title, body, type, tags, isAnonymous, authorDisplayName, createdAt, replyCount, solved }) => ({
+          id,
+          board,
+          title,
+          snippet: body.length > 160 ? `${body.slice(0, 160)}…` : body,
+          type: type || "discussion",
+          tags: tags || [],
+          isAnonymous,
+          authorDisplayName,
+          createdAt,
+          replyCount,
+          solved: Boolean(solved)
+        }));
+
+      return json(response, 200, { results });
+    }
+
     const communityThreadsListMatch = pathname.match(/^\/api\/community\/boards\/([^/]+)\/threads$/);
     if (communityThreadsListMatch && request.method === "GET") {
       const [, board] = communityThreadsListMatch;
       if (!communityBoards.has(board)) return json(response, 404, { error: "Unknown board." });
 
-      const threads = readCommunityPosts()
-        .filter((post) => post.board === board && post.parentId === null)
-        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-        .map(({ id, title, authorDisplayName, isAnonymous, createdAt, replyCount }) => ({
+      const requestedSort = new URL(request.url, "http://localhost").searchParams.get("sort");
+      const sort = ["new", "trending", "most-answered"].includes(requestedSort) ? requestedSort : "new";
+
+      let threads = readCommunityPosts().filter((post) => post.board === board && post.parentId === null);
+
+      if (sort === "most-answered") {
+        threads.sort((a, b) => (b.replyCount || 0) - (a.replyCount || 0) || b.createdAt.localeCompare(a.createdAt));
+      } else if (sort === "trending") {
+        const now = Date.now();
+        const score = (thread) => {
+          const ageHours = Math.max(1, (now - new Date(thread.createdAt).getTime()) / (60 * 60 * 1000));
+          return ((thread.replyCount || 0) * 4 + (thread.views || 0)) / Math.pow(ageHours, 0.6);
+        };
+        threads.sort((a, b) => score(b) - score(a));
+      } else {
+        threads.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      }
+
+      const mapped = threads.map(
+        ({ id, title, authorDisplayName, isAnonymous, createdAt, replyCount, type, tags, views, solved }) => ({
           id,
           title,
           authorDisplayName,
           isAnonymous,
           createdAt,
-          replyCount
-        }));
-      return json(response, 200, { threads });
+          replyCount,
+          type: type || "discussion",
+          tags: tags || [],
+          views: views || 0,
+          solved: Boolean(solved)
+        })
+      );
+      return json(response, 200, { threads: mapped, sort });
     }
 
     const communityThreadMatch = pathname.match(/^\/api\/community\/threads\/([^/]+)$/);
@@ -1658,9 +1833,43 @@ const handleApi = async (request, response, pathname) => {
       const replies = posts
         .filter((post) => post.parentId === threadId)
         .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+
+      // ?preview=1 is used to hydrate a thread's title/board for the Saved/
+      // Following lists without it silently counting as a real read.
+      const isPreview = new URL(request.url, "http://localhost").searchParams.get("preview") === "1";
+
+      if (!isPreview) {
+        // Fire-and-forget view increment — queued so it can't race a concurrent
+        // reply write, but the response doesn't wait on the write completing.
+        communityPostsQueue(() => {
+          const latest = readCommunityPosts();
+          const target = latest.find((post) => post.id === threadId && post.parentId === null);
+          if (target) {
+            target.views = (target.views || 0) + 1;
+            writeCommunityPosts(latest);
+          }
+        }).catch(() => {});
+      }
+
+      // thread.authorUserId is stripped below (anonymous posts must never
+      // reveal it), so "can this viewer accept an answer" has to be computed
+      // server-side into a plain boolean rather than letting the client
+      // compare IDs itself.
+      const viewer = getAuthenticatedUser(request);
+      const canAccept = Boolean(
+        viewer && viewer.id === thread.authorUserId && (thread.type || "discussion") === "question" && !thread.solved
+      );
+
       return json(response, 200, {
-        thread: stripCommunityAuthorFields(thread),
-        replies: replies.map(stripCommunityAuthorFields)
+        thread: {
+          ...stripCommunityAuthorFields(thread),
+          type: thread.type || "discussion",
+          tags: thread.tags || [],
+          views: (thread.views || 0) + (isPreview ? 0 : 1),
+          solved: Boolean(thread.solved),
+          canAccept
+        },
+        replies: replies.map((reply) => ({ ...stripCommunityAuthorFields(reply), isAccepted: Boolean(reply.isAccepted) }))
       });
     }
 
@@ -1676,8 +1885,13 @@ const handleApi = async (request, response, pathname) => {
       const title = cleanText(body.title, 150);
       const postBody = cleanText(body.body, 5000);
       const anonymous = Boolean(body.anonymous);
+      const type = communityThreadTypes.has(body.type) ? body.type : "discussion";
+      const tags = cleanTags(body.tags);
 
       if (!communityBoards.has(board)) return json(response, 400, { error: "Choose a valid board." });
+      if (communityStaffOnlyBoards.has(board)) {
+        return json(response, 403, { error: "Announcements are posted by the TemptX team." });
+      }
       if (title.length < 3) return json(response, 400, { error: "Title must be at least 3 characters." });
       if (postBody.length < 10) return json(response, 400, { error: "Post must be at least 10 characters." });
 
@@ -1687,11 +1901,15 @@ const handleApi = async (request, response, pathname) => {
         parentId: null,
         title,
         body: postBody,
+        type,
+        tags,
         authorUserId: user.id,
         authorRole: user.role,
         isAnonymous: anonymous,
         authorDisplayName: resolveCommunityAuthorName(user, anonymous),
         replyCount: 0,
+        views: 0,
+        solved: false,
         createdAt: new Date().toISOString()
       };
 
@@ -1729,6 +1947,7 @@ const handleApi = async (request, response, pathname) => {
           parentId: threadId,
           title: null,
           body: postBody,
+          isAccepted: false,
           authorUserId: user.id,
           authorRole: user.role,
           isAnonymous: anonymous,
@@ -1741,7 +1960,328 @@ const handleApi = async (request, response, pathname) => {
       });
 
       if (!created) return json(response, 404, { error: "Thread not found." });
-      return json(response, 201, { reply: stripCommunityAuthorFields(created) });
+      return json(response, 201, { reply: { ...stripCommunityAuthorFields(created), isAccepted: false } });
+    }
+
+    const communityAcceptMatch = pathname.match(/^\/api\/community\/threads\/([^/]+)\/replies\/([^/]+)\/accept$/);
+    if (communityAcceptMatch && request.method === "POST") {
+      const user = requireSession(request);
+      if (!user) return json(response, 401, { error: "Sign in to mark a best answer." });
+      const [, threadId, replyId] = communityAcceptMatch;
+
+      let outcome = null;
+      await communityPostsQueue(() => {
+        const posts = readCommunityPosts();
+        const thread = posts.find((post) => post.id === threadId && post.parentId === null);
+        if (!thread) {
+          outcome = { status: 404, error: "Thread not found." };
+          return;
+        }
+        if (thread.authorUserId !== user.id) {
+          outcome = { status: 403, error: "Only the person who asked can mark a best answer." };
+          return;
+        }
+        if ((thread.type || "discussion") !== "question") {
+          outcome = { status: 400, error: "Only questions can have an accepted answer." };
+          return;
+        }
+        const reply = posts.find((post) => post.id === replyId && post.parentId === threadId);
+        if (!reply) {
+          outcome = { status: 404, error: "Reply not found." };
+          return;
+        }
+        posts
+          .filter((post) => post.parentId === threadId)
+          .forEach((post) => {
+            post.isAccepted = post.id === replyId;
+          });
+        thread.solved = true;
+        writeCommunityPosts(posts);
+        outcome = { status: 200, replyId };
+      });
+
+      if (outcome.error) return json(response, outcome.status, { error: outcome.error });
+      return json(response, 200, { replyId: outcome.replyId });
+    }
+
+    if (pathname === "/api/community/me/contributions" && request.method === "GET") {
+      const user = requireSession(request);
+      if (!user) return json(response, 401, { error: "Sign in to view your contributions." });
+
+      const mine = readCommunityPosts().filter((post) => post.authorUserId === user.id);
+      const threads = mine
+        .filter((post) => post.parentId === null)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .map(({ id, board, title, type, createdAt, replyCount, solved }) => ({
+          id,
+          board,
+          title,
+          type: type || "discussion",
+          createdAt,
+          replyCount,
+          solved: Boolean(solved)
+        }));
+      const replies = mine
+        .filter((post) => post.parentId !== null)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .map(({ id, parentId, board, body, createdAt, isAccepted }) => ({
+          id,
+          threadId: parentId,
+          board,
+          snippet: body.length > 140 ? `${body.slice(0, 140)}…` : body,
+          createdAt,
+          isAccepted: Boolean(isAccepted)
+        }));
+      const feedback = readCommunityFeedback()
+        .filter((item) => item.authorUserId === user.id)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .map(({ id, kind, title, status, createdAt }) => ({ id, kind, title, status, createdAt }));
+
+      const contributionCount = threads.length + replies.length + feedback.length;
+      const badges = [];
+      if (contributionCount >= 3) badges.push("Helpful Member");
+      if (contributionCount >= 10) badges.push("Community Contributor");
+      if (contributionCount >= 25) badges.push("Trusted Contributor");
+
+      return json(response, 200, { threads, replies, feedback, contributionCount, badges });
+    }
+
+    // ---------------------------------------------------------------------
+    // Saved + Following — lightweight per-user pointers stored separately
+    // from users.json (kept out of the protected user-schema file). Both
+    // follow the same shape ({userId, targetType, targetId}) and are
+    // idempotent: POSTing an existing pointer just returns it rather than
+    // erroring, since the frontend treats these as toggles.
+    // ---------------------------------------------------------------------
+
+    const communityFollowTargetTypes = new Set(["thread", "group"]);
+    const communitySavedTargetTypes = new Set(["thread", "resource"]);
+
+    if (pathname === "/api/community/follows" && request.method === "GET") {
+      const user = requireSession(request);
+      if (!user) return json(response, 401, { error: "Sign in to view what you're following." });
+      const follows = readCommunityFollows()
+        .filter((entry) => entry.userId === user.id)
+        .map(({ targetType, targetId, createdAt }) => ({ targetType, targetId, createdAt }));
+      return json(response, 200, { follows });
+    }
+
+    if (pathname === "/api/community/follows" && request.method === "POST") {
+      const user = requireSession(request);
+      if (!user) return json(response, 401, { error: "Sign in to follow." });
+      if (!rateLimit(communityRateLimits, `community:follow:${user.id}`, 60, 60 * 60 * 1000)) {
+        return json(response, 429, { error: "Too many follow changes. Try again shortly." });
+      }
+      const body = await readJsonBody(request);
+      const targetType = cleanText(body.targetType, 20);
+      const targetId = cleanText(body.targetId, 80);
+      if (!communityFollowTargetTypes.has(targetType) || !targetId) {
+        return json(response, 400, { error: "Choose a valid thing to follow." });
+      }
+      if (targetType === "thread" && !readCommunityPosts().some((post) => post.id === targetId && post.parentId === null)) {
+        return json(response, 404, { error: "Thread not found." });
+      }
+      if (targetType === "group" && !readCommunityGroups().some((group) => group.id === targetId)) {
+        return json(response, 404, { error: "Group not found." });
+      }
+
+      let entry = null;
+      await communityFollowsQueue(() => {
+        const follows = readCommunityFollows();
+        entry = follows.find((f) => f.userId === user.id && f.targetType === targetType && f.targetId === targetId);
+        if (!entry) {
+          entry = { id: crypto.randomUUID(), userId: user.id, targetType, targetId, createdAt: new Date().toISOString() };
+          follows.push(entry);
+          writeCommunityFollows(follows);
+        }
+      });
+      return json(response, 201, { targetType, targetId, createdAt: entry.createdAt });
+    }
+
+    const communityUnfollowMatch = pathname.match(/^\/api\/community\/follows\/([^/]+)\/([^/]+)$/);
+    if (communityUnfollowMatch && request.method === "DELETE") {
+      const user = requireSession(request);
+      if (!user) return json(response, 401, { error: "Sign in to unfollow." });
+      const [, targetType, targetId] = communityUnfollowMatch;
+
+      await communityFollowsQueue(() => {
+        const follows = readCommunityFollows().filter(
+          (f) => !(f.userId === user.id && f.targetType === targetType && f.targetId === decodeURIComponent(targetId))
+        );
+        writeCommunityFollows(follows);
+      });
+      return json(response, 200, { targetType, targetId: decodeURIComponent(targetId) });
+    }
+
+    if (pathname === "/api/community/saved" && request.method === "GET") {
+      const user = requireSession(request);
+      if (!user) return json(response, 401, { error: "Sign in to view your saved items." });
+      const saved = readCommunitySaved()
+        .filter((entry) => entry.userId === user.id)
+        .map(({ targetType, targetId, createdAt }) => ({ targetType, targetId, createdAt }));
+      return json(response, 200, { saved });
+    }
+
+    if (pathname === "/api/community/saved" && request.method === "POST") {
+      const user = requireSession(request);
+      if (!user) return json(response, 401, { error: "Sign in to save." });
+      if (!rateLimit(communityRateLimits, `community:saved:${user.id}`, 60, 60 * 60 * 1000)) {
+        return json(response, 429, { error: "Too many save changes. Try again shortly." });
+      }
+      const body = await readJsonBody(request);
+      const targetType = cleanText(body.targetType, 20);
+      const targetId = cleanText(body.targetId, 80);
+      if (!communitySavedTargetTypes.has(targetType) || !targetId) {
+        return json(response, 400, { error: "Choose a valid thing to save." });
+      }
+      if (targetType === "thread" && !readCommunityPosts().some((post) => post.id === targetId && post.parentId === null)) {
+        return json(response, 404, { error: "Thread not found." });
+      }
+
+      let entry = null;
+      await communitySavedQueue(() => {
+        const saved = readCommunitySaved();
+        entry = saved.find((s) => s.userId === user.id && s.targetType === targetType && s.targetId === targetId);
+        if (!entry) {
+          entry = { id: crypto.randomUUID(), userId: user.id, targetType, targetId, createdAt: new Date().toISOString() };
+          saved.push(entry);
+          writeCommunitySaved(saved);
+        }
+      });
+      return json(response, 201, { targetType, targetId, createdAt: entry.createdAt });
+    }
+
+    const communityUnsaveMatch = pathname.match(/^\/api\/community\/saved\/([^/]+)\/([^/]+)$/);
+    if (communityUnsaveMatch && request.method === "DELETE") {
+      const user = requireSession(request);
+      if (!user) return json(response, 401, { error: "Sign in to unsave." });
+      const [, targetType, targetId] = communityUnsaveMatch;
+
+      await communitySavedQueue(() => {
+        const saved = readCommunitySaved().filter(
+          (s) => !(s.userId === user.id && s.targetType === targetType && s.targetId === decodeURIComponent(targetId))
+        );
+        writeCommunitySaved(saved);
+      });
+      return json(response, 200, { targetType, targetId: decodeURIComponent(targetId) });
+    }
+
+    // ---------------------------------------------------------------------
+    // Groups — join/leave membership. Group definitions themselves are
+    // editorial-seeded (see communityGroupsFile bootstrap above), not user
+    // created, so there's no create/delete-group route yet.
+    // ---------------------------------------------------------------------
+
+    if (pathname === "/api/community/groups" && request.method === "GET") {
+      const user = getAuthenticatedUser(request);
+      const members = readCommunityGroupMembers();
+      const groups = readCommunityGroups().map(({ id, key, name, description, createdAt }) => ({
+        id,
+        key,
+        name,
+        description,
+        createdAt,
+        memberCount: members.filter((member) => member.groupId === id).length,
+        isMember: Boolean(user) && members.some((member) => member.groupId === id && member.userId === user.id)
+      }));
+      return json(response, 200, { groups });
+    }
+
+    const communityGroupJoinMatch = pathname.match(/^\/api\/community\/groups\/([^/]+)\/join$/);
+    if (communityGroupJoinMatch && request.method === "POST") {
+      const user = requireSession(request);
+      if (!user) return json(response, 401, { error: "Sign in to join a group." });
+      const [, groupId] = communityGroupJoinMatch;
+      if (!readCommunityGroups().some((group) => group.id === groupId)) {
+        return json(response, 404, { error: "Group not found." });
+      }
+
+      await communityGroupMembersQueue(() => {
+        const members = readCommunityGroupMembers();
+        if (!members.some((member) => member.groupId === groupId && member.userId === user.id)) {
+          members.push({ id: crypto.randomUUID(), groupId, userId: user.id, joinedAt: new Date().toISOString() });
+          writeCommunityGroupMembers(members);
+        }
+      });
+      return json(response, 200, { groupId, isMember: true });
+    }
+
+    const communityGroupLeaveMatch = pathname.match(/^\/api\/community\/groups\/([^/]+)\/leave$/);
+    if (communityGroupLeaveMatch && request.method === "POST") {
+      const user = requireSession(request);
+      if (!user) return json(response, 401, { error: "Sign in to leave a group." });
+      const [, groupId] = communityGroupLeaveMatch;
+
+      await communityGroupMembersQueue(() => {
+        const members = readCommunityGroupMembers().filter(
+          (member) => !(member.groupId === groupId && member.userId === user.id)
+        );
+        writeCommunityGroupMembers(members);
+      });
+      return json(response, 200, { groupId, isMember: false });
+    }
+
+    // ---------------------------------------------------------------------
+    // Community feedback / ideas — separate from /api/reports on purpose:
+    // reports are private safety intake (IP-hashed, access-code tracked);
+    // feedback is a public "help shape TemptX" board, so it needs a plainer,
+    // listable shape instead of the reports pipeline's privacy model.
+    // ---------------------------------------------------------------------
+
+    const communityFeedbackKinds = new Set(["idea", "feature", "resource", "issue", "general"]);
+
+    if (pathname === "/api/community/feedback" && request.method === "GET") {
+      const items = readCommunityFeedback()
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .slice(0, 50)
+        .map(({ id, kind, title, details, authorDisplayName, isAnonymous, status, createdAt }) => ({
+          id,
+          kind,
+          title,
+          details,
+          authorDisplayName,
+          isAnonymous,
+          status,
+          createdAt
+        }));
+      return json(response, 200, { feedback: items });
+    }
+
+    if (pathname === "/api/community/feedback" && request.method === "POST") {
+      const user = requireSession(request);
+      if (!user) return json(response, 401, { error: "Sign in to submit feedback." });
+      if (!rateLimit(communityRateLimits, `community:feedback:${user.id}`, 10, 60 * 60 * 1000)) {
+        return json(response, 429, { error: "Too much feedback submitted. Try again later." });
+      }
+
+      const body = await readJsonBody(request);
+      const kind = communityFeedbackKinds.has(body.kind) ? body.kind : "general";
+      const title = cleanText(body.title, 120);
+      const details = cleanText(body.details, 2000);
+      const anonymous = Boolean(body.anonymous);
+      if (title.length < 3) return json(response, 400, { error: "Give your feedback a short title." });
+      if (details.length < 10) return json(response, 400, { error: "Add a little more detail." });
+
+      const entry = {
+        id: crypto.randomUUID(),
+        kind,
+        title,
+        details,
+        authorUserId: user.id,
+        isAnonymous: anonymous,
+        authorDisplayName: resolveCommunityAuthorName(user, anonymous),
+        status: "submitted",
+        createdAt: new Date().toISOString()
+      };
+
+      await communityFeedbackQueue(() => {
+        const items = readCommunityFeedback();
+        items.push(entry);
+        writeCommunityFeedback(items);
+      });
+
+      const { authorUserId, ...publicEntry } = entry;
+      return json(response, 201, { feedback: publicEntry });
     }
 
 // ---------------------------------------------------------------------------

@@ -12,6 +12,11 @@ if (reportForm) {
   if (["profile", "conversation", "account", "technical", "community", "other"].includes(requestedType)) {
     reportType.value = requestedType;
   }
+  const requestedCategory = params.get("category");
+  const reportCategory = document.querySelector("#reportCategory");
+  if (reportCategory && ["harassment", "coercion", "scam", "privacy", "underage", "other"].includes(requestedCategory)) {
+    reportCategory.value = requestedCategory;
+  }
   reportReference.value = (params.get("ref") || "").slice(0, 120);
 
   reportForm.addEventListener("submit", async (event) => {
