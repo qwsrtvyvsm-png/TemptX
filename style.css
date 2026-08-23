@@ -13965,7 +13965,7 @@ button,
     background: var(--black);
     border-bottom: 2px solid var(--cream);
     z-index: 650;
-    max-height: calc(100vh - 100%);
+    max-height: calc(100vh - 72px);
     overflow-y: auto;
   }
 

@@ -193,6 +193,7 @@ document.querySelectorAll(".nav-toggle").forEach((toggle) => {
 
   const setOpen = (open) => {
     toggle.setAttribute("aria-expanded", String(open));
+    toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
     document.body.classList.toggle("nav-open", open);
   };
 
