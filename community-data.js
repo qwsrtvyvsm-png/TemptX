@@ -141,7 +141,7 @@ const COMMUNITY_CONTRIBUTION_CARDS = [
   { title: "Join the Conversation", description: "Jump into discussions, ask questions, and share your experience.", cta: "Start now", href: "community.html?board=discussions#compose" },
   { title: "Find Your Group", description: "Connect with people who get it. Groups for every interest.", cta: "Explore groups", href: "#groups" },
   { title: "Share Your Knowledge", description: "Help others by answering questions in Q&A.", cta: "Answer a question", href: "community.html?board=qna" },
-  { title: "Get Recognised", description: "Contribution badges reward useful participation, not popularity.", cta: "Learn more", href: "#contributions" },
+  { title: "Get Recognised", description: "Contribution badges reward useful participation, not popularity.", cta: "Learn more", href: "#contributions-panel" },
   { title: "Help Shape TemptX", description: "Your feedback drives what we build next.", cta: "Submit an idea", href: "#feedback" }
 ];
 
