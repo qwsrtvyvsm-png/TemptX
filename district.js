@@ -2,7 +2,7 @@ const cards = document.querySelector("#districtBusinessCards");
 const results = document.querySelector("#districtResults");
 const empty = document.querySelector("#districtEmpty");
 const search = document.querySelector("#districtSearch");
-const location = document.querySelector("#districtLocation");
+const locationSelect = document.querySelector("#districtLocation");
 const sideLocation = document.querySelector("#districtSideLocation");
 const category = document.querySelector("#districtCategory");
 const services = document.querySelector("#districtServices");
@@ -36,11 +36,11 @@ const shortDescription = (profile, business) => {
   return titleCase(business.accountCategory) + " storefront in the District";
 };
 
-const syncLocation = (source) => { if (source === location && sideLocation) sideLocation.value = location.value; if (source === sideLocation && location) location.value = sideLocation.value; };
+const syncLocation = (source) => { if (source === locationSelect && sideLocation) sideLocation.value = locationSelect.value; if (source === sideLocation && locationSelect) locationSelect.value = sideLocation.value; };
 const matches = (business) => {
   const profile = business.businessProfile || {};
   const query = normalise([search.value, services.value].filter(Boolean).join(" "));
-  const selectedLocation = normalise(location.value || sideLocation.value);
+  const selectedLocation = normalise(locationSelect.value || sideLocation.value);
   const selectedCategory = normalise(category.value);
   const haystack = normalise([business.workingName, business.accountCategory, profile.location, profile.description, serviceList(profile.services).join(" ")].join(" "));
   return (!query || haystack.includes(query)) && (!selectedLocation || normalise(profile.location).includes(selectedLocation)) && (!selectedCategory || normalise(business.accountCategory) === selectedCategory) && (!verified.checked || business.applicationStatus === "approved");
@@ -162,10 +162,10 @@ const setStats = () => {
   document.querySelector("#districtCategoryCount").textContent = categories.size;
 };
 const runQuery = (value) => { search.value = value || ""; render(); document.querySelector("#businesses")?.scrollIntoView({ behavior: "smooth", block: "start" }); };
-form.addEventListener("submit", (event) => { event.preventDefault(); syncLocation(location); render(); document.querySelector("#businesses")?.scrollIntoView({ behavior: "smooth", block: "start" }); });
+form.addEventListener("submit", (event) => { event.preventDefault(); syncLocation(locationSelect); render(); document.querySelector("#businesses")?.scrollIntoView({ behavior: "smooth", block: "start" }); });
 [search, services].forEach((input) => input.addEventListener("input", render));
-[location, sideLocation, category, verified].forEach((input) => input.addEventListener("change", () => { if (input === location || input === sideLocation) syncLocation(input); render(); }));
-filters.addEventListener("reset", () => window.setTimeout(() => { location.value = ""; sideLocation.value = ""; render(); }, 0));
+[locationSelect, sideLocation, category, verified].forEach((input) => input.addEventListener("change", () => { if (input === locationSelect || input === sideLocation) syncLocation(input); render(); }));
+filters.addEventListener("reset", () => window.setTimeout(() => { locationSelect.value = ""; sideLocation.value = ""; render(); }, 0));
 document.querySelectorAll("[data-district-query]").forEach((link) => link.addEventListener("click", (event) => { if (link.tagName === "A") event.preventDefault(); runQuery(link.dataset.districtQuery); }));
 document.querySelectorAll("[data-district-category]").forEach((link) => link.addEventListener("click", (event) => { event.preventDefault(); category.value = link.dataset.districtCategory; document.querySelectorAll("[data-district-category]").forEach((item) => item.classList.toggle("is-current", item === link)); render(); document.querySelector("#businesses")?.scrollIntoView({ behavior: "smooth", block: "start" }); }));
 fetch("/api/directory/businesses").then((response) => response.ok ? response.json() : Promise.reject(new Error("Business directory unavailable"))).then((result) => { businesses = Array.isArray(result.businesses) ? result.businesses : []; setStats(); render(); }).catch(() => { businesses = []; setStats(); render(); });
