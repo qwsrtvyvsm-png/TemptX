@@ -12938,28 +12938,21 @@ select {
 /* ══════════════════════════════════════════════════
    DISTRICT — standalone business marketplace
    All styles intentionally scoped to .district-page.
-   Near-black / charcoal storefront aesthetic.
+   Bold Editorial: flat, hard-edged black/paper/red,
+   using the site's own tokens (no local palette).
    ══════════════════════════════════════════════════ */
 .district-page {
-  --district-bg: #0a0a0a;
-  --district-charcoal: #141414;
-  --district-panel: #1a1a1a;
-  --district-line: rgba(197, 160, 89, 0.28);
-  --district-line-soft: rgba(255, 255, 255, 0.08);
-  --district-gold: #c5a059;
-  --district-ink: #f2ebe0;
-  --district-muted: rgba(242, 235, 224, 0.58);
   margin: 0;
-  color: var(--district-ink);
+  color: var(--cream);
   background:
-    radial-gradient(ellipse 55% 40% at 88% 0%, rgba(197, 160, 89, 0.07), transparent 55%),
+    radial-gradient(ellipse 55% 40% at 88% 0%, rgba(var(--gold-rgb), 0.07), transparent 55%),
     radial-gradient(ellipse 40% 30% at 8% 18%, rgba(255, 255, 255, 0.03), transparent 50%),
-    linear-gradient(180deg, #0c0c0c 0%, var(--district-bg) 40%, #080808 100%);
+    linear-gradient(180deg, #0c0c0c 0%, var(--black) 40%, #080808 100%);
   font-family: var(--font-sans);
 }
 .district-page .district-brand-label {
   margin-left: 8px;
-  color: var(--district-gold);
+  color: var(--gold);
   font-size: 0.58rem;
   font-weight: 800;
   letter-spacing: 0.18em;
@@ -12972,33 +12965,33 @@ select {
 }
 .district-page .district-kicker {
   margin: 0 0 10px;
-  color: var(--district-gold);
+  color: var(--gold);
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 
-/* —— Premium split hero —— */
+/* —— Hero —— */
 .district-page .district-hero {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.9fr);
   gap: 40px;
-  align-items: center;
-  min-height: min(58vh, 520px);
+  align-items: end;
   padding-bottom: 40px;
+  border-bottom: 1px solid var(--line);
 }
 .district-page .district-hero-copy { max-width: 560px; }
 .district-page .district-hero h1 {
   margin: 0;
-  color: var(--district-ink);
+  color: var(--cream);
   font: 400 clamp(3rem, 6vw, 4.6rem) / 0.94 var(--font-display);
   letter-spacing: -0.03em;
 }
 .district-page .district-support {
   max-width: 420px;
   margin: 16px 0 28px;
-  color: var(--district-muted);
+  color: var(--muted);
   font-size: 0.95rem;
   line-height: 1.55;
 }
@@ -13015,112 +13008,84 @@ select {
   gap: 10px;
   min-height: 50px;
   padding: 0 16px;
-  border: 1px solid var(--district-line);
-  background: rgba(10, 10, 10, 0.85);
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.4);
 }
-.district-page .district-search-icon { display: grid; color: var(--district-gold); opacity: 0.85; }
+.district-page .district-search-icon { display: grid; color: var(--gold); opacity: 0.9; }
 .district-page .district-search input {
   width: 100%;
   min-width: 0;
   border: 0;
-  color: var(--district-ink);
+  color: var(--cream);
   background: transparent;
   font: inherit;
   font-size: 0.88rem;
 }
-.district-page .district-search input::placeholder { color: rgba(242, 235, 224, 0.38); }
+.district-page .district-search input::placeholder { color: rgba(var(--cream-rgb), 0.38); }
 .district-page .district-browse-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   min-height: 50px;
-  padding: 0 18px;
-  border: 1px solid var(--district-line);
-  color: var(--district-ink);
-  background: transparent;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  padding: 0 20px;
+  border: 1px solid var(--gold);
+  border-radius: 0;
+  color: var(--cream);
+  background: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   text-decoration: none;
   white-space: nowrap;
-  transition: border-color var(--duration-fast) var(--ease-soft), color var(--duration-fast) var(--ease-soft);
+  transition: background var(--duration-fast) var(--ease-soft), border-color var(--duration-fast) var(--ease-soft);
 }
 .district-page .district-browse-btn:hover {
-  border-color: var(--district-gold);
-  color: var(--district-gold);
+  background: var(--bullion-rich);
+  border-color: var(--bullion-rich);
 }
-.district-page .district-browse-icon { display: grid; color: var(--district-gold); }
+.district-page .district-browse-icon { display: grid; }
 
-/* Hero architectural visual */
-.district-page .district-hero-visual { min-height: 420px; }
-.district-page .district-hero-frame {
-  position: relative;
-  height: 100%;
-  min-height: 420px;
-  overflow: hidden;
-  border: 1px solid var(--district-line-soft);
-  background:
-    linear-gradient(180deg, transparent 55%, rgba(0, 0, 0, 0.72) 100%),
-    radial-gradient(ellipse 70% 55% at 50% 100%, rgba(197, 160, 89, 0.18), transparent 60%),
-    linear-gradient(145deg, #1c1c1c 0%, #0d0d0d 48%, #16120e 100%);
+/* Hero glance panel — live storefront/city/category counts */
+.district-page .district-hero-glance {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 22px 24px;
 }
-.district-page .district-hero-frame::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    repeating-linear-gradient(90deg, transparent, transparent 47px, rgba(255, 255, 255, 0.015) 48px),
-    repeating-linear-gradient(0deg, transparent, transparent 47px, rgba(255, 255, 255, 0.012) 48px);
-  opacity: 0.7;
-  pointer-events: none;
-}
-.district-page .district-hero-arch {
-  position: absolute;
-  left: 50%;
-  bottom: 8%;
-  width: min(58%, 220px);
-  height: 68%;
-  transform: translateX(-50%);
-  border: 1px solid rgba(197, 160, 89, 0.35);
-  border-bottom: 0;
-  border-radius: 110px 110px 0 0;
-  background:
-    linear-gradient(180deg, rgba(197, 160, 89, 0.08), transparent 40%),
-    linear-gradient(180deg, #121212, #050505 70%);
-  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.55), 0 0 60px rgba(197, 160, 89, 0.06);
-}
-.district-page .district-hero-arch::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 28%;
-  width: 10px;
-  height: 42px;
-  transform: translateX(-50%);
-  border-radius: 6px;
-  background: linear-gradient(180deg, #e2c48a, #8a6a32);
-  box-shadow: 0 0 18px rgba(197, 160, 89, 0.45);
-}
-.district-page .district-hero-arch::after {
-  content: "";
-  position: absolute;
-  inset: 12px 12px 0;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-bottom: 0;
-  border-radius: 98px 98px 0 0;
-}
-.district-page .district-hero-engraving {
-  position: absolute;
-  top: 14%;
-  left: 0;
-  right: 0;
-  margin: 0;
-  color: rgba(197, 160, 89, 0.72);
-  font: 600 0.58rem / 1 var(--font-sans);
-  letter-spacing: 0.28em;
-  text-align: center;
+.district-page .district-glance-title {
+  margin: 0 0 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--gold);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
+}
+.district-page .district-glance-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.district-page .district-glance-stat strong {
+  display: block;
+  color: var(--cream);
+  font: 400 1.7rem var(--font-display);
+}
+.district-page .district-glance-stat span {
+  color: var(--muted);
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.district-page .district-glance-note {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.5;
 }
 
 /* —— Visual category row —— */
@@ -13129,8 +13094,7 @@ select {
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
   padding: 28px 0 36px;
-  border-top: 1px solid var(--district-line-soft);
-  border-bottom: 1px solid var(--district-line-soft);
+  border-bottom: 1px solid var(--line);
 }
 .district-page .district-category-item {
   display: flex;
@@ -13145,18 +13109,18 @@ select {
   border: 1px solid transparent;
 }
 .district-page .district-category-item:hover {
-  border-color: var(--district-line);
-  background: rgba(255, 255, 255, 0.02);
+  border-color: var(--line);
+  background: rgba(var(--gold-rgb), 0.05);
 }
-.district-page .district-category-icon { color: var(--district-gold); }
+.district-page .district-category-icon { color: var(--gold); }
 .district-page .district-category-item strong {
-  color: var(--district-gold);
+  color: var(--cream);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
 .district-page .district-category-item small {
-  color: var(--district-muted);
+  color: var(--muted);
   font-size: 0.68rem;
 }
 
@@ -13167,42 +13131,42 @@ select {
   grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.85fr);
   min-height: 280px;
   overflow: hidden;
-  border: 1px solid var(--district-line-soft);
-  background: var(--district-panel);
+  border: 1px solid var(--line);
+  background: var(--panel);
 }
 .district-page .district-featured-media {
   position: relative;
   min-height: 260px;
   display: grid;
   place-items: center;
-  color: rgba(197, 160, 89, 0.35);
+  color: rgba(var(--gold-rgb), 0.4);
   font: 400 4rem / 1 var(--font-display);
   letter-spacing: 0.08em;
   background:
     linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.35)),
-    radial-gradient(circle at 30% 20%, rgba(197, 160, 89, 0.16), transparent 42%),
-    linear-gradient(145deg, #222 0%, #0e0e0e 55%, #1a1612 100%);
+    radial-gradient(circle at 30% 20%, rgba(var(--gold-rgb), 0.18), transparent 42%),
+    linear-gradient(145deg, #221715 0%, #0e0e0e 55%, #1a1210 100%);
 }
-.district-page .district-featured-media[data-tone="2"] { background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.35)), radial-gradient(circle at 70% 30%, rgba(120, 90, 70, 0.28), transparent 45%), linear-gradient(150deg, #1b1b1b, #0a0a0a 60%, #17130f); }
-.district-page .district-featured-media[data-tone="3"] { background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.35)), radial-gradient(circle at 40% 80%, rgba(70, 90, 110, 0.25), transparent 45%), linear-gradient(150deg, #1a1c1e, #090909 60%, #121418); }
-.district-page .district-featured-media[data-tone="4"] { background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.35)), radial-gradient(circle at 20% 40%, rgba(90, 60, 90, 0.22), transparent 45%), linear-gradient(150deg, #1c181c, #0a0a0a 60%, #151218); }
-.district-page .district-featured-media[data-tone="5"] { background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.35)), radial-gradient(circle at 60% 20%, rgba(70, 100, 80, 0.2), transparent 45%), linear-gradient(150deg, #181c1a, #090909 60%, #121614); }
+.district-page .district-featured-media[data-tone="2"] { background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.35)), radial-gradient(circle at 70% 30%, rgba(var(--gold-rgb), 0.12), transparent 45%), linear-gradient(150deg, #1e1815, #0a0a0a 60%, #14100e); }
+.district-page .district-featured-media[data-tone="3"] { background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.35)), radial-gradient(circle at 40% 80%, rgba(74, 5, 9, 0.42), transparent 45%), linear-gradient(150deg, #1c1210, #090909 60%, #150c0b); }
+.district-page .district-featured-media[data-tone="4"] { background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.35)), radial-gradient(circle at 20% 40%, rgba(209, 52, 58, 0.16), transparent 45%), linear-gradient(150deg, #1e1414, #0a0a0a 60%, #171011); }
+.district-page .district-featured-media[data-tone="5"] { background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.35)), radial-gradient(circle at 60% 20%, rgba(255, 255, 255, 0.05), transparent 45%), linear-gradient(150deg, #1a1a1a, #090909 60%, #131313); }
 .district-page .district-featured-body {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 28px 26px;
-  background: var(--district-charcoal);
+  background: var(--soft-black);
 }
 .district-page .district-featured-body h3 {
   margin: 0;
-  color: var(--district-ink);
+  color: var(--cream);
   font: 400 1.75rem / 1.1 var(--font-display);
   letter-spacing: -0.02em;
 }
 .district-page .district-featured-body > p {
   margin: 0;
-  color: var(--district-muted);
+  color: var(--muted);
   font-size: 0.86rem;
   line-height: 1.5;
 }
@@ -13211,7 +13175,7 @@ select {
   flex-wrap: wrap;
   gap: 14px 18px;
   margin-top: 4px;
-  color: var(--district-muted);
+  color: var(--muted);
   font-size: 0.72rem;
 }
 .district-page .district-featured-meta > span,
@@ -13220,7 +13184,7 @@ select {
   align-items: center;
   gap: 6px;
 }
-.district-page .district-featured-verified { color: var(--district-gold); }
+.district-page .district-featured-verified { color: var(--gold); }
 .district-page .district-featured-actions {
   display: flex;
   align-items: center;
@@ -13230,7 +13194,7 @@ select {
   padding-top: 10px;
 }
 .district-page .district-featured-cta {
-  color: var(--district-gold);
+  color: var(--gold);
   font-size: 0.78rem;
   font-weight: 600;
   text-decoration: none;
@@ -13238,7 +13202,7 @@ select {
 }
 .district-page .district-featured-cta:hover { text-decoration: underline; }
 
-/* —— Explore / precincts —— */
+/* —— Explore / precincts — directory board —— */
 .district-page .district-section-heading {
   display: flex;
   align-items: end;
@@ -13248,14 +13212,14 @@ select {
 }
 .district-page .district-section-heading h2 {
   margin: 0;
-  color: var(--district-ink);
+  color: var(--cream);
   font: 400 clamp(1.35rem, 2.2vw, 1.7rem) / 1.1 var(--font-display);
   letter-spacing: -0.015em;
 }
 .district-page .district-section-heading > p,
 .district-page .district-section-link {
   margin: 0;
-  color: var(--district-gold);
+  color: var(--gold);
   font-size: 0.72rem;
   font-weight: 600;
   text-decoration: none;
@@ -13264,71 +13228,74 @@ select {
 .district-page .district-section-link:hover { text-decoration: underline; }
 .district-page .district-precinct-section { margin-top: 44px; }
 .district-page .district-precincts {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  background: var(--panel);
 }
 .district-page .district-precinct {
   position: relative;
-  display: flex;
-  min-height: 148px;
-  flex-direction: column;
-  gap: 6px;
-  padding: 16px 14px;
-  overflow: hidden;
-  border: 1px solid var(--district-line-soft);
-  background: var(--district-panel);
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  column-gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
   color: inherit;
   text-decoration: none;
-  isolation: isolate;
-  transition: border-color var(--duration-fast) var(--ease-soft), transform var(--duration-mid) var(--ease-luxury);
+  transition: background var(--duration-fast) var(--ease-soft), padding-left var(--duration-fast) var(--ease-soft);
 }
-.district-page .district-precinct::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(circle at 78% 12%, rgba(197, 160, 89, 0.18), transparent 36%),
-    linear-gradient(165deg, #1d1d1d, #0f0f0f 70%);
-  transition: transform var(--duration-slow) var(--ease-luxury);
+.district-page .district-precincts .district-precinct:last-child { border-bottom: 0; }
+.district-page .district-precinct:hover {
+  background: rgba(var(--gold-rgb), 0.06);
+  padding-left: 28px;
 }
-.district-page .precinct-wellness::before { background: radial-gradient(circle at 78% 12%, rgba(110, 140, 120, 0.22), transparent 36%), linear-gradient(165deg, #1a1d1b, #0f0f0f 70%); }
-.district-page .precinct-entertainment::before { background: radial-gradient(circle at 78% 12%, rgba(140, 70, 90, 0.24), transparent 36%), linear-gradient(165deg, #1d181a, #0f0f0f 70%); }
-.district-page .precinct-creator::before { background: radial-gradient(circle at 78% 12%, rgba(90, 110, 150, 0.22), transparent 36%), linear-gradient(165deg, #181a1d, #0f0f0f 70%); }
-.district-page .precinct-professional::before { background: radial-gradient(circle at 78% 12%, rgba(150, 130, 90, 0.18), transparent 36%), linear-gradient(165deg, #1c1b18, #0f0f0f 70%); }
-.district-page .precinct-education::before { background: radial-gradient(circle at 78% 12%, rgba(100, 90, 140, 0.22), transparent 36%), linear-gradient(165deg, #1a1820, #0f0f0f 70%); }
 .district-page .district-precinct > span {
-  color: var(--district-gold);
-  font: 1.55rem / 1 var(--font-display);
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  color: var(--gold);
+  font: 1.5rem / 1 var(--font-display);
 }
 .district-page .district-precinct strong {
-  margin-top: auto;
-  color: var(--district-ink);
-  font: 400 0.82rem / 1.2 var(--font-display);
-  letter-spacing: 0.03em;
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--cream);
+  font: 400 1.05rem / 1.2 var(--font-display);
+  letter-spacing: 0.01em;
 }
 .district-page .district-precinct small {
-  color: var(--district-muted);
-  font-size: 0.64rem;
+  grid-column: 2;
+  grid-row: 2;
+  color: var(--muted);
+  font-size: 0.74rem;
   line-height: 1.3;
 }
-.district-page .district-precinct:hover {
-  border-color: var(--district-line);
-  transform: translateY(-2px);
+.district-page .district-precinct::after {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  content: "→";
+  color: var(--gold);
+  font-weight: 700;
 }
-.district-page .district-precinct:hover::before { transform: scale(1.05); }
+.district-page .precinct-education::after {
+  content: "External";
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
 
 /* —— Compact storefront cards —— */
 .district-page .district-businesses { margin-top: 44px; }
 .district-page .district-filters-panel {
   margin: 0 0 16px;
-  border: 1px solid var(--district-line-soft);
-  background: var(--district-charcoal);
+  border: 1px solid var(--line);
+  background: var(--soft-black);
 }
 .district-page .district-filters-panel > summary {
   padding: 12px 14px;
-  color: var(--district-muted);
+  color: var(--muted);
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -13349,20 +13316,20 @@ select {
   grid-column: 1 / -1;
   display: flex;
   justify-content: space-between;
-  color: var(--district-ink);
+  color: var(--cream);
   font-size: 0.75rem;
   font-weight: 700;
 }
 .district-page .district-filter-title button {
   border: 0;
-  color: var(--district-gold);
+  color: var(--gold);
   background: none;
   font: inherit;
   cursor: pointer;
 }
 .district-page .district-filters label {
   display: block;
-  color: var(--district-muted);
+  color: var(--muted);
   font-size: 0.66rem;
 }
 .district-page .district-filters input,
@@ -13371,8 +13338,8 @@ select {
   min-height: 36px;
   margin-top: 5px;
   padding: 0 8px;
-  border: 1px solid var(--district-line-soft);
-  color: var(--district-ink);
+  border: 1px solid var(--line);
+  color: var(--cream);
   background: rgba(0, 0, 0, 0.35);
   font: inherit;
   font-size: 0.72rem;
@@ -13383,13 +13350,13 @@ select {
   gap: 8px;
   align-self: end;
   min-height: 36px;
-  color: var(--district-muted) !important;
+  color: var(--muted) !important;
 }
 .district-page .district-toggle input {
   width: 15px;
   min-height: 15px;
   margin: 0;
-  accent-color: var(--district-gold);
+  accent-color: var(--gold);
 }
 .district-page .district-business-cards {
   display: grid;
@@ -13398,12 +13365,12 @@ select {
 }
 .district-page .district-business-card {
   overflow: hidden;
-  border: 1px solid var(--district-line-soft);
-  background: var(--district-panel);
+  border: 1px solid var(--line);
+  background: var(--panel);
   transition: border-color var(--duration-fast) var(--ease-soft), transform var(--duration-mid) var(--ease-luxury);
 }
 .district-page .district-business-card:hover {
-  border-color: var(--district-line);
+  border-color: var(--line-strong);
   transform: translateY(-2px);
 }
 .district-page .district-business-card > a {
@@ -13418,17 +13385,17 @@ select {
   display: grid;
   min-height: 132px;
   place-items: center;
-  color: rgba(197, 160, 89, 0.38);
+  color: rgba(var(--gold-rgb), 0.45);
   background:
-    radial-gradient(circle at 35% 20%, rgba(197, 160, 89, 0.18), transparent 40%),
-    linear-gradient(150deg, #232323, #0c0c0c 70%);
+    radial-gradient(circle at 35% 20%, rgba(var(--gold-rgb), 0.2), transparent 40%),
+    linear-gradient(150deg, #241816, #0c0c0c 70%);
   font: 400 1.8rem / 1 var(--font-display);
   letter-spacing: 0.06em;
 }
-.district-page .district-business-card[data-tone="2"] .district-business-media { background: radial-gradient(circle at 70% 25%, rgba(130, 95, 70, 0.22), transparent 42%), linear-gradient(150deg, #1f1c1a, #0b0b0b 70%); }
-.district-page .district-business-card[data-tone="3"] .district-business-media { background: radial-gradient(circle at 40% 70%, rgba(70, 95, 120, 0.22), transparent 42%), linear-gradient(150deg, #1a1c1f, #0b0b0b 70%); }
-.district-page .district-business-card[data-tone="4"] .district-business-media { background: radial-gradient(circle at 25% 30%, rgba(110, 70, 110, 0.2), transparent 42%), linear-gradient(150deg, #1e1a1e, #0b0b0b 70%); }
-.district-page .district-business-card[data-tone="5"] .district-business-media { background: radial-gradient(circle at 60% 20%, rgba(80, 110, 90, 0.2), transparent 42%), linear-gradient(150deg, #1a1e1c, #0b0b0b 70%); }
+.district-page .district-business-card[data-tone="2"] .district-business-media { background: radial-gradient(circle at 70% 25%, rgba(var(--gold-rgb), 0.13), transparent 42%), linear-gradient(150deg, #1f1a18, #0b0b0b 70%); }
+.district-page .district-business-card[data-tone="3"] .district-business-media { background: radial-gradient(circle at 40% 70%, rgba(74, 5, 9, 0.42), transparent 42%), linear-gradient(150deg, #1c1210, #0b0b0b 70%); }
+.district-page .district-business-card[data-tone="4"] .district-business-media { background: radial-gradient(circle at 25% 30%, rgba(209, 52, 58, 0.18), transparent 42%), linear-gradient(150deg, #1e1414, #0b0b0b 70%); }
+.district-page .district-business-card[data-tone="5"] .district-business-media { background: radial-gradient(circle at 60% 20%, rgba(255, 255, 255, 0.05), transparent 42%), linear-gradient(150deg, #1a1a1a, #0b0b0b 70%); }
 .district-page .district-business-body {
   display: flex;
   flex: 1;
@@ -13443,17 +13410,17 @@ select {
 }
 .district-page .district-business-body h3 {
   margin: 0;
-  color: var(--district-ink);
+  color: var(--cream);
   font: 400 1rem / 1.2 var(--font-display);
 }
 .district-page .district-verified-mark {
   display: grid;
-  color: var(--district-gold);
+  color: var(--gold);
   flex: 0 0 auto;
 }
 .district-page .district-business-kind {
   margin: 0;
-  color: var(--district-muted);
+  color: var(--muted);
   font-size: 0.7rem;
   line-height: 1.35;
   display: -webkit-box;
@@ -13468,7 +13435,7 @@ select {
   gap: 8px;
   margin-top: auto;
   padding-top: 8px;
-  color: var(--district-muted);
+  color: var(--muted);
   font-size: 0.64rem;
 }
 .district-page .district-business-place {
@@ -13485,8 +13452,8 @@ select {
 .district-page .district-business-pill {
   flex: 0 0 auto;
   padding: 3px 8px;
-  border: 1px solid var(--district-line);
-  color: var(--district-ink);
+  border: 1px solid var(--line-strong);
+  color: var(--cream);
   background: rgba(0, 0, 0, 0.35);
   font-size: 0.58rem;
   font-weight: 600;
@@ -13495,7 +13462,7 @@ select {
 }
 .district-page .district-empty {
   margin-top: 18px;
-  color: var(--district-muted);
+  color: var(--muted);
 }
 
 /* —— Owner strip —— */
@@ -13506,18 +13473,18 @@ select {
   gap: 24px;
   margin-top: 48px;
   padding: 28px 26px;
-  border: 1px solid var(--district-line-soft);
-  background: var(--district-charcoal);
+  border: 1px solid var(--line);
+  background: var(--soft-black);
 }
 .district-page .district-owner-strip h2 {
   margin: 0 0 6px;
-  color: var(--district-ink);
+  color: var(--cream);
   font: 400 1.6rem / 1.1 var(--font-display);
 }
 .district-page .district-owner-strip p:not(.district-kicker) {
   margin: 0;
   max-width: 460px;
-  color: var(--district-muted);
+  color: var(--muted);
   font-size: 0.84rem;
 }
 .district-page .district-gold-button {
@@ -13526,18 +13493,21 @@ select {
   justify-content: space-between;
   gap: 16px;
   min-height: 44px;
-  padding: 0 18px;
-  border: 1px solid var(--district-line);
-  color: var(--district-gold);
-  background: transparent;
-  font: 600 0.78rem var(--font-sans);
+  padding: 0 20px;
+  border: 1px solid var(--gold);
+  border-radius: 0;
+  color: var(--cream);
+  background: var(--gold);
+  font: 800 0.72rem var(--font-sans);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   text-decoration: none;
   white-space: nowrap;
-  transition: background var(--duration-fast) var(--ease-soft), color var(--duration-fast) var(--ease-soft);
+  transition: background var(--duration-fast) var(--ease-soft), border-color var(--duration-fast) var(--ease-soft);
 }
 .district-page .district-gold-button:hover {
-  background: rgba(197, 160, 89, 0.1);
-  color: var(--district-ink);
+  background: var(--bullion-rich);
+  border-color: var(--bullion-rich);
 }
 
 /* —— Footer —— */
@@ -13546,13 +13516,13 @@ select {
   grid-template-columns: 1.25fr 2.3fr 1.1fr;
   gap: 28px;
   padding-top: 30px;
-  border-top: 1px solid var(--district-line-soft);
+  border-top: 1px solid var(--line);
   background: #080808;
 }
 .district-page .district-footer .home-footer-bottom { grid-column: 1 / -1; }
 .district-page .district-footer .logo small {
   margin-left: 7px;
-  color: var(--district-gold);
+  color: var(--gold);
   font: 700 0.56rem var(--font-sans);
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -13563,49 +13533,48 @@ select {
   width: 25px;
   height: 25px;
   place-items: center;
-  border: 1px solid var(--district-line-soft);
+  border: 1px solid var(--line);
   border-radius: 50%;
-  color: var(--district-muted);
+  color: var(--muted);
 }
 .district-page .district-footer-signup { align-self: start; }
 .district-page .district-footer-signup label {
-  color: var(--district-ink);
+  color: var(--cream);
   font: 400 1rem var(--font-display);
 }
 .district-page .district-footer-signup p {
   margin: 3px 0 10px;
-  color: var(--district-muted);
+  color: var(--muted);
   font-size: 0.67rem;
 }
 .district-page .district-footer-signup div {
   display: flex;
   overflow: hidden;
-  border: 1px solid var(--district-line-soft);
+  border: 1px solid var(--line);
 }
 .district-page .district-footer-signup input {
   width: 100%;
   min-width: 0;
   padding: 9px;
   border: 0;
-  color: var(--district-ink);
+  color: var(--cream);
   background: rgba(0, 0, 0, 0.35);
 }
 .district-page .district-footer-signup button {
   width: 42px;
   border: 0;
-  color: #130b05;
-  background: linear-gradient(135deg, #e2c48a, var(--district-gold));
+  border-radius: 0;
+  color: var(--cream);
+  background: var(--gold);
   cursor: pointer;
 }
+.district-page .district-footer-signup button:hover { background: var(--bullion-rich); }
 
 @media (max-width: 1100px) {
-  .district-page .district-precincts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .district-page .district-business-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 900px) {
-  .district-page .district-hero { grid-template-columns: 1fr; gap: 24px; min-height: 0; }
-  .district-page .district-hero-visual { order: -1; min-height: 280px; }
-  .district-page .district-hero-frame { min-height: 280px; }
+  .district-page .district-hero { grid-template-columns: 1fr; gap: 24px; }
   .district-page .district-category-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .district-page .district-featured-banner { grid-template-columns: 1fr; }
   .district-page .district-filters { grid-template-columns: 1fr 1fr; }
@@ -13623,12 +13592,7 @@ select {
     padding-bottom: 18px;
   }
   .district-page .district-category-item { flex: 0 0 120px; }
-  .district-page .district-precincts {
-    display: flex;
-    overflow-x: auto;
-    padding-bottom: 8px;
-  }
-  .district-page .district-precinct { flex: 0 0 168px; min-height: 130px; }
+  .district-page .district-precinct { grid-template-columns: 36px 1fr auto; padding: 14px 16px; }
   .district-page .district-filters { grid-template-columns: 1fr; }
   .district-page .district-business-cards { grid-template-columns: 1fr 1fr; gap: 10px; }
   .district-page .district-footer { grid-template-columns: 1fr; gap: 20px; }
@@ -13639,7 +13603,6 @@ select {
 }
 @media (prefers-reduced-motion: reduce) {
   .district-page .district-precinct,
-  .district-page .district-precinct::before,
   .district-page .district-business-card {
     transition: none;
   }

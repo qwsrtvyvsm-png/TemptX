@@ -52,6 +52,14 @@ const mimeTypes = {
   ".svg": "image/svg+xml"
 };
 
+// Write to a .tmp file then rename — rename(2) is atomic on POSIX, preventing
+// readers from ever seeing a half-written file if the process crashes mid-write.
+const atomicWrite = (filePath, data) => {
+  const tmp = `${filePath}.tmp`;
+  fs.writeFileSync(tmp, data);
+  fs.renameSync(tmp, filePath);
+};
+
 fs.mkdirSync(dataDirectory, { recursive: true });
 if (!fs.existsSync(usersFile)) {
   fs.writeFileSync(usersFile, "[]\n");
@@ -120,9 +128,7 @@ if (!fs.existsSync(communityGroupsFile)) {
     ...group,
     createdAt: new Date().toISOString()
   }));
-  const tmp = `${communityGroupsFile}.tmp`;
-  fs.writeFileSync(tmp, `${JSON.stringify(seededGroups, null, 2)}\n`);
-  fs.renameSync(tmp, communityGroupsFile);
+  atomicWrite(communityGroupsFile, `${JSON.stringify(seededGroups, null, 2)}\n`);
 }
 
 let serverSecret;
@@ -136,14 +142,6 @@ if (process.env.SERVER_SECRET) {
   fs.writeFileSync(serverSecretFile, serverSecret, { mode: 0o600 });
   console.warn("[WARN] No SERVER_SECRET env var or secret file found. Generated a new secret and saved to data/server-secret. Set SERVER_SECRET env var before deploying to production.");
 }
-
-// Write to a .tmp file then rename — rename(2) is atomic on POSIX, preventing
-// readers from ever seeing a half-written file if the process crashes mid-write.
-const atomicWrite = (filePath, data) => {
-  const tmp = `${filePath}.tmp`;
-  fs.writeFileSync(tmp, data);
-  fs.renameSync(tmp, filePath);
-};
 
 // Serial write queue — guarantees that only one read-modify-write runs at a time,
 // eliminating the last-writer-wins race that occurs when two concurrent requests
