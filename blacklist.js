@@ -10,7 +10,7 @@ if (blacklistForm) {
 
   const setStatus = (message = "", type = "") => {
     status.textContent = message;
-    status.className = `report-status${type ? ` is-${type}` : ""}`;
+    status.className = `status-message${type ? ` is-${type}` : ""}`;
   };
 
   const loadReports = async () => {

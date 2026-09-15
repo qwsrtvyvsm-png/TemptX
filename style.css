@@ -57,6 +57,19 @@
   --black-rgb: 10, 10, 10;
   --panel-rgb: 23, 20, 18;
 
+  /* ── Status System — semantic state tokens (added 2026-09-10) ──
+     Backs .status-badge / .status-message. See design doc for rationale:
+     positive/pending/neutral get their own hues; negative reuses the
+     brand accent since red already reads as "urgent" everywhere else. */
+  --status-positive: #2fbf71;
+  --status-positive-rgb: 47, 191, 113;
+  --status-pending: #e8ab2e;
+  --status-pending-rgb: 232, 171, 46;
+  --status-negative: var(--gold);
+  --status-negative-rgb: var(--gold-rgb);
+  --status-neutral: #6e6a63;
+  --status-neutral-rgb: 110, 106, 99;
+
   /* Semantic text (WCAG-minded alphas on near-black) */
   --text-primary: var(--cream);
   --text-secondary: color-mix(in oklch, var(--cream) 78%, transparent);
@@ -160,6 +173,7 @@
    and a wider max-width, letting the listings + sidebar grid fill the page. */
 .directory-body .directory-main {
   width: min(1440px, calc(100% - 48px));
+  margin: 0 auto;
 }
 
 .directory-footer {
@@ -267,6 +281,13 @@
   align-self: start;
   width: 100%;
   min-width: 0;
+  display: none;
+}
+
+/* Reveal sidebar when filter panel is toggled open */
+.dir-sidebar:has(.directory-filters.is-open) {
+  display: block;
+  margin-bottom: 24px;
 }
 
 .dir-content {
@@ -274,21 +295,12 @@
   margin-top: 0;
 }
 
-/* ─── Desktop: CSS grid — 320px filters (col 1) | cards (col 2) ─── */
+/* ─── Desktop: single column — filter is a collapsible dropdown above cards ─── */
 @media (min-width: 1024px) {
   .dir-layout {
-    display: grid;
-    grid-template-columns: 320px minmax(0, 1fr);
-    gap: 32px;
-    align-items: start;
-  }
-
-  .dir-sidebar {
-    grid-column: 1;
-  }
-
-  .dir-content {
-    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
   }
 }
 
@@ -1135,7 +1147,8 @@
 }
 
 .directory-mobile-filter {
-  display: none;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* ─── Results meta bar ─── */
@@ -1836,9 +1849,9 @@
     position: static;
   }
 
-  /* Expand filter form to show all options in stacked layout */
+  /* Filter hidden until toggled (same pattern as desktop) */
   .directory-filters {
-    display: block;
+    display: none;
   }
 
   /* Stacked horizontal grid: 2 columns for primary filters */
@@ -2190,21 +2203,33 @@
   }
 }
 
-/* ─── Desktop grid (final) — after responsive overrides, same exact layout ─── */
-@media (min-width: 1024px) {
-  .dir-layout {
+/* ─── Desktop/tablet open filter panel — horizontal compact layout ─── */
+@media (min-width: 701px) {
+  .directory-filters.is-open {
+    display: block;
+  }
+
+  .directory-filters.is-open .dir-filter-primary {
     display: grid;
-    grid-template-columns: 320px minmax(0, 1fr);
-    gap: 32px;
-    align-items: start;
+    grid-template-columns: 2fr repeat(4, 1fr);
+    gap: 0 16px;
+    padding: 16px 24px 12px;
+    align-items: end;
   }
 
-  .dir-sidebar {
-    grid-column: 1;
+  .directory-filters.is-open .dir-filter-secondary {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr auto;
+    gap: 0 16px;
+    padding: 12px 24px 16px;
+    align-items: end;
+    border-top: 1px solid rgba(var(--champagne-rgb), 0.12);
   }
 
-  .dir-content {
-    grid-column: 2;
+  /* Show the panel header with close affordance */
+  .directory-filters.is-open .dir-sidebar-heading {
+    display: flex;
+    padding: 14px 24px 0;
   }
 }
 
@@ -7430,6 +7455,7 @@ body[data-auth-role] .account-type-switch {
   opacity: 0.58;
 }
 
+/* legacy — superseded by .status-message, kept until auth.html is confirmed fully migrated */
 .auth-status {
   min-height: 0;
   margin-top: 14px;
@@ -7882,6 +7908,111 @@ body[data-auth-role] .account-type-switch {
 .verification-channel-card .settings-section-heading {
   align-items: center;
 }
+
+/* ── Status Badge / Status Message — unified status system (added 2026-09-10) ──
+   Replaces .verification-status-badge, .auth-status and .report-status.
+   Badge = an entity's persistent state. Message = one-off action feedback.
+   The old rules below are left in place until every page has migrated;
+   remove them once nothing references .verification-status-badge/.auth-status/
+   .report-status any more. */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  padding: 6px 14px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border: 1px solid var(--line);
+  color: var(--status-neutral);
+  background: transparent;
+}
+
+.status-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-badge.is-positive {
+  color: var(--status-positive);
+  border-color: rgba(var(--status-positive-rgb), 0.5);
+  background: rgba(var(--status-positive-rgb), 0.1);
+}
+
+.status-badge.is-pending {
+  color: var(--status-pending);
+  border-color: rgba(var(--status-pending-rgb), 0.45);
+  background: rgba(var(--status-pending-rgb), 0.1);
+}
+
+.status-badge.is-negative {
+  color: var(--status-negative);
+  border-color: rgba(var(--status-negative-rgb), 0.5);
+  background: rgba(var(--status-negative-rgb), 0.08);
+}
+
+.status-badge.is-neutral {
+  color: var(--status-neutral);
+  border-color: var(--line);
+}
+
+.status-message {
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--status-neutral);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.status-message:empty {
+  display: none;
+}
+
+.status-message::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: 0 0 auto;
+}
+
+.status-message.is-success {
+  color: var(--status-positive);
+}
+
+.status-message.is-error {
+  color: var(--status-negative);
+}
+
+.status-message.is-loading {
+  color: var(--status-pending);
+}
+
+.status-message.is-loading::before {
+  animation: status-message-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes status-message-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-message.is-loading::before {
+    animation: none;
+  }
+}
+
+/* ── legacy — superseded by .status-badge above, kept until fully migrated ── */
 
 .verification-status-badge {
   flex: 0 0 auto;
@@ -9913,6 +10044,7 @@ body.cinematic-background {
   opacity: 0.58;
 }
 
+/* legacy — superseded by .status-message, kept until blacklist.html is confirmed fully migrated */
 .report-status {
   min-height: 1.5em;
   margin: 0;
@@ -13967,12 +14099,38 @@ body.nav-open {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
   border-bottom: 2px solid var(--cream);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Full-width photo that bleeds behind both columns */
+.tx-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(to right,
+      #0a0a0a 0%,
+      #0a0a0a 18%,
+      rgba(10, 10, 10, 0.85) 34%,
+      rgba(10, 10, 10, 0.22) 52%,
+      rgba(10, 10, 10, 0.08) 66%,
+      transparent 78%,
+      rgba(10, 10, 10, 0.55) 92%,
+      #0a0a0a 100%),
+    url("assets/temptx-hero-photo.jpg");
+  background-size: cover, contain;
+  background-position: right center;
+  background-repeat: no-repeat;
 }
 
 .tx-hero-copy {
   padding: clamp(40px, 6vw, 70px) clamp(20px, 4vw, 48px) 0;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 1;
 }
 
 .tx-hero-eyebrow {
@@ -14062,25 +14220,18 @@ body.nav-open {
   position: relative;
   overflow: hidden;
   min-height: 420px;
-  border-left: 2px solid var(--cream);
-  background:
-    radial-gradient(120% 90% at 78% 12%, rgba(var(--gold-rgb), 0.55), transparent 60%),
-    linear-gradient(200deg, #1c0f10, #0a0a0a 72%);
+  z-index: 1;
+  /* border-left removed — photo now spans full hero width */
 }
 
-/* Hero photo — fades into the dark panel from the right so it reads
-   as part of the page rather than a pasted-in image. */
 .tx-hero-art::before {
+  /* Photo handled by .tx-hero::before; only keep the warm gold accent */
   content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
-  background-image:
-    linear-gradient(90deg, var(--black) 0%, rgba(10, 10, 10, 0.55) 30%, rgba(10, 10, 10, 0.08) 58%, transparent 78%),
-    url("assets/temptx-hero-photo.jpg");
-  background-size: cover, cover;
-  background-position: center, right center;
-  background-repeat: no-repeat, no-repeat;
+  background:
+    radial-gradient(120% 90% at 78% 12%, rgba(var(--gold-rgb), 0.25), transparent 55%);
 }
 
 .tx-hero-art .tx-grain {
@@ -14291,7 +14442,7 @@ body.nav-open {
 
 @media (max-width: 900px) {
   .tx-hero { grid-template-columns: 1fr; }
-  .tx-hero-art { border-left: none; border-top: 2px solid var(--cream); min-height: 260px; }
+  .tx-hero-art { border-left: none; border-top: none; min-height: 260px; }
   .tx-pillars { grid-template-columns: 1fr 1fr; }
   .tx-pillar { border-bottom: 1px solid rgba(var(--cream-rgb), 0.25); }
   .tx-escort-grid { grid-template-columns: 1fr; }
