@@ -321,7 +321,7 @@ if (menuButton && nav) {
   });
 }
 
-openFilters.addEventListener("click", () => filterForm.classList.add("is-open"));
+openFilters.addEventListener("click", () => filterForm.classList.toggle("is-open"));
 closeFilters.addEventListener("click", () => filterForm.classList.remove("is-open"));
 
 document.addEventListener("click", (event) => {
