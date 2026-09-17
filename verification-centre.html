@@ -163,6 +163,43 @@
 
         <p class="verification-channel-error" id="phoneError" aria-live="polite"></p>
       </section>
+
+      <section class="settings-section verification-channel-card" id="identityVerificationCard">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Channel</p>
+            <h2>Identity</h2>
+          </div>
+          <span class="verification-status-badge" id="identityStatusBadge">Loading…</span>
+        </div>
+
+        <div class="verification-channel-step" id="identityUnavailableStep" hidden>
+          <p class="verification-channel-hint">Identity verification isn't switched on for TemptX yet. Email and phone verification are still open, and this section will update automatically once it's available.</p>
+        </div>
+
+        <div class="verification-channel-step" id="identityStartStep" hidden>
+          <p class="verification-channel-hint">This confirms who you are with a quick check through our verification partner. TemptX never sees or stores your ID document — only the result.</p>
+          <button type="button" class="verification-primary-btn" id="identityStartButton">Start identity verification</button>
+        </div>
+
+        <div class="verification-channel-step" id="identityPendingStep" hidden>
+          <p class="verification-channel-hint">Your verification is in progress. This page will update once it's complete — you can also check back later from Verification Centre.</p>
+        </div>
+
+        <div class="verification-channel-step" id="identityFailedStep" hidden>
+          <p class="verification-channel-hint">That verification attempt wasn't successful. You can try again.</p>
+          <button type="button" class="verification-primary-btn" id="identityRetryButton">Try again</button>
+        </div>
+
+        <div class="verification-channel-step" id="identityVerifiedStep" hidden>
+          <p class="verification-channel-verified">
+            <span class="trust-check" aria-hidden="true">&#10003;</span>
+            <span id="identityVerifiedText">Verified</span>
+          </p>
+        </div>
+
+        <p class="verification-channel-error" id="identityError" aria-live="polite"></p>
+      </section>
     </div>
   </main>
 

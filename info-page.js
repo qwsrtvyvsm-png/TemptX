@@ -205,28 +205,37 @@ const pageContent = {
   terms: {
     group: "Trust & Safety",
     title: "Terms of Use",
-    intro: "These terms explain the expected standard for using TemptX and its member features.",
+    intro: "These Terms are an agreement between you and Hope Bellchambers, trading as X Venture Holdings (ABN 41 601 858 721) (“TemptX”, “we”, “us”). By creating an account or using TemptX you agree to these Terms, the Privacy Notice, and the Community Standards.",
     sections: [
-      ["Adults only", "TemptX is intended only for people aged 18 or over. Do not create an account, browse adult listings, or use member features if you are under 18."],
-      ["Lawful, respectful use", "Do not use TemptX for harassment, coercion, exploitation, impersonation, scams, non-consensual content, unlawful services, or activity that puts another person at risk."],
-      ["Profiles and verification", "Profile information must be accurate and authorised. A verification badge describes only the checks TemptX has completed and never guarantees conduct, safety, services, or legality."],
-      ["Member features", "Listings, messages, groups, favourites and account tools must be used only for lawful, consensual, adult-only purposes."],
-      ["Reports and enforcement", "TemptX may review reports, restrict access, preserve relevant records, or remove content where necessary for safety, policy, or legal reasons."],
-      ["Legal context", "Members are responsible for understanding and following the laws that apply in their location and circumstances."]
+      ["Adults only", "TemptX is intended only for people aged 18 or over. Do not create an account, browse adult listings, or use member features if you are under 18. TemptX applies age assurance at both entry to the site and account creation, and may refuse, suspend, or terminate access where this cannot be confirmed."],
+      ["Lawful, respectful use", "Do not use TemptX for harassment, coercion, exploitation, impersonation, scams, non-consensual content, unlawful services, or activity that puts another person at risk. Full detail is in the Community Standards and the relevant account-type Standards page."],
+      ["Profiles and verification", "Profile information must be accurate and authorised. A verification badge describes only the checks TemptX has completed at that time and never guarantees conduct, safety, services, or legality. TemptX may require re-verification at any time and may restrict a profile pending it."],
+      ["TemptX's role", "TemptX is a directory, membership, and networking platform. TemptX is not a party to, and does not control, arrangements made directly between members (for example a booking between a Provider and a Client). Members are solely responsible for their own conduct and for complying with the law that applies to them."],
+      ["Membership and fees", "Paid membership tiers, inclusions, and any optional Campaign Credit purchases are set out on the Membership page, which forms part of these Terms. Fees are charged in advance for the billing period selected. You can manage or cancel your membership at any time through Settings; access continues until the end of the current billing period and no refund is given for the remaining period unless required by law."],
+      ["Content and intellectual property", "You retain ownership of content you post. By posting to TemptX you grant TemptX a non-exclusive, worldwide, royalty-free licence to host, display, and distribute that content solely to operate and promote the platform, for as long as it remains on TemptX. You confirm you own or hold the necessary rights and consents for everything you upload, and that it does not infringe anyone else's rights. TemptX's own branding, software, and platform technology remain TemptX's property."],
+      ["Reports and enforcement", "TemptX may review reports, restrict access, preserve relevant records, remove content, or suspend or terminate an account where necessary for safety, policy, or legal reasons, with or without notice depending on severity. You may close your account at any time; some obligations (confidentiality, content licences already granted, amounts owing) survive closure."],
+      ["Liability", "To the maximum extent the law allows, TemptX excludes liability for indirect or consequential loss and for the conduct of other members. Nothing in these Terms excludes a right you have under the Australian Consumer Law that cannot lawfully be excluded."],
+      ["Disputes and governing law", "If you have a dispute with TemptX, contact us first through Settings or the report tool so we can try to resolve it directly. These Terms are governed by the laws of South Australia, and both parties submit to the non-exclusive jurisdiction of its courts."],
+      ["Changes to these Terms", "TemptX may update these Terms as the platform grows. Material changes will be notified on the platform or by email before they take effect."],
+      ["Legal context", "Members are responsible for understanding and following the laws that apply in their own location and circumstances, in addition to these Terms."]
     ],
     action: ["Report a concern", "report.html"]
   },
   privacy: {
     group: "Trust & Safety",
     title: "Privacy Notice",
-    intro: "This notice describes how TemptX handles account, preference, messaging, and safety information with Australian privacy obligations in mind.",
+    intro: "This notice explains how Hope Bellchambers, trading as X Venture Holdings (ABN 41 601 858 721) (“TemptX”), collects, holds, uses, and discloses personal information through the TemptX platform, with the Australian Privacy Principles in mind.",
     sections: [
       ["Account information", "Provider accounts use an email address. Client accounts use a generated ID, password hash, assigned-device token, and protected network-address hashes. Account preferences are also stored."],
+      ["Verification information", "Where verification is completed, TemptX holds the outcome and status of that check. Any identity or age-verification evidence is treated as sensitive information, is used only for verification and safety/compliance purposes, and is not published or shown to other members."],
       ["Messages and favourites", "Messages, groups and favourites may be stored in the browser or account tools depending on the feature. Browser data may be cleared from the device."],
       ["Safety reports", "Reports may include a category, reference, description, optional contact email, protected network-address hash, and submission time. Share only what is necessary."],
+      ["Why we collect it", "To create and run your account, verify age and identity, provide membership and directory features, keep the platform safe through moderation and reporting, and meet TemptX's legal obligations, including under the Online Safety Act. We do not collect more than is reasonably needed for these purposes."],
+      ["Disclosure", "We do not sell personal information. We may disclose it to service providers who help run TemptX (for example hosting or verification providers) under confidentiality obligations, to other members only to the extent you choose to publish it in your profile, or where required by law."],
       ["Security and retention", "Passwords are stored as salted hashes. Retention periods, access controls, breach response, backups, and deletion processes are managed according to TemptX policy and reviewed against Australian Privacy Principles."],
-      ["Your choices", "Members can change visibility and messaging preferences, deactivate an account, or request permanent account deletion through Settings."],
-      ["Privacy requests", "Members can contact TemptX about privacy questions, account access, correction requests, deletion requests, or safety-related data concerns."]
+      ["Data breach notification", "If a data breach involving your personal information is likely to result in serious harm, TemptX will notify affected members and the Office of the Australian Information Commissioner in line with the Notifiable Data Breaches scheme."],
+      ["Your choices and rights", "Members can change visibility and messaging preferences, deactivate an account, or request permanent account deletion through Settings. You may also request access to or correction of the personal information TemptX holds about you."],
+      ["Privacy requests", "Members can contact TemptX about privacy questions, account access, correction requests, deletion requests, or safety-related data concerns through the report tool. If you're not satisfied with our response, you may complain to the Office of the Australian Information Commissioner (OAIC)."]
     ],
     action: ["Report a privacy concern", "report.html?type=technical"]
   },
