@@ -38,27 +38,46 @@
     phoneCooldownHint: document.querySelector("#phoneCooldownHint"),
     phoneVerifiedStep: document.querySelector("#phoneVerifiedStep"),
     phoneVerifiedText: document.querySelector("#phoneVerifiedText"),
-    phoneError: document.querySelector("#phoneError")
+    phoneError: document.querySelector("#phoneError"),
+
+    identityCard: document.querySelector("#identityVerificationCard"),
+    identityStatusBadge: document.querySelector("#identityStatusBadge"),
+    identityUnavailableStep: document.querySelector("#identityUnavailableStep"),
+    identityStartStep: document.querySelector("#identityStartStep"),
+    identityStartButton: document.querySelector("#identityStartButton"),
+    identityPendingStep: document.querySelector("#identityPendingStep"),
+    identityFailedStep: document.querySelector("#identityFailedStep"),
+    identityRetryButton: document.querySelector("#identityRetryButton"),
+    identityVerifiedStep: document.querySelector("#identityVerifiedStep"),
+    identityVerifiedText: document.querySelector("#identityVerifiedText"),
+    identityError: document.querySelector("#identityError")
   };
 
   const STATUS_LABELS = {
     unverified: "Not started",
     pending: "Code sent",
-    verified: "Verified"
+    verified: "Verified",
+    failed: "Not verified"
   };
 
   const TRUST_HINTS = {
     0: "Verify your email or phone to reach Partially Verified.",
     1: "Verify your remaining channel to reach Fully Verified.",
-    2: "You're Fully Verified. Identity verification is coming soon."
+    2: "You're Fully Verified. Identity verification is available below for an extra layer of trust.",
+    3: "You're Identity Verified — the highest Trust Level on TemptX."
   };
 
   let state = {
     user: null,
-    verification: { email: { status: "unverified" }, phone: { status: "unverified" } },
+    verification: {
+      email: { status: "unverified" },
+      phone: { status: "unverified" },
+      identity: { status: "unverified" }
+    },
     trustLevel: 0,
     trustLevelLabel: "Unverified",
-    cooldowns: { email: 0, phone: 0 }
+    cooldowns: { email: 0, phone: 0 },
+    identityAvailable: false
   };
 
   const cooldownTimers = { email: null, phone: null };
@@ -79,7 +98,7 @@
   };
 
   const setChannelError = (channel, message) => {
-    const target = channel === "email" ? els.emailError : els.phoneError;
+    const target = channel === "email" ? els.emailError : channel === "phone" ? els.phoneError : els.identityError;
     if (!target) return;
     target.textContent = message || "";
   };
@@ -88,9 +107,10 @@
     const name = String(state.user?.settings?.displayName || state.user?.workingName || "Member").trim();
     if (els.avatar) els.avatar.textContent = name.slice(0, 2).toUpperCase() || "TX";
     if (els.trustLevelLabel) els.trustLevelLabel.textContent = state.trustLevelLabel || "Unverified";
-    const verifiedCount = ["email", "phone"].filter((c) => state.verification[c]?.status === "verified").length;
+    const channels = state.identityAvailable ? ["email", "phone", "identity"] : ["email", "phone"];
+    const verifiedCount = channels.filter((c) => state.verification[c]?.status === "verified").length;
     if (els.trustLevelMeta) {
-      els.trustLevelMeta.textContent = `${verifiedCount} of 2 channels verified`;
+      els.trustLevelMeta.textContent = `${verifiedCount} of ${channels.length} channels verified`;
     }
     if (els.trustPassportHint) {
       els.trustPassportHint.textContent = TRUST_HINTS[state.trustLevel] || "";
@@ -113,6 +133,14 @@
         anchor: "#phoneVerificationCard"
       }
     ];
+    if (state.identityAvailable) {
+      items.push({
+        id: "identity",
+        title: "Verify your identity",
+        status: state.verification.identity?.status || "unverified",
+        anchor: "#identityVerificationCard"
+      });
+    }
     const completed = items.filter((item) => item.status === "verified").length;
     const percent = Math.round((completed / items.length) * 100);
 
@@ -240,11 +268,64 @@
     }
   };
 
+  const renderIdentity = () => {
+    const verification = state.verification.identity || { status: "unverified" };
+    const status = verification.status || "unverified";
+
+    const steps = {
+      unavailable: els.identityUnavailableStep,
+      start: els.identityStartStep,
+      pending: els.identityPendingStep,
+      failed: els.identityFailedStep,
+      verified: els.identityVerifiedStep
+    };
+    Object.values(steps).forEach((step) => {
+      if (step) step.hidden = true;
+    });
+
+    if (!state.identityAvailable) {
+      if (els.identityStatusBadge) {
+        els.identityStatusBadge.textContent = "Not available yet";
+        els.identityStatusBadge.className = "verification-status-badge is-unverified";
+      }
+      if (steps.unavailable) steps.unavailable.hidden = false;
+      return;
+    }
+
+    if (els.identityStatusBadge) {
+      els.identityStatusBadge.textContent = STATUS_LABELS[status] || "Not started";
+      els.identityStatusBadge.className = `verification-status-badge is-${status}`;
+    }
+
+    if (status === "verified") {
+      if (steps.verified) steps.verified.hidden = false;
+      if (els.identityVerifiedText) {
+        els.identityVerifiedText.textContent = `Verified${
+          verification.verifiedAt ? ` on ${formatDate(verification.verifiedAt)}` : ""
+        }`;
+      }
+      return;
+    }
+
+    if (status === "pending") {
+      if (steps.pending) steps.pending.hidden = false;
+      return;
+    }
+
+    if (status === "failed") {
+      if (steps.failed) steps.failed.hidden = false;
+      return;
+    }
+
+    if (steps.start) steps.start.hidden = false;
+  };
+
   const renderAll = () => {
     renderPassport();
     renderChecklist();
     renderChannel("email");
     renderChannel("phone");
+    renderIdentity();
   };
 
   const applyStatusResult = (result) => {
@@ -252,6 +333,41 @@
     state.trustLevel = typeof result.trustLevel === "number" ? result.trustLevel : state.trustLevel;
     state.trustLevelLabel = result.trustLevelLabel || state.trustLevelLabel;
     if (result.cooldowns) state.cooldowns = result.cooldowns;
+    if (typeof result.identityAvailable === "boolean") state.identityAvailable = result.identityAvailable;
+  };
+
+  const startIdentityVerification = async (button) => {
+    setChannelError("identity", "");
+    await withButtonLoading(button, async () => {
+      try {
+        const response = await fetch("/api/verification/identity/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ returnUrl: window.location.href })
+        });
+        const result = await response.json();
+        if (!response.ok || result.available === false) {
+          state.identityAvailable = false;
+          renderIdentity();
+          setChannelError("identity", result.error || "Identity verification isn't available right now.");
+          return;
+        }
+        if (result.verification) {
+          // dev-instant-pass or an already-resolved result came straight back.
+          applyStatusResult(result);
+          renderAll();
+          return;
+        }
+        state.verification.identity = { ...state.verification.identity, status: "pending" };
+        renderIdentity();
+        renderChecklist();
+        if (result.redirectUrl) {
+          window.location.href = result.redirectUrl;
+        }
+      } catch (error) {
+        setChannelError("identity", error.message || "Could not start identity verification.");
+      }
+    });
   };
 
   const withButtonLoading = async (button, fn) => {
@@ -377,6 +493,14 @@
         setChannelError("phone", error.message);
       }
     });
+  });
+
+  els.identityStartButton?.addEventListener("click", () => {
+    startIdentityVerification(els.identityStartButton);
+  });
+
+  els.identityRetryButton?.addEventListener("click", () => {
+    startIdentityVerification(els.identityRetryButton);
   });
 
   const loadPage = async () => {

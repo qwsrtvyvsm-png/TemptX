@@ -3998,7 +3998,15 @@ const server = http.createServer((request, response) => {
   if (url.pathname.startsWith("/api/")) {
     if (["POST", "PATCH", "DELETE"].includes(request.method)) {
       const origin = request.headers.origin;
-      const expectedOrigin = `${url.protocol}//${url.host}`;
+      // `url` is always parsed with a hardcoded "http://" base (see above) purely to
+      // read pathname/query — it does not reflect the real public scheme. Render (and
+      // most hosts) terminate TLS upstream and forward plain HTTP internally, setting
+      // x-forwarded-proto to tell us what the browser actually used. Without this, the
+      // expected origin was always "http://..." while browsers correctly send
+      // "https://...", so every POST/PATCH/DELETE request was rejected as cross-site.
+      const forwardedProto = String(request.headers["x-forwarded-proto"] || "").split(",")[0].trim();
+      const expectedProtocol = forwardedProto ? `${forwardedProto}:` : url.protocol;
+      const expectedOrigin = `${expectedProtocol}//${url.host}`;
       if (origin && origin !== expectedOrigin) {
         return json(response, 403, { error: "Cross-site request blocked." });
       }
