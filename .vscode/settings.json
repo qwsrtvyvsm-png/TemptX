@@ -1,5 +1,6 @@
 {
     "js/ts.experimental.useTsgo": false,
     "chat.planAgent.defaultModel": "Auto (copilot)",
-    "chat.editor.defaultProvider": "copilotAh"
+    "chat.editor.defaultProvider": "copilotAh",
+    "liveServer.settings.port": 5501
 }
