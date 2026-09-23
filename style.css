@@ -1452,6 +1452,35 @@
   }
 }
 
+/* Name + location, overlaid at the base of the photo */
+.dir-card-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 16px 18px 14px;
+}
+
+.dir-card-overlay .dir-card-name-row {
+  margin-bottom: 4px;
+}
+
+.dir-card-overlay .dir-card-name,
+.dir-card-overlay .dir-card-verified-mark {
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6), 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+.dir-card-overlay .dir-card-location {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
+}
+
+.dir-card-overlay .dir-card-location svg {
+  color: rgba(255, 255, 255, 0.7);
+}
+
 /* Card badges (overlaid on image) */
 .dir-card-badge {
   position: absolute;
@@ -1498,7 +1527,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: 18px 20px 18px;
+  padding: 14px 20px 18px;
   gap: 6px;
   background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.12) 100%);
 }
@@ -1641,32 +1670,38 @@
   color: var(--champagne);
 }
 
-/* View Profile CTA */
+/* View Profile CTA — solid pill button */
 .dir-card-cta {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--champagne) !important;
-  font-size: 0.7rem !important;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  flex-shrink: 0;
+  padding: 9px 18px;
+  border-radius: var(--radius-pill);
+  background: var(--cream);
+  color: var(--black) !important;
+  font-size: 0.66rem !important;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
-  border-bottom: 1px solid transparent !important;
-  padding-bottom: 1px;
+  border-bottom: none !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
   transition:
+    background var(--duration-fast) var(--ease-soft),
     color var(--duration-fast) var(--ease-soft),
-    border-color var(--duration-fast) ease,
-    letter-spacing var(--duration-fast) ease,
-    gap var(--duration-fast) ease;
+    transform var(--duration-fast) var(--ease-soft),
+    box-shadow var(--duration-fast) var(--ease-soft);
   text-decoration: none;
 }
 
 .dir-card-cta:hover {
+  background: var(--gold);
   color: var(--cream) !important;
-  border-bottom-color: rgba(var(--gold-rgb), 0.65) !important;
-  letter-spacing: 0.12em;
-  gap: 8px;
+  transform: translateY(-1px);
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.32),
+    0 0 16px rgba(var(--gold-rgb), 0.25);
 }
 
 .dir-card-cta:focus-visible {
@@ -2116,29 +2151,85 @@
     align-items: center;
   }
 
-  /* Cards: single column — generous touch spacing */
+  /* Cards: compact 2-up grid on mobile instead of one-per-row */
   .directory-cards,
   .dir-content .directory-cards {
-    grid-template-columns: 1fr;
-    gap: 18px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
 
   .directory-card {
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
   }
 
   .dir-card-info {
-    padding: 16px 16px 16px;
+    padding: 10px 12px 12px;
+    gap: 3px;
+  }
+
+  .dir-card-name-row {
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 0;
   }
 
   .dir-card-name {
-    font-size: 1.1rem;
-    letter-spacing: 0.14em;
+    font-size: 0.86rem;
+    letter-spacing: 0.08em;
+  }
+
+  .dir-card-verified-mark {
+    font-size: 0.52rem;
+  }
+
+  .dir-card-verified-mark svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .dir-card-location {
+    font-size: 0.58rem;
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dir-card-bio {
+    font-size: 0.68rem;
+    line-height: 1.4;
+    padding-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .dir-card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    padding-top: 8px;
+    gap: 6px;
+  }
+
+  .dir-card-status {
+    font-size: 0.58rem;
+    gap: 5px;
+    white-space: nowrap;
+  }
+
+  .dir-card-cta {
+    font-size: 0.6rem !important;
+    letter-spacing: 0.06em;
   }
 
   .dir-card-badge {
-    top: 12px;
-    left: 12px;
+    top: 8px;
+    left: 8px;
+    padding: 3px 8px;
+    font-size: 0.5rem;
+    letter-spacing: 0.1em;
   }
 
   .directory-cards.is-list .directory-card {
@@ -2187,6 +2278,32 @@
     gap: 14px;
     padding: 24px 0;
     min-height: 0;
+  }
+}
+
+/* ─── Responsive — Larger phones (480–700px) — 3-up grid ─── */
+
+@media (min-width: 480px) and (max-width: 700px) {
+  .directory-cards,
+  .dir-content .directory-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .dir-card-info {
+    padding: 8px 10px 10px;
+  }
+
+  .dir-card-name {
+    font-size: 0.76rem;
+  }
+
+  .dir-card-location {
+    font-size: 0.54rem;
+  }
+
+  .dir-card-bio {
+    display: none;
   }
 }
 
@@ -13081,14 +13198,6 @@ select {
     radial-gradient(ellipse 40% 30% at 8% 18%, rgba(255, 255, 255, 0.03), transparent 50%),
     linear-gradient(180deg, #0c0c0c 0%, var(--black) 40%, #080808 100%);
   font-family: var(--font-sans);
-}
-.district-page .district-brand-label {
-  margin-left: 8px;
-  color: var(--gold);
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
 }
 .district-page .district-main {
   width: min(1180px, calc(100% - 48px));

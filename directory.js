@@ -388,19 +388,21 @@ const createProviderCard = (provider) => {
         : `<div class="dir-card-placeholder ${placeholderClass}" aria-hidden="true"><span class="dir-card-initial">${initial}</span></div>`
       }
       <span class="dir-card-badge dir-card-badge--new">New</span>
+      <div class="dir-card-overlay">
+        <div class="dir-card-name-row">
+          <h3 class="dir-card-name">${provider.name.toUpperCase()}</h3>
+          <span class="dir-card-verified-mark">${checkmarkSvg} Verified</span>
+        </div>
+        <p class="dir-card-location">${pinSvg} ${locationText}</p>
+      </div>
     </div>
     <div class="dir-card-info">
-      <div class="dir-card-name-row">
-        <h3 class="dir-card-name">${provider.name.toUpperCase()}</h3>
-        <span class="dir-card-verified-mark">${checkmarkSvg} Verified</span>
-      </div>
-      <p class="dir-card-location">${pinSvg} ${locationText}</p>
       <p class="dir-card-bio">${bioText}</p>
       <div class="dir-card-footer">
         <span class="dir-card-status">
           <span class="dir-status-dot"></span>Available
         </span>
-        <a href="${profileHref}" class="dir-card-cta">View Profile →</a>
+        <a href="${profileHref}" class="dir-card-cta">View Profile</a>
       </div>
     </div>
   `;
