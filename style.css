@@ -13199,14 +13199,6 @@ select {
     linear-gradient(180deg, #0c0c0c 0%, var(--black) 40%, #080808 100%);
   font-family: var(--font-sans);
 }
-.district-page .district-brand-label {
-  margin-left: 8px;
-  color: var(--gold);
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
 .district-page .district-main {
   width: min(1180px, calc(100% - 48px));
   margin: auto;
