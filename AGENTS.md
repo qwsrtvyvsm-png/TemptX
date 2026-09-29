@@ -5,6 +5,7 @@ Australia's premium adult industry network. Vanilla HTML/CSS/JS frontend served 
 ## Dev Commands
 
 ```bash
+bash scripts/setup.sh  # First-time setup: installs dependencies, creates .env from .env.example
 npm start          # Start local server at http://127.0.0.1:5510
 npm run check      # Syntax-check all JS files (node --check)
 ```
