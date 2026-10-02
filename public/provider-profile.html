@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit Profile | TEMPTX</title>
+  <meta name="description" content="Manage your TEMPTX provider profile content — photos, availability, rates, tours, notes, and services." />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/sidebar.css" />
+</head>
+
+<body class="settings-body cinematic-background">
+  <div class="app-layout">
+    <aside id="app-sidebar" data-active="profile-general"></aside>
+
+    <div class="app-content">
+      <header class="app-topbar">
+        <button type="button" class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">
+          <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+
+  <main class="settings-shell">
+    <aside class="settings-intro">
+      <p class="eyebrow">Profile management</p>
+      <h1>Edit Profile.</h1>
+      <p>Update your public profile content — photos, availability, rates, tours, notes, and services.</p>
+
+      <div class="settings-identity">
+        <span class="settings-avatar" id="profileEditAvatar">TX</span>
+        <div>
+          <strong id="profileEditName">TEMPTX Provider</strong>
+          <small id="profileEditMeta">Provider account</small>
+        </div>
+      </div>
+
+      <a class="outline-btn settings-back" href="/profile">Back to profile</a>
+    </aside>
+
+    <section class="setup-checklist" id="setupChecklist" aria-labelledby="setupChecklistTitle">
+      <div class="setup-checklist-heading">
+        <div>
+          <p class="eyebrow">Setup</p>
+          <h2 id="setupChecklistTitle">Complete your setup</h2>
+        </div>
+        <p>Finish the required steps to prepare your provider profile.</p>
+      </div>
+
+      <div class="setup-checklist-progress">
+        <div class="setup-checklist-progress-bar">
+          <span id="setupChecklistProgressFill"></span>
+        </div>
+        <p class="setup-checklist-progress-label" id="setupChecklistProgressLabel">Loading setup progress…</p>
+      </div>
+
+      <ul class="setup-checklist-list" id="setupChecklistList"></ul>
+    </section>
+
+    <form class="settings-form" id="profileEditForm" novalidate>
+
+      <!-- 1. Profile Details -->
+      <section class="settings-section" id="detail-basics">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">About you</p>
+            <h2>Profile details</h2>
+          </div>
+          <p>Essential information shown in your public profile facts panel.</p>
+        </div>
+
+        <div class="profile-details-grid">
+          <label class="settings-text-field">
+            <span>Location</span>
+            <input type="text" id="detailLocation" placeholder="Sydney, NSW" maxlength="60" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>Age</span>
+            <select id="detailAge">
+              <option value="">Select your age</option>
+              <option value="18-21">18-21</option>
+              <option value="22-24">22-24</option>
+              <option value="25-29">25-29</option>
+              <option value="30-34">30-34</option>
+              <option value="35-39">35-39</option>
+              <option value="40-49">40-49</option>
+              <option value="50+">50+</option>
+            </select>
+          </label>
+
+          <label class="settings-text-field">
+            <span>Height</span>
+            <input type="text" id="detailHeight" placeholder="168 cm" maxlength="20" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>Bust size</span>
+            <input type="text" id="detailBustSize" placeholder="34C" maxlength="20" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>Orientation</span>
+            <select id="detailOrientation">
+              <option value="">Select orientation</option>
+              <option value="Straight">Straight</option>
+              <option value="Gay">Gay</option>
+              <option value="Lesbian">Lesbian</option>
+              <option value="Bisexual">Bisexual</option>
+              <option value="Pansexual">Pansexual</option>
+              <option value="Prefer not to say">Prefer not to say</option>
+            </select>
+          </label>
+
+          <label class="settings-text-field">
+            <span>Nationality</span>
+            <select id="detailNationality">
+              <option value="">Select your nationality</option>
+              <option value="Aussie">Aussie</option>
+              <option value="Caucasian">Caucasian</option>
+              <option value="Asian">Asian</option>
+              <option value="Japanese">Japanese</option>
+              <option value="European">European</option>
+              <option value="African">African</option>
+              <option value="Arabian">Arabian</option>
+              <option value="Hispanic">Hispanic</option>
+              <option value="Latina">Latina</option>
+              <option value="Mixed">Mixed</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+
+          <label class="settings-text-field">
+            <span>Hair colour</span>
+            <select id="detailHairColour">
+              <option value="">Select hair colour</option>
+              <option value="Blonde">Blonde</option>
+              <option value="Brunette">Brunette</option>
+              <option value="Red">Red</option>
+              <option value="Auburn">Auburn</option>
+              <option value="Brown">Brown</option>
+              <option value="Black">Black</option>
+              <option value="Dark">Dark</option>
+              <option value="Bright colored">Bright colored</option>
+              <option value="White">White</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+
+          <label class="settings-text-field">
+            <span>Hair length</span>
+            <select id="detailHairLength">
+              <option value="">Select hair length</option>
+              <option value="Shaved/Bald">Shaved/Bald</option>
+              <option value="Short">Short</option>
+              <option value="Medium">Medium</option>
+              <option value="Long">Long</option>
+              <option value="Very long">Very long</option>
+            </select>
+          </label>
+
+          <label class="settings-text-field">
+            <span>Eye colour</span>
+            <select id="detailEyeColour">
+              <option value="">Select eye colour</option>
+              <option value="Brown">Brown</option>
+              <option value="Blue">Blue</option>
+              <option value="Green">Green</option>
+              <option value="Hazel">Hazel</option>
+              <option value="Grey">Grey</option>
+              <option value="Amber">Amber</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+
+          <label class="settings-text-field">
+            <span>Body type</span>
+            <select id="detailBodyType">
+              <option value="">Select body type</option>
+              <option value="Slim">Slim</option>
+              <option value="Petite">Petite</option>
+              <option value="Athletic">Athletic</option>
+              <option value="Average">Average</option>
+              <option value="Curvy">Curvy</option>
+              <option value="Plus size">Plus size</option>
+              <option value="Muscular">Muscular</option>
+            </select>
+          </label>
+
+          <label class="settings-text-field">
+            <span>Place of service</span>
+            <select id="detailPlaceOfService">
+              <option value="">Select place of service</option>
+              <option value="Incall only">Incall only</option>
+              <option value="Outcall only">Outcall only</option>
+              <option value="Incall &amp; Outcall">Incall &amp; Outcall</option>
+              <option value="On request">On request</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <!-- 1b. Social Handles -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Social</p>
+            <h2>Social handles</h2>
+          </div>
+          <p>Share your social accounts so clients can find you elsewhere.</p>
+        </div>
+
+        <div class="profile-details-grid">
+          <label class="settings-text-field">
+            <span>Instagram</span>
+            <input type="text" id="socialInstagram" placeholder="@yourname" maxlength="60" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>Twitter / X</span>
+            <input type="text" id="socialTwitter" placeholder="@yourname" maxlength="60" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>TikTok</span>
+            <input type="text" id="socialTiktok" placeholder="@yourname" maxlength="60" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>Snapchat</span>
+            <input type="text" id="socialSnapchat" placeholder="@yourname" maxlength="60" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>OnlyFans</span>
+            <input type="text" id="socialOnlyfans" placeholder="@yourname" maxlength="60" />
+          </label>
+        </div>
+      </section>
+
+      <!-- 2. Upload Photos -->
+      <section class="settings-section" id="photo-upload">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Gallery</p>
+            <h2>Upload photos</h2>
+          </div>
+          <p>Add images to your profile gallery. Photos are reviewed before appearing publicly.</p>
+        </div>
+
+        <div class="profile-photo-grid" id="photoPreviewGrid" aria-label="Uploaded photo previews"></div>
+
+        <label class="profile-photo-upload">
+          <input type="file" id="photoInput" accept="image/*" multiple aria-label="Choose photos to upload" />
+          <span>Choose photos</span>
+        </label>
+
+        <p class="directory-choice-note">Maximum 8 photos · Approved images appear on your public profile within 24 hours · Minimum 800×800px recommended</p>
+      </section>
+
+      <!-- 2. Profile Note -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">About me</p>
+            <h2>Profile note</h2>
+          </div>
+          <p>A short message about your approach, boundaries, and booking requirements.</p>
+        </div>
+
+        <label class="settings-text-field">
+          <span>Profile note</span>
+          <textarea
+            id="profileNote"
+            rows="5"
+            maxlength="500"
+            placeholder="Respectful messages only. Please read my full profile before enquiring. Screening required for all new clients."
+          ></textarea>
+        </label>
+
+        <p class="directory-choice-note" id="profileNoteCount">0 / 500 characters</p>
+      </section>
+
+      <!-- 3. Availability -->
+      <section class="settings-section" id="availability">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Availability</p>
+            <h2>Booking windows</h2>
+          </div>
+          <p>Set your weekly schedule so clients know the best times to reach out.</p>
+        </div>
+
+        <div class="profile-edit-table" id="availabilityTable" role="table" aria-label="Availability schedule">
+          <div class="profile-edit-table-head" role="row">
+            <span role="columnheader">Day</span>
+            <span role="columnheader">Availability</span>
+            <span role="columnheader">Notes</span>
+            <span role="columnheader" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <button type="button" class="profile-edit-add-btn outline-btn" id="addAvailabilityRow">+ Add row</button>
+      </section>
+
+      <!-- 4. Rates -->
+      <section class="settings-section" id="rates">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Rates</p>
+            <h2>Incall &amp; outcall rates</h2>
+          </div>
+          <p>Set your rates for incall and outcall bookings.</p>
+        </div>
+
+        <div class="profile-rates-grid">
+          <fieldset class="profile-rates-group">
+            <legend>Incall</legend>
+            <label class="settings-text-field">
+              <span>1 hour</span>
+              <input type="text" id="rateIncall1h" placeholder="$400" maxlength="20" />
+            </label>
+            <label class="settings-text-field">
+              <span>2 hours</span>
+              <input type="text" id="rateIncall2h" placeholder="$700" maxlength="20" />
+            </label>
+            <label class="settings-text-field">
+              <span>Overnight</span>
+              <input type="text" id="rateIncallOvn" placeholder="On request" maxlength="20" />
+            </label>
+          </fieldset>
+
+          <fieldset class="profile-rates-group">
+            <legend>Outcall</legend>
+            <label class="settings-text-field">
+              <span>1 hour</span>
+              <input type="text" id="rateOutcall1h" placeholder="$500" maxlength="20" />
+            </label>
+            <label class="settings-text-field">
+              <span>2 hours</span>
+              <input type="text" id="rateOutcall2h" placeholder="$900" maxlength="20" />
+            </label>
+            <label class="settings-text-field">
+              <span>Overnight</span>
+              <input type="text" id="rateOutcallOvn" placeholder="On request" maxlength="20" />
+            </label>
+          </fieldset>
+        </div>
+      </section>
+
+      <!-- 5. Tours -->
+      <section class="settings-section" id="tours">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Tours</p>
+            <h2>Tour schedule</h2>
+          </div>
+          <p>Add upcoming tours so clients in other cities can plan bookings in advance.</p>
+        </div>
+
+        <div class="profile-edit-table" id="toursTable" role="table" aria-label="Tour schedule">
+          <div class="profile-edit-table-head" role="row">
+            <span role="columnheader">Destination</span>
+            <span role="columnheader">From</span>
+            <span role="columnheader">Until</span>
+            <span role="columnheader" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <button type="button" class="profile-edit-add-btn outline-btn" id="addTourRow">+ Add tour</button>
+      </section>
+
+      <!-- 6. Services -->
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Directory</p>
+            <h2>Services</h2>
+          </div>
+          <p>Select the services that appear on your public profile and in directory search results.</p>
+        </div>
+
+        <fieldset class="directory-choice-group">
+          <legend class="visually-hidden">Services</legend>
+          <div class="directory-choice-grid">
+            <label><input type="checkbox" name="editService" value="Anal play" /> Anal play</label>
+            <label><input type="checkbox" name="editService" value="Anal sex" /> Anal sex</label>
+            <label><input type="checkbox" name="editService" value="ATM" /> ATM</label>
+            <label><input type="checkbox" name="editService" value="Bi twin" /> Bi twin</label>
+            <label><input type="checkbox" name="editService" value="BJ" /> BJ</label>
+            <label><input type="checkbox" name="editService" value="BBBJ" /> BBBJ</label>
+            <label><input type="checkbox" name="editService" value="BBBJTC" /> BBBJTC</label>
+            <label><input type="checkbox" name="editService" value="BLS" /> BLS</label>
+            <label><input type="checkbox" name="editService" value="B &amp; D" /> B &amp; D</label>
+            <label><input type="checkbox" name="editService" value="BDSM" /> BDSM</label>
+            <label><input type="checkbox" name="editService" value="Bondage" /> Bondage</label>
+            <label><input type="checkbox" name="editService" value="Brazilian" /> Brazilian</label>
+            <label><input type="checkbox" name="editService" value="BS" /> BS</label>
+            <label><input type="checkbox" name="editService" value="CBT" /> CBT</label>
+            <label><input type="checkbox" name="editService" value="CIM" /> CIM</label>
+            <label><input type="checkbox" name="editService" value="CIMWS" /> CIMWS</label>
+            <label><input type="checkbox" name="editService" value="CBJ" /> CBJ</label>
+            <label><input type="checkbox" name="editService" value="COB" /> COB</label>
+            <label><input type="checkbox" name="editService" value="COF" /> COF</label>
+            <label><input type="checkbox" name="editService" value="Costumes and role play" /> Costumes and role play</label>
+            <label><input type="checkbox" name="editService" value="Couples" /> Couples</label>
+            <label><input type="checkbox" name="editService" value="DATY" /> DATY</label>
+            <label><input type="checkbox" name="editService" value="DATO" /> DATO</label>
+            <label><input type="checkbox" name="editService" value="DFK" /> DFK</label>
+            <label><input type="checkbox" name="editService" value="Dinner companion" /> Dinner companion</label>
+            <label><input type="checkbox" name="editService" value="Dirty talk" /> Dirty talk</label>
+            <label><input type="checkbox" name="editService" value="DP" /> DP</label>
+            <label><input type="checkbox" name="editService" value="DDP" /> DDP</label>
+            <label><input type="checkbox" name="editService" value="DT" /> DT</label>
+            <label><input type="checkbox" name="editService" value="Doggy style" /> Doggy style</label>
+            <label><input type="checkbox" name="editService" value="Erotic sensual massage" /> Erotic sensual massage</label>
+            <label><input type="checkbox" name="editService" value="Facial" /> Facial</label>
+            <label><input type="checkbox" name="editService" value="FE" /> FE</label>
+            <label><input type="checkbox" name="editService" value="Fetish" /> Fetish</label>
+            <label><input type="checkbox" name="editService" value="Filming" /> Filming</label>
+            <label><input type="checkbox" name="editService" value="Fire and ice" /> Fire and ice</label>
+            <label><input type="checkbox" name="editService" value="Fisting" /> Fisting</label>
+            <label><input type="checkbox" name="editService" value="FK" /> FK</label>
+            <label><input type="checkbox" name="editService" value="Foot fetish" /> Foot fetish</label>
+            <label><input type="checkbox" name="editService" value="French" /> French</label>
+            <label><input type="checkbox" name="editService" value="FS" /> FS</label>
+            <label><input type="checkbox" name="editService" value="Gagging" /> Gagging</label>
+            <label><input type="checkbox" name="editService" value="GFE" /> GFE</label>
+            <label><input type="checkbox" name="editService" value="Greek" /> Greek</label>
+            <label><input type="checkbox" name="editService" value="GS" /> GS</label>
+            <label><input type="checkbox" name="editService" value="Happy ending" /> Happy ending</label>
+            <label><input type="checkbox" name="editService" value="HJ" /> HJ</label>
+            <label><input type="checkbox" name="editService" value="Italian" /> Italian</label>
+            <label><input type="checkbox" name="editService" value="LK" /> LK</label>
+            <label><input type="checkbox" name="editService" value="MFF" /> MFF</label>
+            <label><input type="checkbox" name="editService" value="MMF" /> MMF</label>
+            <label><input type="checkbox" name="editService" value="Multiple positions" /> Multiple positions</label>
+            <label><input type="checkbox" name="editService" value="Masturbation" /> Masturbation</label>
+            <label><input type="checkbox" name="editService" value="Mutual masturbation" /> Mutual masturbation</label>
+            <label><input type="checkbox" name="editService" value="Mutual French" /> Mutual French</label>
+            <label><input type="checkbox" name="editService" value="Mutual natural French" /> Mutual natural French</label>
+            <label><input type="checkbox" name="editService" value="MSOG" /> MSOG</label>
+            <label><input type="checkbox" name="editService" value="Natural bush" /> Natural bush</label>
+            <label><input type="checkbox" name="editService" value="OWO" /> OWO</label>
+            <label><input type="checkbox" name="editService" value="Overnight stays" /> Overnight stays</label>
+            <label><input type="checkbox" name="editService" value="Photography" /> Photography</label>
+            <label><input type="checkbox" name="editService" value="Prostate massage" /> Prostate massage</label>
+            <label><input type="checkbox" name="editService" value="PSE" /> PSE</label>
+            <label><input type="checkbox" name="editService" value="Role play" /> Role play</label>
+            <label><input type="checkbox" name="editService" value="Rimming" /> Rimming</label>
+            <label><input type="checkbox" name="editService" value="Sex toy" /> Sex toy</label>
+            <label><input type="checkbox" name="editService" value="Snowballing" /> Snowballing</label>
+            <label><input type="checkbox" name="editService" value="Spanish" /> Spanish</label>
+            <label><input type="checkbox" name="editService" value="Spanking" /> Spanking</label>
+            <label><input type="checkbox" name="editService" value="Spit roasting" /> Spit roasting</label>
+            <label><input type="checkbox" name="editService" value="Squirting" /> Squirting</label>
+            <label><input type="checkbox" name="editService" value="Strap on" /> Strap on</label>
+            <label><input type="checkbox" name="editService" value="Strip tease" /> Strip tease</label>
+            <label><input type="checkbox" name="editService" value="Tea bagging" /> Tea bagging</label>
+            <label><input type="checkbox" name="editService" value="Toy show" /> Toy show</label>
+            <label><input type="checkbox" name="editService" value="Tromboning" /> Tromboning</label>
+            <label><input type="checkbox" name="editService" value="TTM" /> TTM</label>
+            <label><input type="checkbox" name="editService" value="Water sports" /> Water sports</label>
+          </div>
+        </fieldset>
+
+        <p class="directory-choice-note">Selected services appear on your public profile and in directory search results.</p>
+      </section>
+
+      <div class="settings-save-bar">
+        <p id="profileEditStatus" aria-live="polite"></p>
+        <button type="submit">Save profile</button>
+      </div>
+    </form>
+
+    <form class="settings-form" id="bookingSettingsForm" novalidate>
+      <section class="settings-section">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Bookings</p>
+            <h2>Booking settings</h2>
+          </div>
+          <p>Choose how clients can book you, and whether a deposit is required. See requests on your <a href="/provider-dashboard.html">Provider Dashboard</a>.</p>
+        </div>
+
+        <div class="profile-details-grid">
+          <label class="settings-text-field">
+            <span><input type="checkbox" id="acceptsRequestToBook" /> Accept request-to-book</span>
+          </label>
+
+          <label class="settings-text-field">
+            <span><input type="checkbox" id="acceptsInstantBook" /> Accept instant book</span>
+          </label>
+
+          <label class="settings-text-field">
+            <span><input type="checkbox" id="depositRequired" /> Require a deposit</span>
+          </label>
+
+          <label class="settings-text-field">
+            <span>Deposit type</span>
+            <select id="depositType">
+              <option value="fixed">Fixed amount</option>
+              <option value="percentage">Percentage of rate</option>
+            </select>
+          </label>
+
+          <label class="settings-text-field">
+            <span>Deposit amount</span>
+            <input type="number" id="depositAmount" min="0" step="0.01" placeholder="50" />
+          </label>
+
+          <label class="settings-text-field">
+            <span>No-show grace period (minutes)</span>
+            <input type="number" id="noShowGracePeriodMinutes" min="0" max="240" placeholder="30" />
+          </label>
+        </div>
+
+        <p class="directory-choice-note">You can enable request-to-book, instant book, or both — but never neither.</p>
+      </section>
+
+      <div class="settings-save-bar">
+        <p id="bookingSettingsStatus" aria-live="polite"></p>
+        <button type="submit">Save booking settings</button>
+      </div>
+    </form>
+  </main>
+    </div>
+  </div>
+
+  <script src="/script.js"></script>
+  <script src="/sidebar.js"></script>
+  <script src="/provider-profile.js"></script>
+</body>
+</html>

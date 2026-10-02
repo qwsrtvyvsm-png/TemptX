@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Report a Safety Concern | TEMPTX</title>
+  <meta name="description" content="Report a profile, conversation, account, or safety concern to TEMPTX." />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="cinematic-background content-body report-body">
+    <header class="site-header">
+    <div class="announcement">
+      <div class="tx-banner-track">
+        <span class="tx-banner-set">A Place to Connect <span class="tx-dot">&middot;</span> A Space to Create <span class="tx-dot">&middot;</span> A Community to Belong <span class="tx-dot">&middot;</span> A Future to Build <span class="tx-dot">&middot;</span></span>
+        <span class="tx-banner-set">A Place to Connect <span class="tx-dot">&middot;</span> A Space to Create <span class="tx-dot">&middot;</span> A Community to Belong <span class="tx-dot">&middot;</span> A Future to Build <span class="tx-dot">&middot;</span></span>
+      </div>
+    </div>
+    <div class="site-header-bar">
+      <div class="tx-nav-left">
+      <a class="brand-mark" href="/">
+        <span class="brand-word">TEMPT</span>
+        <span class="brand-x">X</span>
+      </a>
+      <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+      </button>
+      <nav class="store-nav home-nav" id="siteNav" aria-label="Main navigation">
+      <a href="/">Home</a>
+      <a href="/directory">Directory</a>
+      <a href="/safety-hub">Support</a>
+      <a href="/community">Community</a>
+      <a href="/chat.html" data-authenticated hidden>Messages</a>
+    </nav>
+      </div>
+      <div class="site-header-actions">
+        <div class="account-dropdown hover-dropdown">
+        <a href="/profile" class="tx-signin-link">Sign In</a>
+        <div class="dropdown-menu account-menu">
+          <a href="/provider-login.html" data-login>Provider Log In</a>
+          <a href="/client-login.html" data-login>Client Log In</a>
+          <a href="/auth.html" data-logout hidden>Log Out</a>
+        </div>
+      </div>
+        <a href="/join" class="tx-join-btn">Join</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-shell report-shell">
+    <section class="content-hero report-hero">
+      <p class="eyebrow">Trust &amp; safety</p>
+      <h1>Report a concern.</h1>
+      <p>
+        Use this form for a profile, conversation, account, or platform safety concern.
+        If anyone is in immediate danger in Australia, call 000.
+      </p>
+    </section>
+
+    <section class="report-layout">
+      <form class="report-form" id="reportForm">
+        <div class="report-form-heading">
+          <p class="eyebrow">Private intake</p>
+          <h2>Tell us what happened</h2>
+          <p>Share only what is necessary. Do not include passwords, payment details, identity documents, or intimate images.</p>
+        </div>
+
+        <label>
+          What are you reporting?
+          <select id="reportType" name="type" required>
+            <option value="">Choose one</option>
+            <option value="profile">Profile or listing</option>
+            <option value="conversation">Conversation or message</option>
+            <option value="account">Account or impersonation</option>
+            <option value="technical">Privacy or technical issue</option>
+            <option value="community">Community forum post</option>
+            <option value="other">Other safety concern</option>
+          </select>
+        </label>
+
+        <label>
+          Main concern
+          <select id="reportCategory" name="category" required>
+            <option value="">Choose one</option>
+            <option value="harassment">Harassment or unwanted contact</option>
+            <option value="coercion">Coercion, threats, or unsafe behaviour</option>
+            <option value="scam">Scam, fraud, or impersonation</option>
+            <option value="privacy">Privacy or image misuse</option>
+            <option value="underage">Possible person under 18</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+
+        <label>
+          Profile, conversation, or account reference <span>(optional)</span>
+          <input id="reportReference" name="reference" type="text" maxlength="120" autocomplete="off" />
+        </label>
+
+        <label>
+          What happened?
+          <textarea id="reportDetails" name="details" maxlength="2000" required></textarea>
+        </label>
+
+        <label>
+          Contact email <span>(optional)</span>
+          <input id="reportContact" name="contact" type="email" autocomplete="email" />
+        </label>
+
+        <label class="report-consent">
+          <input id="reportConsent" type="checkbox" required />
+          <span>I understand this report is stored for safety review and may be used to investigate the concern.</span>
+        </label>
+
+        <button type="submit">Submit safety report</button>
+        <p class="report-status" id="reportStatus" aria-live="polite"></p>
+      </form>
+
+      <aside class="report-guidance">
+        <p class="eyebrow">Before submitting</p>
+        <h2>Protect yourself first.</h2>
+        <ul>
+          <li>Stop contact if continuing feels unsafe.</li>
+          <li>Keep relevant message dates, profile references, and transaction records.</li>
+          <li>Do not confront someone if doing so may increase risk.</li>
+          <li>This form is not monitored as an emergency service.</li>
+        </ul>
+        <a class="outline-btn" href="/safety-hub">Open Safety Hub</a>
+
+        <form class="report-status-form" id="reportStatusForm">
+          <p class="eyebrow">Private tracking</p>
+          <h2>Check a report</h2>
+          <label>
+            Report reference
+            <input id="statusReference" type="text" placeholder="TXR-XXXXXXXX" required />
+          </label>
+          <label>
+            Private access code
+            <input id="statusAccessCode" type="text" autocomplete="off" required />
+          </label>
+          <button type="submit">Check status</button>
+          <div class="report-status-result" id="reportStatusResult" aria-live="polite"></div>
+        </form>
+      </aside>
+    </section>
+  </main>
+
+  <script src="/script.js"></script>
+  <script src="/report.js"></script>
+  <footer class="footer home-footer">
+    <div class="home-footer-brand">
+      <div class="logo">Tempt<span>X</span></div>
+      <p class="home-footer-tagline">Australia's Adult Network</p>
+    </div>
+    <div class="home-footer-columns">
+      <div class="home-footer-col">
+        <span class="home-footer-col-title">Support</span>
+        <a href="/safety-hub">Safety Hub</a>
+        <a href="/community-support">Community Support</a>
+        <a href="/report.html?type=profile">Report a Profile</a>
+      </div>
+      <div class="home-footer-col">
+        <span class="home-footer-col-title">Resources</span>
+        <a href="/educational-hub">Educational Hub</a>
+        <a href="/sex-work-resources">Sex Work Resources</a>
+        <a href="/friendly-businesses">Friendly Businesses</a>
+      </div>
+      <div class="home-footer-col">
+        <span class="home-footer-col-title">Community</span>
+        <a href="/community-standards">Community Guidelines</a>
+        <a href="/verification">Verification</a>
+        <a href="/news">News &amp; Announcements</a>
+      </div>
+      <div class="home-footer-col">
+        <span class="home-footer-col-title">Policies</span>
+        <a href="/terms">Terms of Service</a>
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/provider-standards">Provider Standards</a>
+        <a href="/client-standards">Client Standards</a>
+      </div>
+    </div>
+    <div class="home-footer-bottom">
+      <p class="home-footer-legal">© 2026 TEMPTX. All rights reserved. For adults aged 18+ only.</p>
+      <div class="home-footer-links">
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="/safety-hub">Safety</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

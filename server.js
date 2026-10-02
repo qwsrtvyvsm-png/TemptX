@@ -5,12 +5,17 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 const { sendEmail, sendSms } = require("./notifications");
 const { canTransition } = require("./lib/booking-transitions");
+const { createSite } = require("./lib/site/router");
+const { providerPath } = require("./lib/site/directory-pages");
 
 const host = process.env.HOST || "0.0.0.0";
 const port = Number(process.env.PORT || 5510);
 const turnstileSiteKey = process.env.TURNSTILE_SITE_KEY || "";
 const turnstileSecretKey = process.env.TURNSTILE_SECRET_KEY || "";
 const root = __dirname;
+// Only files inside public/ are ever sent to a browser. Server code, data and
+// internal docs live outside it, so they cannot be requested by URL.
+const publicRoot = path.join(root, "public");
 const dataDirectory = path.join(root, "data");
 const usersFile = path.join(dataDirectory, "users.json");
 const reportsFile = path.join(dataDirectory, "reports.json");
@@ -39,18 +44,6 @@ const communityRateLimits = new Map();
 const emailVerificationCodes = new Map();
 const phoneVerificationCodes = new Map();
 const bookingRateLimits = new Map();
-
-const mimeTypes = {
-  ".html": "text/html; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".webmanifest": "application/manifest+json; charset=utf-8",
-  ".jpeg": "image/jpeg",
-  ".jpg": "image/jpeg",
-  ".png": "image/png",
-  ".svg": "image/svg+xml"
-};
 
 // Write to a .tmp file then rename — rename(2) is atomic on POSIX, preventing
 // readers from ever seeing a half-written file if the process crashes mid-write.
@@ -1257,6 +1250,26 @@ const publicUser = (user) => ({
     creatorCompleted: Boolean(user.xync?.creator?.completedAt)
   }
 });
+
+// The one definition of "this provider is publicly listed". The directory
+// API, the public profile API, city pages, provider pages and the sitemap all
+// use it, so none of them can show a provider the others hide.
+const isPublicProvider = (user) =>
+  user.role === "provider" &&
+  !user.deactivatedAt &&
+  user.settings?.profileVisible !== false &&
+  Boolean(String(user.settings?.displayName || "").trim());
+
+const publicProviderView = (user) => {
+  const provider = {
+    id: user.id,
+    name: String(user.settings.displayName).trim().slice(0, 50),
+    locations: cleanDirectorySelections(user.settings?.locations, DIRECTORY_OPTIONS.locations),
+    services: cleanDirectorySelections(user.settings?.services, DIRECTORY_OPTIONS.services),
+    attributes: cleanDirectorySelections(user.settings?.attributes, DIRECTORY_OPTIONS.attributes)
+  };
+  return { ...provider, url: providerPath(provider) };
+};
 
 const publicDirectoryBusiness = (user) => ({
   id: user.id,
@@ -3571,21 +3584,7 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
     }
 
     if (pathname === "/api/directory/providers" && request.method === "GET") {
-      const providers = readUsers()
-        .filter(
-          (user) =>
-            user.role === "provider" &&
-            !user.deactivatedAt &&
-            user.settings?.profileVisible !== false &&
-            String(user.settings?.displayName || "").trim()
-        )
-        .map((user) => ({
-          id: user.id,
-          name: String(user.settings.displayName).trim().slice(0, 50),
-          locations: cleanDirectorySelections(user.settings?.locations, DIRECTORY_OPTIONS.locations),
-          services: cleanDirectorySelections(user.settings?.services, DIRECTORY_OPTIONS.services),
-          attributes: cleanDirectorySelections(user.settings?.attributes, DIRECTORY_OPTIONS.attributes)
-        }));
+      const providers = readUsers().filter(isPublicProvider).map(publicProviderView);
 
       return json(response, 200, {
         providers,
@@ -3823,24 +3822,11 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
     const providerProfileMatch = pathname.match(/^\/api\/providers\/([^/]+)\/profile$/);
     if (providerProfileMatch && request.method === "GET") {
       const targetId = providerProfileMatch[1];
-      const user = readUsers().find(
-        (u) =>
-          u.id === targetId &&
-          u.role === "provider" &&
-          !u.deactivatedAt &&
-          u.settings?.profileVisible !== false &&
-          String(u.settings?.displayName || "").trim()
-      );
+      const user = readUsers().find((u) => u.id === targetId && isPublicProvider(u));
       if (!user) return json(response, 404, { error: "Provider not found." });
       return json(response, 200, {
         profile: user.profile || {},
-        provider: {
-          id: user.id,
-          name: String(user.settings.displayName).trim().slice(0, 50),
-          locations: cleanDirectorySelections(user.settings?.locations, DIRECTORY_OPTIONS.locations),
-          services: cleanDirectorySelections(user.settings?.services, DIRECTORY_OPTIONS.services),
-          attributes: cleanDirectorySelections(user.settings?.attributes, DIRECTORY_OPTIONS.attributes),
-        },
+        provider: publicProviderView(user),
       });
     }
 
@@ -3880,38 +3866,15 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
   }
 };
 
-const serveStatic = (request, response, pathname) => {
-  const requestedPath = pathname === "/" ? "/index.html" : pathname;
-  const decodedPath = decodeURIComponent(requestedPath);
-  const filePath = path.resolve(root, `.${decodedPath}`);
-
-  if (!filePath.startsWith(`${root}${path.sep}`) || filePath.startsWith(dataDirectory)) {
-    response.writeHead(403);
-    return response.end("Forbidden");
-  }
-
-  fs.stat(filePath, (error, stats) => {
-    if (error || !stats.isFile()) {
-      response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-      return response.end("Not found");
-    }
-
-    const ext = path.extname(filePath).toLowerCase();
-    const url = new URL(request.url, `http://${request.headers.host || "localhost"}`);
-    const isVersioned = url.searchParams.has("v");
-    response.writeHead(200, {
-      "Content-Type": mimeTypes[ext] || "application/octet-stream",
-      "Cache-Control": isVersioned ? "public, max-age=31536000, immutable" : "no-store",
-      "X-Content-Type-Options": "nosniff",
-      "Referrer-Policy": "same-origin",
-      "X-Frame-Options": "DENY",
-      "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-      "Content-Security-Policy":
-        "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
-    });
-    fs.createReadStream(filePath).pipe(response);
-  });
-};
+// Public pages and static files. See lib/site/config.js for the URL rules.
+const site = createSite({
+  publicRoot,
+  cities: DIRECTORY_OPTIONS.locations,
+  listProviders: () =>
+    readUsers()
+      .filter(isPublicProvider)
+      .map((user) => ({ ...publicProviderView(user), profile: user.profile || {} }))
+});
 
 // ---------------------------------------------------------------------------
 // Booking sweep job — keeps time-based transitions out of request handlers,
@@ -4026,7 +3989,7 @@ const server = http.createServer((request, response) => {
     }
   }
 
-  return serveStatic(request, response, url.pathname);
+  return site.handle(request, response, url);
 });
 
 server.listen(port, host, () => {

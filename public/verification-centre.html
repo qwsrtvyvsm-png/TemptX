@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verification Centre | TEMPTX</title>
+  <meta name="description" content="Verify your email and phone number to build a Trust Level on your TEMPTX account." />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+
+<body class="settings-body cinematic-background">
+  <header class="chat-header settings-header">
+    <a class="brand-mark chat-brand" href="/">
+      <span class="brand-word">TEMPT</span>
+      <span class="brand-x">X</span>
+    </a>
+
+    <nav class="chat-top-nav" aria-label="Verification navigation">
+      <a href="/profile">My Profile</a>
+      <a href="/chat.html">Messages</a>
+      <a href="/settings.html">Settings</a>
+      <a href="/verification-centre.html" aria-current="page">Verification</a>
+    </nav>
+
+    <div class="account-dropdown hover-dropdown">
+      <a href="/profile" class="header-tool profile-tool" aria-label="Profile">
+        <span></span>
+      </a>
+      <div class="dropdown-menu account-menu">
+        <a href="/profile">My Profile</a>
+        <a href="/chat.html">Messages</a>
+        <a href="/settings.html">Settings</a>
+        <a href="/verification-centre.html">Verification</a>
+        <a href="/client-login.html" data-login>Client Log In</a>
+        <a href="/provider-login.html" data-login>Provider Log In</a>
+        <a href="/creator-login.html" data-login>Creator Log In</a>
+        <a href="/auth.html" data-logout hidden>Log Out</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="settings-shell">
+    <aside class="settings-intro">
+      <p class="eyebrow">Trust &amp; safety</p>
+      <h1>Verification Centre.</h1>
+      <p>Verify your email and phone number to raise your Trust Level and build confidence with other members.</p>
+
+      <div class="settings-identity trust-passport" id="trustPassport">
+        <span class="settings-avatar" id="verificationAvatar">TX</span>
+        <div>
+          <strong id="trustLevelLabel">Loading…</strong>
+          <small id="trustLevelMeta">Checking your verification status…</small>
+        </div>
+      </div>
+      <p class="trust-passport-hint" id="trustPassportHint" aria-live="polite"></p>
+
+      <a class="outline-btn settings-back" href="/profile">Back to profile</a>
+      <a class="verification-learn-more" href="/verification">What verification does and doesn't mean</a>
+    </aside>
+
+    <div class="verification-main">
+      <p class="verification-page-error" id="pageError" role="alert" hidden></p>
+
+      <section class="setup-checklist" id="verificationChecklist" aria-labelledby="verificationChecklistTitle">
+        <div class="setup-checklist-heading">
+          <div>
+            <p class="eyebrow">Progress</p>
+            <h2 id="verificationChecklistTitle">Verification progress</h2>
+          </div>
+          <p>Complete both channels to reach Fully Verified.</p>
+        </div>
+
+        <div class="setup-checklist-progress">
+          <div class="setup-checklist-progress-bar">
+            <span id="verificationProgressFill"></span>
+          </div>
+          <p class="setup-checklist-progress-label" id="verificationProgressLabel">Loading verification progress…</p>
+        </div>
+
+        <ul class="setup-checklist-list" id="verificationChecklistList"></ul>
+      </section>
+
+      <section class="settings-section verification-channel-card" id="emailVerificationCard">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Channel</p>
+            <h2>Email</h2>
+          </div>
+          <span class="verification-status-badge" id="emailStatusBadge">Loading…</span>
+        </div>
+
+        <div class="verification-channel-step" id="emailAddressStep" hidden>
+          <label class="settings-text-field">
+            <span>Email address</span>
+            <input type="email" id="emailAddressInput" placeholder="you@example.com" autocomplete="email" maxlength="120" />
+          </label>
+          <button type="button" class="verification-primary-btn" id="emailSendButton">Send verification code</button>
+        </div>
+
+        <div class="verification-channel-step" id="emailSendStep" hidden>
+          <p class="verification-channel-target" id="emailTargetDisplay"></p>
+          <button type="button" class="verification-primary-btn" id="emailSendExistingButton">Send verification code</button>
+        </div>
+
+        <div class="verification-channel-step" id="emailCodeStep" hidden>
+          <label class="settings-text-field">
+            <span>6-digit code</span>
+            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" id="emailCodeInput" autocomplete="one-time-code" />
+          </label>
+          <div class="verification-channel-actions">
+            <button type="button" class="verification-primary-btn" id="emailConfirmButton">Confirm code</button>
+            <button type="button" class="outline-btn" id="emailResendButton">Resend code</button>
+          </div>
+          <p class="verification-channel-hint" id="emailCooldownHint" aria-live="polite"></p>
+        </div>
+
+        <div class="verification-channel-step" id="emailVerifiedStep" hidden>
+          <p class="verification-channel-verified">
+            <span class="trust-check" aria-hidden="true">&#10003;</span>
+            <span id="emailVerifiedText">Verified</span>
+          </p>
+        </div>
+
+        <p class="verification-channel-error" id="emailError" aria-live="polite"></p>
+      </section>
+
+      <section class="settings-section verification-channel-card" id="phoneVerificationCard">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Channel</p>
+            <h2>Phone</h2>
+          </div>
+          <span class="verification-status-badge" id="phoneStatusBadge">Loading…</span>
+        </div>
+
+        <div class="verification-channel-step" id="phoneAddressStep" hidden>
+          <label class="settings-text-field">
+            <span>Mobile number</span>
+            <input type="tel" id="phoneNumberInput" placeholder="+61412345678" autocomplete="tel" maxlength="20" />
+          </label>
+          <p class="verification-channel-hint">Include the country code, e.g. +61 for Australia.</p>
+          <button type="button" class="verification-primary-btn" id="phoneSendButton">Send verification code</button>
+        </div>
+
+        <div class="verification-channel-step" id="phoneCodeStep" hidden>
+          <label class="settings-text-field">
+            <span>6-digit code</span>
+            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" id="phoneCodeInput" autocomplete="one-time-code" />
+          </label>
+          <div class="verification-channel-actions">
+            <button type="button" class="verification-primary-btn" id="phoneConfirmButton">Confirm code</button>
+            <button type="button" class="outline-btn" id="phoneResendButton">Resend code</button>
+          </div>
+          <p class="verification-channel-hint" id="phoneCooldownHint" aria-live="polite"></p>
+        </div>
+
+        <div class="verification-channel-step" id="phoneVerifiedStep" hidden>
+          <p class="verification-channel-verified">
+            <span class="trust-check" aria-hidden="true">&#10003;</span>
+            <span id="phoneVerifiedText">Verified</span>
+          </p>
+        </div>
+
+        <p class="verification-channel-error" id="phoneError" aria-live="polite"></p>
+      </section>
+
+      <section class="settings-section verification-channel-card" id="identityVerificationCard">
+        <div class="settings-section-heading">
+          <div>
+            <p class="eyebrow">Channel</p>
+            <h2>Identity</h2>
+          </div>
+          <span class="verification-status-badge" id="identityStatusBadge">Loading…</span>
+        </div>
+
+        <div class="verification-channel-step" id="identityUnavailableStep" hidden>
+          <p class="verification-channel-hint">Identity verification isn't switched on for TemptX yet. Email and phone verification are still open, and this section will update automatically once it's available.</p>
+        </div>
+
+        <div class="verification-channel-step" id="identityStartStep" hidden>
+          <p class="verification-channel-hint">This confirms who you are with a quick check through our verification partner. TemptX never sees or stores your ID document — only the result.</p>
+          <button type="button" class="verification-primary-btn" id="identityStartButton">Start identity verification</button>
+        </div>
+
+        <div class="verification-channel-step" id="identityPendingStep" hidden>
+          <p class="verification-channel-hint">Your verification is in progress. This page will update once it's complete — you can also check back later from Verification Centre.</p>
+        </div>
+
+        <div class="verification-channel-step" id="identityFailedStep" hidden>
+          <p class="verification-channel-hint">That verification attempt wasn't successful. You can try again.</p>
+          <button type="button" class="verification-primary-btn" id="identityRetryButton">Try again</button>
+        </div>
+
+        <div class="verification-channel-step" id="identityVerifiedStep" hidden>
+          <p class="verification-channel-verified">
+            <span class="trust-check" aria-hidden="true">&#10003;</span>
+            <span id="identityVerifiedText">Verified</span>
+          </p>
+        </div>
+
+        <p class="verification-channel-error" id="identityError" aria-live="polite"></p>
+      </section>
+    </div>
+  </main>
+
+  <script src="/script.js"></script>
+  <script src="/verification-centre.js"></script>
+</body>
+</html>

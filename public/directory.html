@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Escort &amp; Adult Provider Directory Australia | TEMPTX</title>
+  <meta name="description" content="Browse the TEMPTX directory of escorts, independent providers, agencies and adult businesses across Australia. Filter by city, service and availability." />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+
+<body class="directory-body">
+  <header class="site-header">
+    <div class="announcement">
+      <div class="tx-banner-track">
+        <span class="tx-banner-set">A Place to Connect <span class="tx-dot">&middot;</span> A Space to Create <span class="tx-dot">&middot;</span> A Community to Belong <span class="tx-dot">&middot;</span> A Future to Build <span class="tx-dot">&middot;</span></span>
+        <span class="tx-banner-set">A Place to Connect <span class="tx-dot">&middot;</span> A Space to Create <span class="tx-dot">&middot;</span> A Community to Belong <span class="tx-dot">&middot;</span> A Future to Build <span class="tx-dot">&middot;</span></span>
+      </div>
+    </div>
+    <div class="site-header-bar">
+      <div class="tx-nav-left">
+      <a class="brand-mark" href="/">
+        <span class="brand-word">TEMPT</span>
+        <span class="brand-x">X</span>
+      </a>
+      <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+      </button>
+      <nav class="store-nav home-nav" id="siteNav" aria-label="Main navigation">
+      <a href="/">Home</a>
+      <a href="/directory" class="nav-current" aria-current="page">Directory</a>
+      <a href="/district">District</a>
+      <a href="/safety-hub">Support</a>
+      <a href="/community">Community</a>
+      <a href="/chat.html" data-authenticated hidden>Messages</a>
+      <a href="/my-bookings.html" data-authenticated hidden>My Bookings</a>
+    </nav>
+      </div>
+      <div class="site-header-actions">
+        <div class="account-dropdown hover-dropdown">
+        <a href="/profile" class="tx-signin-link">Sign In</a>
+        <div class="dropdown-menu account-menu">
+          <a href="/provider-login.html" data-login>Provider Log In</a>
+          <a href="/client-login.html" data-login>Client Log In</a>
+          <a href="/auth.html" data-logout hidden>Log Out</a>
+        </div>
+      </div>
+        <a href="/join" class="tx-join-btn">Join</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="directory-main">
+
+    <!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+    <section class="dir-hero">
+      <p class="dir-hero-eyebrow">Australia's Adult Network</p>
+      <h1 id="directoryPageTitle" class="dir-hero-title">TEMPTX DIRECTORY</h1>
+      <div class="dir-hero-rule" aria-hidden="true">
+        <span class="dir-hero-rule-line"></span>
+        <span class="dir-hero-diamond">✦</span>
+        <span class="dir-hero-rule-line"></span>
+      </div>
+      <p id="directoryPageIntro" class="dir-hero-subtitle">Australia's Adult Network — Curated Providers, Agencies &amp; Adult Businesses</p>
+    </section>
+
+    <!-- ═══════════════════════════ LAYOUT (filters left, listings right on desktop) ═══════════════════════════ -->
+    <div class="dir-layout">
+
+      <!-- ══ Filters (left sidebar on desktop, stacks above / drawer on tablet/mobile) ══ -->
+      <aside class="dir-sidebar">
+        <form class="directory-filters" id="filters">
+
+          <!-- Mobile header (shown only on small screens in drawer) -->
+          <div class="directory-filter-heading">
+            <h2>Search &amp; Filters</h2>
+            <button id="closeFilters" class="directory-filter-close" type="button">✕ Close</button>
+          </div>
+
+          <!-- Sidebar panel heading (desktop / tablet) -->
+          <div class="dir-sidebar-heading">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M1 2.5h12M3 7h8M5 11.5h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span>Filters</span>
+            <button id="resetDirectory" class="dir-reset-btn" type="button">Reset</button>
+          </div>
+
+          <!-- Primary filters — vertical stack with labels -->
+          <div class="dir-filter-primary">
+
+            <div class="dir-filter-group">
+              <label for="directorySearch">Search location</label>
+              <div class="dir-filter-search-wrap">
+                <svg class="dir-filter-search-icon" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="m11 11 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <input id="directorySearch" type="search" placeholder="Search location..." autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="dir-filter-group">
+              <label for="directoryLocation">Location</label>
+              <div class="dir-filter-select-wrap">
+                <select id="directoryLocation">
+                  <option value="">All Locations</option>
+                  <option>Adelaide</option>
+                  <option>Brisbane</option>
+                  <option>Canberra</option>
+                  <option>Darwin</option>
+                  <option>Gold Coast</option>
+                  <option>Hobart</option>
+                  <option>Melbourne</option>
+                  <option>Newcastle</option>
+                  <option>Perth</option>
+                  <option>Sydney</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="dir-filter-group">
+              <label for="directoryCategory">Category</label>
+              <div class="dir-filter-select-wrap">
+                <select id="directoryCategory">
+                  <option value="">All Categories</option>
+                  <option>Anal play</option>
+                  <option>Anal sex</option>
+                  <option>ATM</option>
+                  <option>Bi twin</option>
+                  <option>BJ</option>
+                  <option>BBBJ</option>
+                  <option>BBBJTC</option>
+                  <option>BLS</option>
+                  <option>B &amp; D</option>
+                  <option>BDSM</option>
+                  <option>Bondage</option>
+                  <option>Brazilian</option>
+                  <option>BS</option>
+                  <option>CBT</option>
+                  <option>CIM</option>
+                  <option>CIMWS</option>
+                  <option>CBJ</option>
+                  <option>COB</option>
+                  <option>COF</option>
+                  <option>Costumes and role play</option>
+                  <option>Couples</option>
+                  <option>DATY</option>
+                  <option>DATO</option>
+                  <option>DFK</option>
+                  <option>Dinner companion</option>
+                  <option>Dirty talk</option>
+                  <option>DP</option>
+                  <option>DDP</option>
+                  <option>DT</option>
+                  <option>Doggy style</option>
+                  <option>Erotic sensual massage</option>
+                  <option>Facial</option>
+                  <option>FE</option>
+                  <option>Fetish</option>
+                  <option>Filming</option>
+                  <option>Fire and ice</option>
+                  <option>Fisting</option>
+                  <option>FK</option>
+                  <option>Foot fetish</option>
+                  <option>French</option>
+                  <option>FS</option>
+                  <option>Gagging</option>
+                  <option>GFE</option>
+                  <option>Greek</option>
+                  <option>GS</option>
+                  <option>Happy ending</option>
+                  <option>HJ</option>
+                  <option>Italian</option>
+                  <option>LK</option>
+                  <option>MFF</option>
+                  <option>MMF</option>
+                  <option>Multiple positions</option>
+                  <option>Masturbation</option>
+                  <option>Mutual masturbation</option>
+                  <option>Mutual French</option>
+                  <option>Mutual natural French</option>
+                  <option>MSOG</option>
+                  <option>Natural bush</option>
+                  <option>OWO</option>
+                  <option>Overnight stays</option>
+                  <option>Photography</option>
+                  <option>Prostate massage</option>
+                  <option>PSE</option>
+                  <option>Role play</option>
+                  <option>Rimming</option>
+                  <option>Sex toy</option>
+                  <option>Snowballing</option>
+                  <option>Spanish</option>
+                  <option>Spanking</option>
+                  <option>Spit roasting</option>
+                  <option>Squirting</option>
+                  <option>Strap on</option>
+                  <option>Strip tease</option>
+                  <option>Tea bagging</option>
+                  <option>Toy show</option>
+                  <option>Tromboning</option>
+                  <option>TTM</option>
+                  <option>Water sports</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="dir-filter-group">
+              <label for="directoryAvailability">Availability</label>
+              <div class="dir-filter-select-wrap">
+                <select id="directoryAvailability">
+                  <option value="">Any availability</option>
+                  <option>Now</option>
+                  <option>Tonight</option>
+                  <option>Tomorrow</option>
+                  <option>Today</option>
+                  <option>This week</option>
+                  <option>Weekend</option>
+                  <option>By appointment</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="dir-filter-group">
+              <label for="directorySort">Sort by</label>
+              <div class="dir-filter-select-wrap">
+                <select id="directorySort">
+                  <option value="featured">Featured</option>
+                  <option value="name">Name</option>
+                  <option value="location">Location</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Verified toggle -->
+            <div class="dir-filter-group dir-filter-group--toggle">
+              <label class="dir-verified-toggle" for="dir-verified-checkbox">
+                <input type="checkbox" id="dir-verified-checkbox" class="dir-verified-checkbox" />
+                <span class="dir-toggle-track" aria-hidden="true"><span class="dir-toggle-thumb"></span></span>
+                <span class="dir-verified-text">Verified only</span>
+              </label>
+              <!-- Hidden select synced by JS -->
+              <select id="directoryVerified" data-no-enhance class="dir-hidden-verified" aria-label="Verified filter">
+                <option value="">Any</option>
+                <option value="verified">Verified</option>
+              </select>
+            </div>
+
+          </div><!-- /.dir-filter-primary -->
+
+          <!-- Secondary filters + submit (always visible in sidebar) -->
+          <div class="dir-filter-secondary">
+
+            <div class="dir-filter-group">
+              <label for="directoryAttribute">Booking Mode</label>
+              <select id="directoryAttribute">
+                <option value="">Any</option>
+                <option>Independent</option>
+                <option>Agency</option>
+                <option>Incall</option>
+                <option>Outcall</option>
+                <option>Touring</option>
+              </select>
+            </div>
+
+            <div class="dir-filter-group">
+              <label for="directoryIdentity">Gender</label>
+              <select id="directoryIdentity">
+                <option value="">Inclusive (any)</option>
+                <option>Woman</option>
+                <option>Man</option>
+                <option>Trans woman</option>
+                <option>Trans man</option>
+                <option>Non-binary</option>
+              </select>
+            </div>
+
+            <div class="dir-filter-group directory-xync-filter" id="directoryXyncPanel" hidden>
+              <label for="directoryXync">Xync</label>
+              <select id="directoryXync">
+                <option value="">Any Xync</option>
+                <option value="strong">Strong Xync</option>
+                <option value="good">Good Xync</option>
+                <option value="possible">Possible Xync</option>
+                <option value="low">Low Xync</option>
+              </select>
+              <p class="directory-xync-note">Xync filters organise results only. Every profile remains accessible.</p>
+            </div>
+
+            <p class="directory-xync-cta" id="directoryXyncCta" hidden>
+              <a href="/xync.html">Complete Provider Xync</a> to see compatibility results.
+            </p>
+
+            <div class="dir-filter-group">
+              <label for="directoryPrice">Price range</label>
+              <div class="directory-price-filter">
+                <div class="directory-price-readout">
+                  <span>Up to</span>
+                  <strong id="directoryPriceValue">Any price</strong>
+                </div>
+                <input id="directoryPrice" type="range" min="100" max="10000" step="100" value="10000" />
+                <label class="directory-price-poa">
+                  <input id="directoryPricePoa" type="checkbox" checked />
+                  Include price on application
+                </label>
+              </div>
+            </div>
+
+            <div class="dir-filter-actions">
+              <button class="directory-primary-button dir-search-btn" type="submit">Search</button>
+            </div>
+
+          </div><!-- /.dir-filter-secondary -->
+
+        </form>
+      </aside><!-- /.dir-sidebar -->
+
+      <!-- ══ Provider Listings (right on desktop) ══ -->
+      <div class="dir-content">
+
+        <!-- Results meta bar -->
+        <div class="dir-results-bar">
+          <div class="dir-results-count">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="8" cy="5.5" r="2.75" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M2.5 14c0-3.04 2.462-5 5.5-5s5.5 1.96 5.5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            <span id="directoryCount">6</span> Providers Found
+          </div>
+          <div class="dir-results-tools">
+            <span class="dir-featured-label">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 1l1.27 2.57 2.84.41-2.05 2 .48 2.83L6 7.57 3.46 8.81l.48-2.83-2.05-2 2.84-.41L6 1Z" fill="currentColor"/></svg>
+              Featured Profiles
+            </span>
+            <button id="openFilters" class="directory-secondary-button directory-mobile-filter" type="button">Filters</button>
+            <div class="directory-view-switch" aria-label="Result view">
+              <button class="is-active" type="button" data-view="grid">Grid</button>
+              <button type="button" data-view="list">List</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div class="directory-results">
+          <p id="directoryEmpty" class="directory-empty" hidden>No profiles match those filters. Try a broader search.</p>
+
+          <div id="directoryCards" class="directory-cards">
+
+        <article class="directory-card" data-demo="true" data-nosnippet data-name="Alex" data-location="Adelaide" data-category="GFE|Dinner companion" data-attributes="Independent|Incall|Discreet" data-price="750" data-identity="Woman" data-availability="Now" data-status="verified" data-tag="featured">
+          <div class="dir-card-media">
+            <div class="dir-card-placeholder dir-card-placeholder--1" aria-hidden="true">
+              <span class="dir-card-initial">A</span>
+            </div>
+            <span class="dir-card-badge dir-card-badge--featured">Featured</span>
+            <div class="dir-card-overlay">
+              <div class="dir-card-name-row">
+              <h3 class="dir-card-name">ALEX</h3>
+              <span class="dir-card-verified-mark">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M10 5.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" fill="currentColor" opacity=".18"/><path d="M3.5 5.5 5 7l3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Verified
+              </span>
+            </div>
+              <p class="dir-card-location">
+              <svg width="9" height="11" viewBox="0 0 9 11" fill="none" aria-hidden="true"><path d="M4.5 0C2.57 0 1 1.57 1 3.5 1 6.38 4.5 11 4.5 11S8 6.38 8 3.5C8 1.57 6.43 0 4.5 0Zm0 4.9a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8Z" fill="currentColor"/></svg>
+              Adelaide, SA
+            </p>
+            </div>
+          </div>
+          <div class="dir-card-info">
+            <p class="dir-card-bio">Calm, curious and verified — Adelaide and nearby.</p>
+            <div class="dir-card-footer">
+              <span class="dir-card-status dir-card-status--available">
+                <span class="dir-status-dot"></span>Available Now
+              </span>
+              <a href="/profile" class="dir-card-cta">View Profile</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="directory-card" data-demo="true" data-nosnippet data-name="Sam" data-location="Melbourne" data-category="Dinner companion|Overnight stays" data-attributes="Independent|Outcall" data-price="450" data-identity="Non-binary" data-availability="Tonight" data-status="verified" data-tag="verified">
+          <div class="dir-card-media">
+            <div class="dir-card-placeholder dir-card-placeholder--2" aria-hidden="true">
+              <span class="dir-card-initial">S</span>
+            </div>
+            <span class="dir-card-badge dir-card-badge--verified">Verified</span>
+            <div class="dir-card-overlay">
+              <div class="dir-card-name-row">
+              <h3 class="dir-card-name">SAM</h3>
+              <span class="dir-card-verified-mark">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M10 5.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" fill="currentColor" opacity=".18"/><path d="M3.5 5.5 5 7l3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Verified
+              </span>
+            </div>
+              <p class="dir-card-location">
+              <svg width="9" height="11" viewBox="0 0 9 11" fill="none" aria-hidden="true"><path d="M4.5 0C2.57 0 1 1.57 1 3.5 1 6.38 4.5 11 4.5 11S8 6.38 8 3.5C8 1.57 6.43 0 4.5 0Zm0 4.9a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8Z" fill="currentColor"/></svg>
+              Melbourne, VIC
+            </p>
+            </div>
+          </div>
+          <div class="dir-card-info">
+            <p class="dir-card-bio">An easy pace, thoughtful conversation and clear availability.</p>
+            <div class="dir-card-footer">
+              <span class="dir-card-status dir-card-status--available">
+                <span class="dir-status-dot"></span>Available Now
+              </span>
+              <a href="/profile" class="dir-card-cta">View Profile</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="directory-card" data-demo="true" data-nosnippet data-name="River" data-location="Sydney" data-category="PSE|Role play" data-attributes="Touring|Discreet" data-price="poa" data-identity="Trans woman" data-availability="By appointment" data-status="verified" data-tag="new">
+          <div class="dir-card-media">
+            <div class="dir-card-placeholder dir-card-placeholder--3" aria-hidden="true">
+              <span class="dir-card-initial">R</span>
+            </div>
+            <span class="dir-card-badge dir-card-badge--new">New</span>
+            <div class="dir-card-overlay">
+              <div class="dir-card-name-row">
+              <h3 class="dir-card-name">RIVER</h3>
+              <span class="dir-card-verified-mark">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M10 5.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" fill="currentColor" opacity=".18"/><path d="M3.5 5.5 5 7l3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Verified
+              </span>
+            </div>
+              <p class="dir-card-location">
+              <svg width="9" height="11" viewBox="0 0 9 11" fill="none" aria-hidden="true"><path d="M4.5 0C2.57 0 1 1.57 1 3.5 1 6.38 4.5 11 4.5 11S8 6.38 8 3.5C8 1.57 6.43 0 4.5 0Zm0 4.9a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8Z" fill="currentColor"/></svg>
+              Sydney, NSW
+            </p>
+            </div>
+          </div>
+          <div class="dir-card-info">
+            <p class="dir-card-bio">Discreet, thoughtful and available by appointment.</p>
+            <div class="dir-card-footer">
+              <span class="dir-card-status dir-card-status--appointment">
+                <span class="dir-status-dot"></span>By Appointment
+              </span>
+              <a href="/profile" class="dir-card-cta">View Profile</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="directory-card" data-demo="true" data-nosnippet data-name="Mia" data-location="Perth" data-category="Erotic sensual massage|GFE" data-attributes="Agency|Incall" data-price="1200" data-identity="Woman" data-availability="Tomorrow" data-status="verified" data-tag="featured">
+          <div class="dir-card-media">
+            <div class="dir-card-placeholder dir-card-placeholder--4" aria-hidden="true">
+              <span class="dir-card-initial">M</span>
+            </div>
+            <span class="dir-card-badge dir-card-badge--featured">Featured</span>
+            <div class="dir-card-overlay">
+              <div class="dir-card-name-row">
+              <h3 class="dir-card-name">MIA</h3>
+              <span class="dir-card-verified-mark">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M10 5.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" fill="currentColor" opacity=".18"/><path d="M3.5 5.5 5 7l3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Verified
+              </span>
+            </div>
+              <p class="dir-card-location">
+              <svg width="9" height="11" viewBox="0 0 9 11" fill="none" aria-hidden="true"><path d="M4.5 0C2.57 0 1 1.57 1 3.5 1 6.38 4.5 11 4.5 11S8 6.38 8 3.5C8 1.57 6.43 0 4.5 0Zm0 4.9a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8Z" fill="currentColor"/></svg>
+              Perth, WA
+            </p>
+            </div>
+          </div>
+          <div class="dir-card-info">
+            <p class="dir-card-bio">Warm, polished company with a relaxed private approach.</p>
+            <div class="dir-card-footer">
+              <span class="dir-card-status dir-card-status--tonight">
+                <span class="dir-status-dot"></span>Available Tomorrow
+              </span>
+              <a href="/profile" class="dir-card-cta">View Profile</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="directory-card" data-demo="true" data-nosnippet data-name="Noa" data-location="Brisbane|Gold Coast" data-category="Role play|Fetish" data-attributes="Independent|Outcall|LGBTQ+ friendly" data-price="400" data-identity="Trans man" data-availability="Weekend" data-status="verified" data-tag="verified">
+          <div class="dir-card-media">
+            <div class="dir-card-placeholder dir-card-placeholder--5" aria-hidden="true">
+              <span class="dir-card-initial">N</span>
+            </div>
+            <span class="dir-card-badge dir-card-badge--verified">Verified</span>
+            <div class="dir-card-overlay">
+              <div class="dir-card-name-row">
+              <h3 class="dir-card-name">NOA</h3>
+              <span class="dir-card-verified-mark">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M10 5.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" fill="currentColor" opacity=".18"/><path d="M3.5 5.5 5 7l3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Verified
+              </span>
+            </div>
+              <p class="dir-card-location">
+              <svg width="9" height="11" viewBox="0 0 9 11" fill="none" aria-hidden="true"><path d="M4.5 0C2.57 0 1 1.57 1 3.5 1 6.38 4.5 11 4.5 11S8 6.38 8 3.5C8 1.57 6.43 0 4.5 0Zm0 4.9a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8Z" fill="currentColor"/></svg>
+              Brisbane / Gold Coast, QLD
+            </p>
+            </div>
+          </div>
+          <div class="dir-card-info">
+            <p class="dir-card-bio">Present, playful and ready for considered plans.</p>
+            <div class="dir-card-footer">
+              <span class="dir-card-status dir-card-status--weekend">
+                <span class="dir-status-dot"></span>Available Weekend
+              </span>
+              <a href="/profile" class="dir-card-cta">View Profile</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="directory-card" data-demo="true" data-nosnippet data-name="Eden" data-location="Adelaide|Melbourne" data-category="Dinner companion|Overnight stays" data-attributes="Independent|Touring" data-price="950" data-identity="Woman" data-availability="This week" data-status="verified" data-tag="featured">
+          <div class="dir-card-media">
+            <div class="dir-card-placeholder dir-card-placeholder--6" aria-hidden="true">
+              <span class="dir-card-initial">E</span>
+            </div>
+            <span class="dir-card-badge dir-card-badge--featured">Featured</span>
+            <div class="dir-card-overlay">
+              <div class="dir-card-name-row">
+              <h3 class="dir-card-name">EDEN</h3>
+              <span class="dir-card-verified-mark">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M10 5.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" fill="currentColor" opacity=".18"/><path d="M3.5 5.5 5 7l3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Verified
+              </span>
+            </div>
+              <p class="dir-card-location">
+              <svg width="9" height="11" viewBox="0 0 9 11" fill="none" aria-hidden="true"><path d="M4.5 0C2.57 0 1 1.57 1 3.5 1 6.38 4.5 11 4.5 11S8 6.38 8 3.5C8 1.57 6.43 0 4.5 0Zm0 4.9a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8Z" fill="currentColor"/></svg>
+              Adelaide / Melbourne
+            </p>
+            </div>
+          </div>
+          <div class="dir-card-info">
+            <p class="dir-card-bio">Private bookings, travel and unhurried conversation.</p>
+            <div class="dir-card-footer">
+              <span class="dir-card-status dir-card-status--week">
+                <span class="dir-status-dot"></span>Available This Week
+              </span>
+              <a href="/profile" class="dir-card-cta">View Profile</a>
+            </div>
+          </div>
+        </article>
+
+        </div><!-- /#directoryCards -->
+        </div><!-- /.directory-results -->
+
+      </div><!-- /.dir-content -->
+
+    </div><!-- /.dir-layout -->
+
+    <section class="advertiser-preview" aria-label="Featured advertiser profiles">
+      <a class="advertiser-card" href="/profile" data-search="premium profile advertiser showcase sydney escorts asian escorts incall outcall availability price">
+        <span class="advertiser-image advertiser-one" aria-hidden="true"></span>
+        <span class="eyebrow">Profile presence</span>
+        <h3>Premium profile page</h3>
+        <p>View a dedicated professional presence with gallery, profile details, availability, memberships, bookings, and private messaging.</p>
+      </a>
+
+      <a class="advertiser-card" href="/profile" data-search="featured listing private profile melbourne escorts latina escorts search availability price">
+        <span class="advertiser-image advertiser-two" aria-hidden="true"></span>
+        <span class="eyebrow">Industry partner</span>
+        <h3>Business discovery</h3>
+        <p>Agencies, venues, photographers, brands, and service providers can sit inside the same trusted professional network.</p>
+      </a>
+
+      <a class="advertiser-card" href="/profile" data-search="verified option premium placement brisbane escorts korean escorts search by availability search by price">
+        <span class="advertiser-image advertiser-three" aria-hidden="true"></span>
+        <span class="eyebrow">Growth layer</span>
+        <h3>Promotion and partnerships</h3>
+        <p>Featured placement, collaborations, advertising, and partnership pathways can support income beyond one profile page.</p>
+      </a>
+    </section>
+
+    <!-- ═══════════════════════════ QUICK LINKS ═══════════════════════════ -->
+    <section class="dir-quick-links" aria-label="Browse directory categories">
+      <div class="dir-quick-links-inner">
+        <div class="dir-quick-group">
+          <p class="dir-quick-label">By Location</p>
+          <nav>
+            <a href="/directory/adelaide">Adelaide</a>
+            <a href="/directory/brisbane">Brisbane</a>
+            <a href="/directory/canberra">Canberra</a>
+            <a href="/directory/darwin">Darwin</a>
+            <a href="/directory/gold-coast">Gold Coast</a>
+            <a href="/directory/hobart">Hobart</a>
+            <a href="/directory/melbourne">Melbourne</a>
+            <a href="/directory/newcastle">Newcastle</a>
+            <a href="/directory/perth">Perth</a>
+            <a href="/directory/sydney">Sydney</a>
+          </nav>
+        </div>
+        <div class="dir-quick-group">
+          <p class="dir-quick-label">By Service</p>
+          <nav>
+            <a href="/directory?service=GFE">GFE</a>
+            <a href="/directory?service=PSE">PSE</a>
+            <a href="/directory?service=BDSM">BDSM</a>
+            <a href="/directory?service=Dinner%20companion">Dinner companion</a>
+            <a href="/directory?service=Erotic%20sensual%20massage">Erotic sensual massage</a>
+            <a href="/directory?service=Overnight%20stays">Overnight stays</a>
+          </nav>
+        </div>
+        <div class="dir-quick-group">
+          <p class="dir-quick-label">By Attribute</p>
+          <nav>
+            <a href="/directory?attribute=Independent">Independent</a>
+            <a href="/directory?attribute=Agency">Agency</a>
+            <a href="/directory?attribute=Incall">Incall</a>
+            <a href="/directory?attribute=Outcall">Outcall</a>
+            <a href="/directory?attribute=Touring">Touring</a>
+            <a href="/directory?attribute=Discreet">Discreet</a>
+            <a href="/directory?attribute=LGBTQ%2B%20friendly">LGBTQ+ friendly</a>
+          </nav>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trust bar -->
+    <div class="dir-trust-bar">
+      <div class="dir-trust-item">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M11 2 3 5.5V11c0 4.42 3.42 8.56 8 9.56 4.58-1 8-5.14 8-9.56V5.5L11 2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M7.5 11l2.5 2.5 4.5-4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div>
+          <strong>Verified Profiles</strong>
+          <span>ID verified for your safety</span>
+        </div>
+      </div>
+      <div class="dir-trust-item">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><rect x="4" y="9" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M8 9V6.5a3 3 0 0 1 6 0V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <div>
+          <strong>Discreet &amp; Private</strong>
+          <span>Your privacy is our priority</span>
+        </div>
+      </div>
+      <div class="dir-trust-item">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M11 2l2.29 4.64 5.12.74-3.7 3.62.87 5.1L11 13.77l-4.58 2.33.87-5.1L3.59 7.38l5.12-.74L11 2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        <div>
+          <strong>Trusted Network</strong>
+          <span>Curated and monitored</span>
+        </div>
+      </div>
+      <div class="dir-trust-item">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="8.5" stroke="currentColor" stroke-width="1.4"/><path d="M11 7v4l2.5 2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div>
+          <strong>24/7 Support</strong>
+          <span>We're here to help</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <div id="ageGate" class="age-gate" role="dialog" aria-modal="true" aria-labelledby="ageGateTitle">
+    <div class="age-box">
+      <p class="age-title" id="ageGateTitle">Tempt<span>X</span></p>
+      <p>This website is intended for adults aged 18+ only.</p>
+      <p class="small-text">
+        By entering, you confirm you are at least 18 years old and agree to view adult industry related content.
+      </p>
+      <p class="age-policy-links">
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="/safety-hub">Safety</a>
+      </p>
+      <div class="age-buttons">
+        <button id="enterSite">I am 18+</button>
+        <button id="leaveSite" class="outline-btn">Leave</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer home-footer">
+    <div class="home-footer-brand">
+      <div class="logo">Tempt<span>X</span></div>
+      <p class="home-footer-tagline">Australia's Adult Network</p>
+    </div>
+    <div class="home-footer-columns">
+      <div class="home-footer-col">
+        <span class="home-footer-col-title">Support</span>
+        <a href="/safety-hub">Safety Hub</a>
+        <a href="/community-support">Community Support</a>
+        <a href="/report.html?type=profile">Report a Profile</a>
+      </div>
+      <div class="home-footer-col">
+        <span class="home-footer-col-title">Resources</span>
+        <a href="/educational-hub">Educational Hub</a>
+        <a href="/sex-work-resources">Sex Work Resources</a>
+        <a href="/friendly-businesses">Friendly Businesses</a>
+      </div>
+      <div class="home-footer-col">
+        <span class="home-footer-col-title">Community</span>
+        <a href="/community-standards">Community Guidelines</a>
+        <a href="/verification">Verification</a>
+        <a href="/news">News &amp; Announcements</a>
+      </div>
+      <div class="home-footer-col">
+        <span class="home-footer-col-title">Policies</span>
+        <a href="/terms">Terms of Service</a>
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/provider-standards">Provider Standards</a>
+        <a href="/client-standards">Client Standards</a>
+      </div>
+    </div>
+    <div class="home-footer-bottom">
+      <p class="home-footer-legal">© 2026 TEMPTX. All rights reserved. For adults aged 18+ only.</p>
+      <div class="home-footer-links">
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="/safety-hub">Safety</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
+  <script src="/directory.js"></script>
+</body>
+</html>
