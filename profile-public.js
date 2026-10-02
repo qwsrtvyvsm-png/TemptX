@@ -1,5 +1,13 @@
 const providerId = new URLSearchParams(window.location.search).get("provider");
 const messageCtas = document.querySelectorAll("[data-message-cta]");
+// Deep-link "Message now" / "Start chat" into a real conversation with this
+// provider (chat.js reads ?provider=<id> and starts/reopens one via the API)
+// instead of the old hardcoded mock "advertiser" conversation.
+if (providerId) {
+  messageCtas.forEach((cta) => {
+    cta.href = `chat.html?provider=${encodeURIComponent(providerId)}`;
+  });
+}
 const editProfileLinks = document.querySelectorAll("[data-edit-profile]");
 const verificationCtaLinks = document.querySelectorAll("[data-verification-cta]");
 const viewDashboardLinks = document.querySelectorAll("[data-view-dashboard]");

@@ -217,6 +217,7 @@ if (chatShell) {
     })
     .then(({ user }) => {
       currentUserId = user?.id || "guest";
+      currentUserRole = user?.role || "guest";
       canCreateGroups = user?.role === "provider";
       canFavouriteProviders = user?.role === "client";
       canTipProviders = user?.role === "client";
@@ -224,6 +225,15 @@ if (chatShell) {
       updateMessageAgreement();
       updateFavouriteButton();
       updateTipButton();
+
+      if (currentUserRole === "client" || currentUserRole === "provider") {
+        const requestedProviderId = urlParams.get("provider");
+        if (currentUserRole === "client" && requestedProviderId) {
+          startConversationWithProvider(requestedProviderId);
+        } else {
+          syncRealConversations();
+        }
+      }
     })
     .catch(() => {
       canCreateGroups = false;
@@ -253,6 +263,123 @@ if (chatShell) {
       hour: "numeric",
       minute: "2-digit"
     }).format(new Date());
+
+  const formatMessageTime = (iso) =>
+    new Intl.DateTimeFormat("en-AU", { hour: "numeric", minute: "2-digit" }).format(new Date(iso));
+
+  const initialsFromName = (name) =>
+    String(name || "?")
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((word) => word[0].toUpperCase())
+      .join("") || "?";
+
+  // Real provider<->client conversations are backed by the server
+  // (/api/conversations, /api/conversations/:id/messages) rather than the
+  // localStorage mock used for the sample/community data above. A real
+  // conversation is flagged with apiBacked: true and its messages are loaded
+  // lazily the first time it's opened, via ensureMessagesLoaded below.
+  const mapApiMessageToUiMessage = (apiMessage) => {
+    const mine = apiMessage.senderRole === currentUserRole ||
+      (currentUserRole === "provider" && apiMessage.senderRole === "ai_assistant");
+    const message = {
+      sender: mine ? "me" : "them",
+      text: apiMessage.body,
+      time: formatMessageTime(apiMessage.createdAt)
+    };
+    if (apiMessage.senderRole === "ai_assistant") {
+      message.name = currentUserRole === "provider" ? "Your assistant (sent automatically)" : "Automated assistant";
+    }
+    return message;
+  };
+
+  const mapApiConversationToUiConversation = (apiConversation) => {
+    const name = apiConversation.otherPartyLabel || (currentUserRole === "provider" ? "Client" : "Provider");
+    const descriptionBase = "Private direct conversation. Keep personal contact details inside TEMPTX.";
+    return {
+      id: apiConversation.id,
+      providerId: apiConversation.providerId,
+      type: "direct",
+      apiBacked: true,
+      messagesLoaded: false,
+      name,
+      initials: initialsFromName(name),
+      meta: apiConversation.lastMessage ? formatMessageTime(apiConversation.lastMessage.createdAt) : "No messages yet",
+      description: currentUserRole === "provider"
+        ? `${descriptionBase} Your assistant may be answering for you while you're away — see the Messages & Assistant tab on your dashboard.`
+        : descriptionBase,
+      unread: apiConversation.unreadCount || 0,
+      joined: true,
+      messages: []
+    };
+  };
+
+  // Fetches and caches a real conversation's messages the first time it's
+  // opened (and whenever it's reopened, to pick up anything new — there's no
+  // websocket layer here, so re-fetch-on-open is the refresh mechanism).
+  const ensureMessagesLoaded = async (conversation) => {
+    if (!conversation.apiBacked) return;
+    try {
+      const response = await fetch(`/api/conversations/${encodeURIComponent(conversation.id)}/messages`);
+      if (!response.ok) return;
+      const result = await response.json();
+      conversation.messages = (result.messages || []).map(mapApiMessageToUiMessage);
+      conversation.messagesLoaded = true;
+      conversation.unread = 0;
+    } catch (error) {
+      console.warn("Unable to load messages for this conversation.", error);
+    }
+  };
+
+  // Pulls the signed-in user's real conversations and merges them into
+  // state.conversations, replacing the static "advertiser" sample (which only
+  // exists for guests/demo purposes) once real data is available.
+  const syncRealConversations = async () => {
+    try {
+      const response = await fetch("/api/conversations");
+      if (!response.ok) return;
+      const result = await response.json();
+      const real = (result.conversations || []).map(mapApiConversationToUiConversation);
+
+      state.conversations = state.conversations.filter(
+        (conversation) => conversation.id !== "advertiser" && conversation.type !== "direct"
+      );
+      state.conversations.unshift(...real);
+
+      if (!state.conversations.some((conversation) => conversation.id === state.activeId)) {
+        state.activeId = state.conversations[0]?.id || state.activeId;
+      }
+
+      renderConversationList();
+      if (state.activeId) {
+        await selectConversation(state.activeId);
+      }
+    } catch (error) {
+      console.warn("Unable to load your conversations.", error);
+    }
+  };
+
+  // Handles chat.html?provider=<id> — a client landing here from a provider's
+  // profile ("Message now") starts (or reopens) a real conversation with them.
+  const startConversationWithProvider = async (providerId) => {
+    try {
+      const response = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ providerId })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        window.alert(result.error || "Couldn't start a conversation with this provider.");
+        return;
+      }
+      await syncRealConversations();
+      await selectConversation(result.conversation.id);
+    } catch (error) {
+      console.warn("Unable to start conversation.", error);
+    }
+  };
 
   const renderConversationList = () => {
     const query = conversationSearch.value.trim().toLowerCase();
@@ -348,8 +475,12 @@ if (chatShell) {
     renderConversationList();
   };
 
-  const selectConversation = (id) => {
+  const selectConversation = async (id) => {
     state.activeId = id;
+    const conversation = getActiveConversation();
+    if (conversation?.apiBacked && !conversation.messagesLoaded) {
+      await ensureMessagesLoaded(conversation);
+    }
     renderMessages();
     chatShell.classList.remove("show-conversations");
   };
@@ -408,7 +539,7 @@ if (chatShell) {
     });
   });
 
-  messageForm.addEventListener("submit", (event) => {
+  messageForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (localStorage.getItem(messageAgreementKey()) !== "true") {
       messageStandardsGate.classList.remove("hidden");
@@ -422,6 +553,33 @@ if (chatShell) {
     }
 
     const conversation = getActiveConversation();
+
+    if (conversation.apiBacked) {
+      sendButton.disabled = true;
+      try {
+        const response = await fetch(`/api/conversations/${encodeURIComponent(conversation.id)}/messages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || "Couldn't send that message.");
+
+        conversation.messages.push(mapApiMessageToUiMessage(result.message));
+        if (result.aiReply) {
+          conversation.messages.push(mapApiMessageToUiMessage(result.aiReply));
+        }
+        messageInput.value = "";
+        renderMessages();
+      } catch (error) {
+        window.alert(error.message || "Couldn't send that message.");
+      } finally {
+        sendButton.disabled = false;
+        messageInput.focus();
+      }
+      return;
+    }
+
     conversation.messages.push({
       sender: "me",
       text,
