@@ -5,6 +5,7 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 const { sendEmail, sendSms } = require("./notifications");
 const { canTransition } = require("./lib/booking-transitions");
+const aiAutoReply = require("./lib/ai-autoreply");
 
 const host = process.env.HOST || "0.0.0.0";
 const port = Number(process.env.PORT || 5510);
@@ -20,6 +21,8 @@ const transactionsFile = path.join(dataDirectory, "transactions.json");
 const verificationEventsFile = path.join(dataDirectory, "verificationEvents.json");
 const bookingsFile = path.join(dataDirectory, "bookings.json");
 const clientNotesFile = path.join(dataDirectory, "client-notes.json");
+const conversationsFile = path.join(dataDirectory, "conversations.json");
+const messagesFile = path.join(dataDirectory, "messages.json");
 const communityPostsFile = path.join(dataDirectory, "community-posts.json");
 const communityFollowsFile = path.join(dataDirectory, "community-follows.json");
 const communitySavedFile = path.join(dataDirectory, "community-saved.json");
@@ -39,6 +42,7 @@ const communityRateLimits = new Map();
 const emailVerificationCodes = new Map();
 const phoneVerificationCodes = new Map();
 const bookingRateLimits = new Map();
+const messageRateLimits = new Map();
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -89,6 +93,14 @@ if (!fs.existsSync(bookingsFile)) {
 
 if (!fs.existsSync(clientNotesFile)) {
   fs.writeFileSync(clientNotesFile, "[]\n");
+}
+
+if (!fs.existsSync(conversationsFile)) {
+  fs.writeFileSync(conversationsFile, "[]\n");
+}
+
+if (!fs.existsSync(messagesFile)) {
+  fs.writeFileSync(messagesFile, "[]\n");
 }
 
 if (!fs.existsSync(communityPostsFile)) {
@@ -248,6 +260,14 @@ const readClientNotes = () => JSON.parse(fs.readFileSync(clientNotesFile, "utf8"
 const writeClientNotes = (clientNotes) =>
   atomicWrite(clientNotesFile, `${JSON.stringify(clientNotes, null, 2)}\n`);
 
+const readConversations = () => JSON.parse(fs.readFileSync(conversationsFile, "utf8"));
+const writeConversations = (conversations) =>
+  atomicWrite(conversationsFile, `${JSON.stringify(conversations, null, 2)}\n`);
+
+const readMessages = () => JSON.parse(fs.readFileSync(messagesFile, "utf8"));
+const writeMessages = (messages) =>
+  atomicWrite(messagesFile, `${JSON.stringify(messages, null, 2)}\n`);
+
 const readCommunityPosts = () => {
   const parsePostsFile = (filePath) => {
     const posts = JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -300,6 +320,8 @@ const reportsQueue = makeQueue();
 const verificationEventsQueue = makeQueue();
 const bookingsQueue = makeQueue();
 const clientNotesQueue = makeQueue();
+const conversationsQueue = makeQueue();
+const messagesQueue = makeQueue();
 const communityPostsQueue = makeQueue();
 const communityFollowsQueue = makeQueue();
 const communitySavedQueue = makeQueue();
@@ -1240,6 +1262,7 @@ const publicUser = (user) => ({
   trustLevel: user.trustLevel || 0,
   trustLevelLabel: TRUST_LEVEL_LABELS[user.trustLevel || 0] || TRUST_LEVEL_LABELS[0],
   bookingSettings: user.role === "provider" ? bookingSettingsView(user.bookingSettings) : null,
+  autoReplySettings: user.role === "provider" ? autoReplySettingsView(user.autoReplySettings) : null,
   settings: {
     displayName: user.settings?.displayName || "",
     directMessages: user.settings?.directMessages !== false,
@@ -1338,6 +1361,77 @@ const cleanBookingSettingsPatch = (body, existing) => {
   return next;
 };
 
+// ---------------------------------------------------------------------------
+// AI auto-reply settings — a provider's own opt-in "answer messages while I'm
+// away" layer. This never bypasses bookingSettings or booking-transitions.js:
+// it only ever drafts message text and, if permitted, calls the existing
+// POST /api/bookings flow in the client's name to create a normal booking —
+// every deposit/response-window/conflict rule still applies untouched.
+const AWAY_MODES = new Set(["always", "manual", "delayed"]);
+const AUTOREPLY_MODES = new Set(["draft", "auto_send"]);
+
+const defaultAutoReplySettings = () => ({
+  enabled: false,
+  mode: "draft", // "draft" = AI writes, provider approves before it sends; "auto_send" = sends immediately
+  awayMode: "manual", // "always" | "manual" | "delayed"
+  manualAwayUntil: null, // ISO timestamp; AI engages only while now < this (awayMode "manual")
+  respondWithinMinutes: 20, // awayMode "delayed": how long a client waits for the provider before AI steps in
+  allowAutoBookingRequests: true, // can the AI draft structured booking details for the client to confirm into a real request
+  houseRules: "", // provider's own boundaries/context, injected into the AI's system prompt verbatim
+  maxAiTurnsPerConversation: 6 // safety valve: AI hands off to "needs you" after this many AI replies in one conversation
+});
+
+const autoReplySettingsView = (settings) => {
+  const source = settings && typeof settings === "object" ? settings : {};
+  const defaults = defaultAutoReplySettings();
+  return {
+    enabled: source.enabled === true,
+    mode: AUTOREPLY_MODES.has(source.mode) ? source.mode : defaults.mode,
+    awayMode: AWAY_MODES.has(source.awayMode) ? source.awayMode : defaults.awayMode,
+    manualAwayUntil: typeof source.manualAwayUntil === "string" && !Number.isNaN(new Date(source.manualAwayUntil).getTime())
+      ? source.manualAwayUntil
+      : null,
+    respondWithinMinutes: Number.isFinite(source.respondWithinMinutes)
+      ? Math.min(180, Math.max(5, Math.round(source.respondWithinMinutes)))
+      : defaults.respondWithinMinutes,
+    allowAutoBookingRequests: source.allowAutoBookingRequests !== false,
+    houseRules: cleanText(source.houseRules, 800),
+    maxAiTurnsPerConversation: Number.isFinite(source.maxAiTurnsPerConversation)
+      ? Math.min(20, Math.max(1, Math.round(source.maxAiTurnsPerConversation)))
+      : defaults.maxAiTurnsPerConversation
+  };
+};
+
+const cleanAutoReplySettingsPatch = (body, existing) => {
+  const current = autoReplySettingsView(existing);
+  const source = body && typeof body === "object" ? body : {};
+  const has = (key) => Object.prototype.hasOwnProperty.call(source, key);
+
+  return autoReplySettingsView({
+    enabled: has("enabled") ? source.enabled === true : current.enabled,
+    mode: has("mode") ? source.mode : current.mode,
+    awayMode: has("awayMode") ? source.awayMode : current.awayMode,
+    manualAwayUntil: has("manualAwayUntil") ? source.manualAwayUntil : current.manualAwayUntil,
+    respondWithinMinutes: has("respondWithinMinutes") ? Number(source.respondWithinMinutes) : current.respondWithinMinutes,
+    allowAutoBookingRequests: has("allowAutoBookingRequests") ? source.allowAutoBookingRequests === true : current.allowAutoBookingRequests,
+    houseRules: has("houseRules") ? source.houseRules : current.houseRules,
+    maxAiTurnsPerConversation: has("maxAiTurnsPerConversation") ? Number(source.maxAiTurnsPerConversation) : current.maxAiTurnsPerConversation
+  });
+};
+
+// Whether the AI is allowed to act right now, for the synchronous ("always" /
+// "manual") away modes. "delayed" is intentionally excluded here — it only
+// ever fires from the sweep job below, once the provider has actually had
+// time to answer themselves.
+const isProviderSyncAway = (settings) => {
+  if (!settings.enabled) return false;
+  if (settings.awayMode === "always") return true;
+  if (settings.awayMode === "manual") {
+    return Boolean(settings.manualAwayUntil) && Date.now() < new Date(settings.manualAwayUntil).getTime();
+  }
+  return false;
+};
+
 const snapshotProviderRate = (provider, locationType, durationKey) => {
   const rates = provider.profile?.rates?.[locationType] || {};
   return cleanText(rates[durationKey], 40) || null;
@@ -1358,6 +1452,81 @@ const hasConflictingBooking = (bookings, providerId, scheduledForIso, durationMi
   });
 };
 
+// Shared booking-creation logic, used by the human POST /api/bookings route
+// and by the AI auto-reply path (see "AI messaging & auto-reply" section
+// below). Behaviour is identical to the original inline implementation EXCEPT
+// for the `origin` field it stamps on the record and the extra safety rule
+// that an AI-originated booking is always REQUESTED — never instant-booked or
+// auto-confirmed — regardless of the provider's own instant-book setting, so
+// an automated conversation can never commit a provider to a job without them
+// actively confirming it. A human client submitting the exact same details
+// through the normal booking form is unaffected and keeps instant-book as-is.
+const createBookingRecord = ({ provider, clientId, locationType, durationKey, scheduledFor, instantBookRequested, origin = "client" }) =>
+  bookingsQueue(() => {
+    const bookings = readBookings();
+    const durationMinutes = BOOKING_DURATIONS[durationKey];
+    const scheduledForIso = scheduledFor.toISOString();
+
+    if (hasConflictingBooking(bookings, provider.id, scheduledForIso, durationMinutes)) {
+      return { conflict: true };
+    }
+
+    const settings = bookingSettingsView(provider.bookingSettings);
+    const rateSnapshot = snapshotProviderRate(provider, locationType, durationKey);
+    const durationLabel = durationKey === "oneHour" ? "1 hour" : durationKey === "twoHours" ? "2 hour" : "Overnight";
+
+    let useInstantBook;
+    if (origin === "ai_assistant") {
+      useInstantBook = false; // always a request the provider confirms themselves — see note above
+    } else if (settings.acceptsInstantBook && settings.acceptsRequestToBook) {
+      useInstantBook = instantBookRequested !== false;
+    } else {
+      useInstantBook = settings.acceptsInstantBook;
+    }
+
+    const depositRequired = settings.depositRequired === true;
+    const initialStatus = useInstantBook
+      ? (depositRequired ? "AWAITING_DEPOSIT" : "CONFIRMED")
+      : "REQUESTED";
+
+    const now = new Date().toISOString();
+    const booking = {
+      id: `bkg_${crypto.randomUUID()}`,
+      providerId: provider.id,
+      clientId,
+      status: initialStatus,
+      statusHistory: [{ status: initialStatus, at: now, by: origin === "ai_assistant" ? "ai_assistant" : clientId }],
+      origin,
+      service: {
+        name: `${durationLabel} session`,
+        durationMinutes,
+        rateSnapshot,
+        currency: "AUD"
+      },
+      location: { type: locationType, addressShared: false, addressSharedAt: null },
+      deposit: {
+        required: depositRequired,
+        amount: settings.depositAmount,
+        status: depositRequired ? "pending" : "not_required",
+        paidAt: null
+      },
+      scheduledFor: scheduledForIso,
+      checkIn: {
+        windowOpensAt: new Date(scheduledFor.getTime() - CHECKIN_WINDOW_BEFORE_MS).toISOString(),
+        providerCheckedInAt: null,
+        clientCheckedInAt: null
+      },
+      cancellation: { cancelledBy: null, reason: null, cancelledAt: null },
+      dispute: { isDisputed: false, raisedBy: null, reason: null, resolvedAt: null },
+      createdAt: now,
+      updatedAt: now
+    };
+
+    bookings.push(booking);
+    writeBookings(bookings);
+    return { booking };
+  });
+
 const appendStatusHistory = (booking, status, by) => {
   booking.status = status;
   booking.statusHistory.push({ status, at: new Date().toISOString(), by });
@@ -1368,6 +1537,13 @@ const actorRoleForBooking = (booking, user) => {
   if (!user) return null;
   if (user.id === booking.clientId) return "client";
   if (user.id === booking.providerId) return "provider";
+  return null;
+};
+
+const conversationParticipantRole = (conversation, user) => {
+  if (!user) return null;
+  if (user.id === conversation.clientId) return "client";
+  if (user.id === conversation.providerId) return "provider";
   return null;
 };
 
@@ -2318,66 +2494,13 @@ if (pathname === "/api/bookings" && request.method === "POST") {
     return json(response, 403, { error: "This provider isn't accepting requests from your account." });
   }
 
-  const settings = bookingSettingsView(provider.bookingSettings);
-  const durationMinutes = BOOKING_DURATIONS[durationKey];
-  const rateSnapshot = snapshotProviderRate(provider, locationType, durationKey);
-  const durationLabel = durationKey === "oneHour" ? "1 hour" : durationKey === "twoHours" ? "2 hour" : "Overnight";
-
-  const result = await bookingsQueue(() => {
-    const bookings = readBookings();
-    if (hasConflictingBooking(bookings, providerId, scheduledFor.toISOString(), durationMinutes)) {
-      return { conflict: true };
-    }
-
-    // Instant-book is shown as the default when a provider offers both modes
-    // (spec §1.7) — the client can still explicitly ask for request-to-book instead.
-    let useInstantBook;
-    if (settings.acceptsInstantBook && settings.acceptsRequestToBook) {
-      useInstantBook = body.instantBook !== false;
-    } else {
-      useInstantBook = settings.acceptsInstantBook;
-    }
-
-    const depositRequired = settings.depositRequired === true;
-    const initialStatus = useInstantBook
-      ? (depositRequired ? "AWAITING_DEPOSIT" : "CONFIRMED")
-      : "REQUESTED";
-
-    const now = new Date().toISOString();
-    const booking = {
-      id: `bkg_${crypto.randomUUID()}`,
-      providerId,
-      clientId: client.id,
-      status: initialStatus,
-      statusHistory: [{ status: initialStatus, at: now, by: client.id }],
-      service: {
-        name: `${durationLabel} session`,
-        durationMinutes,
-        rateSnapshot,
-        currency: "AUD"
-      },
-      location: { type: locationType, addressShared: false, addressSharedAt: null },
-      deposit: {
-        required: depositRequired,
-        amount: settings.depositAmount,
-        status: depositRequired ? "pending" : "not_required",
-        paidAt: null
-      },
-      scheduledFor: scheduledFor.toISOString(),
-      checkIn: {
-        windowOpensAt: new Date(scheduledFor.getTime() - CHECKIN_WINDOW_BEFORE_MS).toISOString(),
-        providerCheckedInAt: null,
-        clientCheckedInAt: null
-      },
-      cancellation: { cancelledBy: null, reason: null, cancelledAt: null },
-      dispute: { isDisputed: false, raisedBy: null, reason: null, resolvedAt: null },
-      createdAt: now,
-      updatedAt: now
-    };
-
-    bookings.push(booking);
-    writeBookings(bookings);
-    return { booking };
+  const result = await createBookingRecord({
+    provider,
+    clientId: client.id,
+    locationType,
+    durationKey,
+    scheduledFor,
+    instantBookRequested: body.instantBook
   });
 
   if (result.conflict) return json(response, 409, { error: "That time overlaps another booking for this provider." });
@@ -2610,6 +2733,437 @@ if (bookingSettingsMatch && request.method === "PATCH") {
 
   if (saved.notFound) return json(response, 404, { error: "Account not found." });
   return json(response, 200, { message: "Booking settings saved.", bookingSettings: saved.bookingSettings });
+}
+
+// ---------------------------------------------------------------------------
+// Messaging + AI auto-reply assistant
+//
+// Root-cause note: chat.html/chat.js previously had no server-side backing at
+// all for direct provider<->client messages — conversations only ever lived
+// in the browser's localStorage, so nothing a client sent ever reached the
+// provider's account, on any device, while they were away. That's the actual
+// problem behind "I lose clients overnight" — not a missing AI, a missing
+// inbox. This section adds the real inbox first (conversations.json /
+// messages.json, same atomic-write + serial-queue discipline as bookings),
+// then layers the opt-in AI assistant on top of it.
+//
+// AI scope for this version: the assistant answers questions grounded in the
+// provider's own saved rates/settings/house-rules, and gathers scheduling
+// details in conversation — but it does NOT create a booking directly from
+// free text. A client is guided to submit the normal /api/bookings request
+// once details are agreed, which still goes through every existing check
+// (deposits, conflicts, the 24h response window, provider confirmation).
+// Auto-creating a booking straight out of an AI-parsed chat message was
+// deliberately left out: free-text extraction is exactly the kind of
+// unreliable step that should not silently create a commitment on a
+// provider's calendar. That's a natural "phase 2" once this inbox has real
+// usage data to validate against, not a first-version feature.
+// ---------------------------------------------------------------------------
+
+const AI_CONTEXT_MESSAGE_LIMIT = 12;
+
+// Claims a conversation's next AI turn, respecting the provider's own
+// maxAiTurnsPerConversation safety valve. Goes through conversationsQueue so
+// two near-simultaneous client messages can never both think they're turn #6.
+const claimAutoReplyTurn = (conversationId, maxTurns) =>
+  conversationsQueue(() => {
+    const conversations = readConversations();
+    const conversation = conversations.find((c) => c.id === conversationId);
+    if (!conversation) return { skip: true };
+    if ((conversation.aiTurnCount || 0) >= maxTurns) {
+      if (!conversation.needsProviderAttention) {
+        conversation.needsProviderAttention = true;
+        conversation.updatedAt = new Date().toISOString();
+        writeConversations(conversations);
+      }
+      return { skip: true };
+    }
+    return { conversation };
+  });
+
+// Calls the AI, then either sends its reply immediately (mode "auto_send") or
+// holds it for the provider to approve first (mode "draft"). A failed/
+// unconfigured AI call is logged and otherwise silent — the conversation just
+// sits as a normal unanswered message, same as if auto-reply were off.
+const performAutoReply = async ({ conversation, provider, settings }) => {
+  const history = readMessages()
+    .filter((m) => m.conversationId === conversation.id)
+    .slice(-AI_CONTEXT_MESSAGE_LIMIT);
+
+  const result = await aiAutoReply.generateReply({
+    provider,
+    settings: { bookingSettings: bookingSettingsView(provider.bookingSettings), autoReplySettings: settings },
+    messages: history
+  });
+
+  if (!result.ok) {
+    if (result.reason === "provider_error") console.error("[ai-autoreply]", result.detail);
+    return null;
+  }
+
+  const now = new Date().toISOString();
+
+  if (settings.mode === "auto_send") {
+    const sentMessage = {
+      id: `msg_${crypto.randomUUID()}`,
+      conversationId: conversation.id,
+      senderId: provider.id,
+      senderRole: "ai_assistant",
+      body: result.replyText,
+      aiGenerated: true,
+      createdAt: now
+    };
+    await messagesQueue(() => {
+      const messages = readMessages();
+      messages.push(sentMessage);
+      writeMessages(messages);
+    });
+    await conversationsQueue(() => {
+      const conversations = readConversations();
+      const target = conversations.find((c) => c.id === conversation.id);
+      if (!target) return;
+      target.aiTurnCount = (target.aiTurnCount || 0) + 1;
+      target.lastMessageAt = now;
+      target.clientUnreadCount = (target.clientUnreadCount || 0) + 1;
+      target.updatedAt = now;
+      writeConversations(conversations);
+    });
+    return { sentMessage };
+  }
+
+  await conversationsQueue(() => {
+    const conversations = readConversations();
+    const target = conversations.find((c) => c.id === conversation.id);
+    if (!target) return;
+    target.pendingAiDraft = { id: `draft_${crypto.randomUUID()}`, body: result.replyText, createdAt: now };
+    target.updatedAt = now;
+    writeConversations(conversations);
+  });
+  return { drafted: true };
+};
+
+// Synchronous entry point — called right after a client message is saved, for
+// the "always" and "manual" away modes. "delayed" mode is intentionally not
+// handled here; it only fires from runAutoReplySweep below, once the
+// provider has actually had the configured window to reply themselves.
+const maybeTriggerAutoReply = async ({ conversationId, providerId }) => {
+  const provider = readUsers().find((u) => u.id === providerId);
+  if (!provider) return null;
+  const settings = autoReplySettingsView(provider.autoReplySettings);
+  if (!isProviderSyncAway(settings)) return null;
+
+  const claim = await claimAutoReplyTurn(conversationId, settings.maxAiTurnsPerConversation);
+  if (claim.skip || !claim.conversation) return null;
+  return performAutoReply({ conversation: claim.conversation, provider, settings });
+};
+
+if (pathname === "/api/conversations" && request.method === "GET") {
+  const user = requireSession(request);
+  if (!user) return json(response, 401, { error: "Sign in to view messages." });
+  if (user.role !== "client" && user.role !== "provider") {
+    return json(response, 403, { error: "Only client or provider accounts have conversations." });
+  }
+
+  const idField = user.role === "provider" ? "providerId" : "clientId";
+  const users = readUsers();
+  const allMessages = readMessages();
+
+  const conversations = readConversations()
+    .filter((c) => c[idField] === user.id)
+    .sort((a, b) => new Date(b.lastMessageAt || b.updatedAt) - new Date(a.lastMessageAt || a.updatedAt))
+    .map((c) => {
+      const otherId = user.role === "provider" ? c.clientId : c.providerId;
+      const otherUser = users.find((u) => u.id === otherId);
+      const conversationMessages = allMessages.filter((m) => m.conversationId === c.id);
+      const lastMessage = conversationMessages[conversationMessages.length - 1] || null;
+
+      return {
+        id: c.id,
+        providerId: c.providerId,
+        clientId: c.clientId,
+        otherPartyLabel: user.role === "provider"
+          ? (otherUser?.clientId || "Client")
+          : (otherUser?.settings?.displayName || otherUser?.workingName || "Provider"),
+        lastMessage: lastMessage
+          ? { body: lastMessage.body, senderRole: lastMessage.senderRole, createdAt: lastMessage.createdAt }
+          : null,
+        unreadCount: user.role === "provider" ? (c.providerUnreadCount || 0) : (c.clientUnreadCount || 0),
+        needsProviderAttention: user.role === "provider" ? Boolean(c.needsProviderAttention) : undefined,
+        hasPendingAiDraft: user.role === "provider" ? Boolean(c.pendingAiDraft) : undefined,
+        updatedAt: c.updatedAt
+      };
+    });
+
+  return json(response, 200, { conversations });
+}
+
+if (pathname === "/api/conversations" && request.method === "POST") {
+  const client = requireSession(request);
+  if (!client) return json(response, 401, { error: "Sign in to start a conversation." });
+  if (client.role !== "client") return json(response, 403, { error: "Only client accounts can start a conversation." });
+
+  if (!rateLimit(messageRateLimits, `start:${client.id}`, 20, 60 * 60 * 1000)) {
+    return json(response, 429, { error: "Too many new conversations. Wait before trying again." });
+  }
+
+  const body = await readJsonBody(request);
+  const providerId = String(body.providerId || "");
+  if (!providerId) return json(response, 400, { error: "Choose a provider." });
+
+  const provider = readUsers().find((u) => u.id === providerId && u.role === "provider" && !u.deactivatedAt);
+  if (!provider) return json(response, 404, { error: "Provider not found." });
+
+  const existingNote = readClientNotes().find((n) => n.providerId === providerId && n.clientId === client.id);
+  if (existingNote?.blocked) {
+    return json(response, 403, { error: "This provider isn't accepting messages from your account." });
+  }
+
+  const conversation = await conversationsQueue(() => {
+    const conversations = readConversations();
+    let conversation = conversations.find((c) => c.providerId === providerId && c.clientId === client.id);
+    if (!conversation) {
+      const now = new Date().toISOString();
+      conversation = {
+        id: `conv_${crypto.randomUUID()}`,
+        providerId,
+        clientId: client.id,
+        aiTurnCount: 0,
+        needsProviderAttention: false,
+        pendingAiDraft: null,
+        providerUnreadCount: 0,
+        clientUnreadCount: 0,
+        createdAt: now,
+        updatedAt: now,
+        lastMessageAt: null
+      };
+      conversations.push(conversation);
+      writeConversations(conversations);
+    }
+    return conversation;
+  });
+
+  return json(response, 201, { conversation });
+}
+
+const conversationMessagesMatch = pathname.match(/^\/api\/conversations\/([^/]+)\/messages$/);
+if (conversationMessagesMatch && request.method === "GET") {
+  const user = requireSession(request);
+  if (!user) return json(response, 401, { error: "Sign in to view messages." });
+
+  const conversation = readConversations().find((c) => c.id === conversationMessagesMatch[1]);
+  if (!conversation) return json(response, 404, { error: "Conversation not found." });
+  const role = conversationParticipantRole(conversation, user);
+  if (!role) return json(response, 403, { error: "You don't have access to this conversation." });
+
+  await conversationsQueue(() => {
+    const conversations = readConversations();
+    const target = conversations.find((c) => c.id === conversation.id);
+    if (!target) return;
+    if (role === "provider") target.providerUnreadCount = 0;
+    else target.clientUnreadCount = 0;
+    writeConversations(conversations);
+  });
+
+  const messages = readMessages()
+    .filter((m) => m.conversationId === conversation.id)
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+  return json(response, 200, {
+    messages,
+    pendingAiDraft: role === "provider" ? conversation.pendingAiDraft || null : null,
+    needsProviderAttention: role === "provider" ? Boolean(conversation.needsProviderAttention) : undefined
+  });
+}
+
+if (conversationMessagesMatch && request.method === "POST") {
+  const user = requireSession(request);
+  if (!user) return json(response, 401, { error: "Sign in to send a message." });
+
+  const conversation = readConversations().find((c) => c.id === conversationMessagesMatch[1]);
+  if (!conversation) return json(response, 404, { error: "Conversation not found." });
+  const role = conversationParticipantRole(conversation, user);
+  if (!role) return json(response, 403, { error: "You don't have access to this conversation." });
+
+  if (!rateLimit(messageRateLimits, `send:${user.id}`, 60, 60 * 60 * 1000)) {
+    return json(response, 429, { error: "Too many messages. Wait before trying again." });
+  }
+
+  const body = await readJsonBody(request);
+  const text = cleanText(body.text, 2000);
+  if (!text) return json(response, 400, { error: "Message can't be empty." });
+
+  const now = new Date().toISOString();
+  const message = {
+    id: `msg_${crypto.randomUUID()}`,
+    conversationId: conversation.id,
+    senderId: user.id,
+    senderRole: role,
+    body: text,
+    aiGenerated: false,
+    createdAt: now
+  };
+
+  await messagesQueue(() => {
+    const messages = readMessages();
+    messages.push(message);
+    writeMessages(messages);
+  });
+
+  await conversationsQueue(() => {
+    const conversations = readConversations();
+    const target = conversations.find((c) => c.id === conversation.id);
+    if (!target) return;
+    target.lastMessageAt = now;
+    target.updatedAt = now;
+    if (role === "client") {
+      target.providerUnreadCount = (target.providerUnreadCount || 0) + 1;
+    } else {
+      // The provider replying in person takes the conversation back from the
+      // assistant: reset its turn count, clear any stale draft and flag.
+      target.clientUnreadCount = (target.clientUnreadCount || 0) + 1;
+      target.aiTurnCount = 0;
+      target.needsProviderAttention = false;
+      target.pendingAiDraft = null;
+    }
+    writeConversations(conversations);
+  });
+
+  const aiOutcome = role === "client"
+    ? await maybeTriggerAutoReply({ conversationId: conversation.id, providerId: conversation.providerId }).catch((error) => {
+        console.error("[ai-autoreply] unhandled error", error);
+        return null;
+      })
+    : null;
+
+  return json(response, 201, { message, aiReply: aiOutcome?.sentMessage || null });
+}
+
+const aiDraftMatch = pathname.match(/^\/api\/conversations\/([^/]+)\/ai-draft\/(approve|discard)$/);
+if (aiDraftMatch && request.method === "POST") {
+  const user = requireSession(request);
+  if (!user) return json(response, 401, { error: "Sign in." });
+  if (user.role !== "provider") return json(response, 403, { error: "Only the provider can manage their assistant's drafts." });
+
+  const action = aiDraftMatch[2];
+  const body = action === "approve" ? await readJsonBody(request) : {};
+  const editedText = action === "approve" ? cleanText(body.text, 2000) : "";
+
+  const claimed = await conversationsQueue(() => {
+    const conversations = readConversations();
+    const conversation = conversations.find((c) => c.id === aiDraftMatch[1] && c.providerId === user.id);
+    if (!conversation) return { notFound: true };
+    if (!conversation.pendingAiDraft) return { noDraft: true };
+    const draft = conversation.pendingAiDraft;
+    conversation.pendingAiDraft = null;
+    conversation.updatedAt = new Date().toISOString();
+    writeConversations(conversations);
+    return { draft };
+  });
+
+  if (claimed.notFound) return json(response, 404, { error: "Conversation not found." });
+  if (claimed.noDraft) return json(response, 404, { error: "No draft waiting on this conversation." });
+
+  if (action === "discard") {
+    return json(response, 200, { message: "Draft discarded." });
+  }
+
+  const now = new Date().toISOString();
+  const finalText = editedText || claimed.draft.body;
+  const sentMessage = {
+    id: `msg_${crypto.randomUUID()}`,
+    conversationId: aiDraftMatch[1],
+    senderId: user.id,
+    senderRole: "ai_assistant",
+    body: finalText,
+    aiGenerated: true,
+    approvedByProvider: true,
+    createdAt: now
+  };
+
+  await messagesQueue(() => {
+    const messages = readMessages();
+    messages.push(sentMessage);
+    writeMessages(messages);
+  });
+  await conversationsQueue(() => {
+    const conversations = readConversations();
+    const conversation = conversations.find((c) => c.id === aiDraftMatch[1]);
+    if (!conversation) return;
+    conversation.aiTurnCount = (conversation.aiTurnCount || 0) + 1;
+    conversation.clientUnreadCount = (conversation.clientUnreadCount || 0) + 1;
+    conversation.lastMessageAt = now;
+    conversation.updatedAt = now;
+    writeConversations(conversations);
+  });
+
+  return json(response, 200, { message: "Reply sent.", sentMessage });
+}
+
+const autoReplySettingsMatch = pathname.match(/^\/api\/providers\/([^/]+)\/autoreply-settings$/);
+if (autoReplySettingsMatch && request.method === "GET") {
+  const provider = readUsers().find((u) => u.id === autoReplySettingsMatch[1] && u.role === "provider" && !u.deactivatedAt);
+  if (!provider) return json(response, 404, { error: "Provider not found." });
+  return json(response, 200, {
+    autoReplySettings: autoReplySettingsView(provider.autoReplySettings),
+    aiConfigured: aiAutoReply.isConfigured()
+  });
+}
+
+if (autoReplySettingsMatch && request.method === "PATCH") {
+  const authenticatedUser = requireSession(request);
+  if (!authenticatedUser) return json(response, 401, { error: "Sign in to update your assistant settings." });
+  if (authenticatedUser.id !== autoReplySettingsMatch[1] || authenticatedUser.role !== "provider") {
+    return json(response, 403, { error: "Only a provider can update their own assistant settings." });
+  }
+
+  const body = await readJsonBody(request);
+  const saved = await usersQueue(() => {
+    const users = readUsers();
+    const user = users.find((item) => item.id === authenticatedUser.id);
+    if (!user) return { notFound: true };
+    user.autoReplySettings = cleanAutoReplySettingsPatch(body, user.autoReplySettings);
+    writeUsers(users);
+    return { autoReplySettings: user.autoReplySettings };
+  });
+
+  if (saved.notFound) return json(response, 404, { error: "Account not found." });
+  return json(response, 200, { message: "Assistant settings saved.", autoReplySettings: saved.autoReplySettings });
+}
+
+// One-tap "going to sleep" / "I'm back" control, separate from the full
+// settings form so the dashboard can offer a single button for the common
+// case instead of making the provider open settings every night.
+const autoReplyAwayMatch = pathname.match(/^\/api\/providers\/([^/]+)\/autoreply-settings\/away$/);
+if (autoReplyAwayMatch && request.method === "POST") {
+  const authenticatedUser = requireSession(request);
+  if (!authenticatedUser) return json(response, 401, { error: "Sign in." });
+  if (authenticatedUser.id !== autoReplyAwayMatch[1] || authenticatedUser.role !== "provider") {
+    return json(response, 403, { error: "Only a provider can set their own away status." });
+  }
+
+  const body = await readJsonBody(request);
+  const clear = body.clear === true;
+  const minutes = Math.min(1440, Math.max(5, Number.isFinite(Number(body.minutes)) ? Number(body.minutes) : 480));
+
+  const saved = await usersQueue(() => {
+    const users = readUsers();
+    const user = users.find((item) => item.id === authenticatedUser.id);
+    if (!user) return { notFound: true };
+    const current = autoReplySettingsView(user.autoReplySettings);
+    user.autoReplySettings = autoReplySettingsView({
+      ...current,
+      awayMode: "manual",
+      manualAwayUntil: clear ? null : new Date(Date.now() + minutes * 60 * 1000).toISOString()
+    });
+    writeUsers(users);
+    return { autoReplySettings: user.autoReplySettings };
+  });
+
+  if (saved.notFound) return json(response, 404, { error: "Account not found." });
+  return json(response, 200, {
+    message: clear ? "You're marked back online." : "Away status set — your assistant will handle new messages.",
+    autoReplySettings: saved.autoReplySettings
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -3992,6 +4546,63 @@ const runBookingSweep = async () => {
 
 setInterval(runBookingSweep, SWEEP_INTERVAL_MS);
 runBookingSweep();
+
+// ---------------------------------------------------------------------------
+// Auto-reply sweep — handles the "delayed" away mode: a provider who hasn't
+// turned auto-reply fully on, but wants it to pick up a client message only
+// after they've genuinely had a chance to answer themselves first. Checked
+// far more often than the booking sweep since "the client is waiting right
+// now" is much more time-sensitive than a booking status transition.
+// ---------------------------------------------------------------------------
+
+const AUTOREPLY_SWEEP_INTERVAL_MS = 2 * 60 * 1000;
+
+const runAutoReplySweep = async () => {
+  let candidates = [];
+  try {
+    const conversations = readConversations();
+    const messages = readMessages();
+    const users = readUsers();
+    const now = Date.now();
+
+    for (const conversation of conversations) {
+      const provider = users.find((u) => u.id === conversation.providerId);
+      if (!provider) continue;
+      const settings = autoReplySettingsView(provider.autoReplySettings);
+      if (!settings.enabled || settings.awayMode !== "delayed") continue;
+      if ((conversation.aiTurnCount || 0) >= settings.maxAiTurnsPerConversation) continue;
+
+      const convMessages = messages.filter((m) => m.conversationId === conversation.id);
+      const last = convMessages[convMessages.length - 1];
+      if (!last || last.senderRole !== "client") continue;
+
+      const waitedMs = now - new Date(last.createdAt).getTime();
+      if (waitedMs < settings.respondWithinMinutes * 60 * 1000) continue;
+
+      candidates.push(conversation.id);
+    }
+  } catch (error) {
+    console.error("[autoreply-sweep]", error);
+    return;
+  }
+
+  for (const conversationId of candidates) {
+    try {
+      const conversation = readConversations().find((c) => c.id === conversationId);
+      const provider = conversation ? readUsers().find((u) => u.id === conversation.providerId) : null;
+      if (!conversation || !provider) continue;
+      const settings = autoReplySettingsView(provider.autoReplySettings);
+      const claim = await claimAutoReplyTurn(conversationId, settings.maxAiTurnsPerConversation);
+      if (claim.skip || !claim.conversation) continue;
+      await performAutoReply({ conversation: claim.conversation, provider, settings });
+    } catch (error) {
+      console.error("[autoreply-sweep] trigger failed", error);
+    }
+  }
+};
+
+setInterval(runAutoReplySweep, AUTOREPLY_SWEEP_INTERVAL_MS);
+runAutoReplySweep();
 
 const server = http.createServer((request, response) => {
   const url = new URL(request.url, `http://${request.headers.host || `${host}:${port}`}`);

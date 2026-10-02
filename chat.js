@@ -123,6 +123,7 @@ if (chatShell) {
 
   let state = loadState();
   let activeFilter = "all";
+  let currentUserRole = "guest";
 
   const escapeHtml = (value) =>
     String(value)

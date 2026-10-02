@@ -18,7 +18,7 @@ Node ≥ 18 required. No build or compile step — changes to HTML/CSS/JS are li
 |---|---|
 | Frontend | Plain HTML pages + vanilla JS. No bundler, no framework. |
 | Backend | Single-file custom HTTP server: [`server.js`](server.js) |
-| Data | JSON flat files in [`data/`](data/) — `users.json`, `memberships.json`, `subscriptions.json`, `transactions.json`, `reports.json` |
+| Data | JSON flat files in [`data/`](data/) — `users.json`, `memberships.json`, `subscriptions.json`, `transactions.json`, `reports.json`, `bookings.json`, `conversations.json`, `messages.json` |
 | Auth | Session tokens in a server-side in-memory `Map`. Cookie: `temptx_session`. |
 | PWA | [`pwa.js`](pwa.js) + [`sw.js`](sw.js) + [`manifest.webmanifest`](manifest.webmanifest) |
 

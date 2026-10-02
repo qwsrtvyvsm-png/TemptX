@@ -15,7 +15,7 @@
   </script>
   <link rel="stylesheet" href="style.css?v=20260923-02" />
   <link rel="stylesheet" href="creator-dashboard.css?v=20260813-01" />
-  <link rel="stylesheet" href="provider-dashboard.css?v=20260803-01" />
+  <link rel="stylesheet" href="provider-dashboard.css?v=20261003-01" />
   <link rel="stylesheet" href="sidebar.css?v=20260819-03" />
 </head>
 
@@ -73,6 +73,7 @@
       <div class="provider-tabs" role="tablist" aria-label="Provider dashboard sections">
         <button type="button" role="tab" id="bookingsTabButton" aria-controls="bookingsTab" aria-selected="true" class="is-active" data-tab="bookings">Bookings</button>
         <button type="button" role="tab" id="clientsTabButton" aria-controls="clientsTab" aria-selected="false" data-tab="clients">Clients</button>
+        <button type="button" role="tab" id="assistantTabButton" aria-controls="assistantTab" aria-selected="false" data-tab="assistant">Messages &amp; Assistant</button>
       </div>
 
       <section class="dashboard-panel provider-tab-panel" id="bookingsTab" role="tabpanel" aria-labelledby="bookingsTabButton">
@@ -113,13 +114,86 @@
         <div id="clientsList" class="client-list"></div>
         <p class="dashboard-empty-state" id="clientsEmptyState" hidden>No clients yet — they'll appear here once someone books you.</p>
       </section>
+
+      <section class="dashboard-panel provider-tab-panel" id="assistantTab" role="tabpanel" aria-labelledby="assistantTabButton" hidden>
+        <div class="dashboard-panel-heading">
+          <div>
+            <p class="eyebrow">Messages &amp; Assistant</p>
+            <h2>Reply to clients, or let your assistant hold the fort</h2>
+          </div>
+          <a class="outline-btn" href="chat.html">Open messages</a>
+        </div>
+
+        <div class="assistant-away-row">
+          <p id="assistantAwayStatus">Checking status…</p>
+          <div class="assistant-away-actions">
+            <button type="button" class="outline-btn" id="markAwayButton">Going to sleep (8 hrs)</button>
+            <button type="button" class="outline-btn" id="markBackButton" hidden>I'm back</button>
+          </div>
+        </div>
+
+        <p class="dashboard-empty-state" id="assistantNotConfiguredNote" hidden>
+          The AI assistant isn't connected on this server yet (no AI_AUTOREPLY_PROVIDER configured) — your settings below will be saved, but no automated replies will be sent until it is.
+        </p>
+
+        <form id="assistantSettingsForm" class="assistant-settings-form">
+          <label class="assistant-toggle">
+            <input type="checkbox" id="assistantEnabled" />
+            Turn on the messaging assistant
+          </label>
+
+          <div class="assistant-settings-grid">
+            <label>
+              When a client messages, reply by
+              <select id="assistantMode">
+                <option value="draft">Drafting a reply for me to approve</option>
+                <option value="auto_send">Sending automatically</option>
+              </select>
+            </label>
+
+            <label>
+              Only step in when I'm
+              <select id="assistantAwayMode">
+                <option value="manual">Marked away (using the button above)</option>
+                <option value="delayed">Slow to reply myself</option>
+                <option value="always">Away at all times (always on)</option>
+              </select>
+            </label>
+
+            <label id="respondWithinRow">
+              Wait this many minutes before stepping in
+              <input type="number" id="assistantRespondWithin" min="5" max="180" step="5" />
+            </label>
+
+            <label>
+              Hand back to me after this many assistant replies in a row
+              <input type="number" id="assistantMaxTurns" min="1" max="20" step="1" />
+            </label>
+          </div>
+
+          <label class="assistant-house-rules">
+            House rules for your assistant (boundaries, screening requirements, anything it should never say)
+            <textarea id="assistantHouseRules" maxlength="800" rows="4" placeholder="e.g. Always ask for a screening photo before confirming outcall. Never discuss anything beyond scheduling."></textarea>
+          </label>
+
+          <button type="submit" class="outline-btn">Save assistant settings</button>
+          <span id="assistantSaveStatus" role="status"></span>
+        </form>
+
+        <div class="assistant-needs-you">
+          <h3>Needs your reply</h3>
+          <div id="assistantQueueList"></div>
+          <p class="dashboard-empty-state" id="assistantQueueEmptyState" hidden>Nothing waiting on you right now.</p>
+        </div>
+      </section>
     </div>
+
   </main>
     </div>
   </div>
 
   <script src="script.js?v=20260824-02"></script>
   <script src="sidebar.js?v=20260819-03"></script>
-  <script src="provider-dashboard.js?v=20260819-01"></script>
+  <script src="provider-dashboard.js?v=20261003-01"></script>
 </body>
 </html>

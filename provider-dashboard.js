@@ -5,8 +5,10 @@ if (dashboardContent) {
   const viewPublicProfileLink = document.querySelector("#viewPublicProfileLink");
   const bookingsTabButton = document.querySelector("#bookingsTabButton");
   const clientsTabButton = document.querySelector("#clientsTabButton");
+  const assistantTabButton = document.querySelector("#assistantTabButton");
   const bookingsTab = document.querySelector("#bookingsTab");
   const clientsTab = document.querySelector("#clientsTab");
+  const assistantTab = document.querySelector("#assistantTab");
   const pendingBanner = document.querySelector("#pendingBanner");
   const filterChips = document.querySelectorAll(".filter-chip");
   const bookingsList = document.querySelector("#bookingsList");
@@ -15,6 +17,21 @@ if (dashboardContent) {
   const crmUpsellNote = document.querySelector("#crmUpsellNote");
   const clientsList = document.querySelector("#clientsList");
   const clientsEmptyState = document.querySelector("#clientsEmptyState");
+  const assistantAwayStatus = document.querySelector("#assistantAwayStatus");
+  const markAwayButton = document.querySelector("#markAwayButton");
+  const markBackButton = document.querySelector("#markBackButton");
+  const assistantNotConfiguredNote = document.querySelector("#assistantNotConfiguredNote");
+  const assistantSettingsForm = document.querySelector("#assistantSettingsForm");
+  const assistantEnabled = document.querySelector("#assistantEnabled");
+  const assistantMode = document.querySelector("#assistantMode");
+  const assistantAwayMode = document.querySelector("#assistantAwayMode");
+  const assistantRespondWithin = document.querySelector("#assistantRespondWithin");
+  const respondWithinRow = document.querySelector("#respondWithinRow");
+  const assistantMaxTurns = document.querySelector("#assistantMaxTurns");
+  const assistantHouseRules = document.querySelector("#assistantHouseRules");
+  const assistantSaveStatus = document.querySelector("#assistantSaveStatus");
+  const assistantQueueList = document.querySelector("#assistantQueueList");
+  const assistantQueueEmptyState = document.querySelector("#assistantQueueEmptyState");
 
   const TERMINAL_STATUSES = new Set([
     "COMPLETED", "DISPUTE_WINDOW", "CLOSED", "NO_SHOW",
@@ -346,23 +363,160 @@ if (dashboardContent) {
     });
   });
 
+  // -------------------------------------------------------------------------
+  // Messages & Assistant tab
+  // -------------------------------------------------------------------------
+
+  const formatAwayUntil = (iso) =>
+    new Date(iso).toLocaleString("en-AU", { weekday: "short", hour: "numeric", minute: "2-digit" });
+
+  const renderAwayStatus = (settings) => {
+    const manuallyAway = settings.awayMode === "manual" && settings.manualAwayUntil && new Date(settings.manualAwayUntil) > new Date();
+    if (!settings.enabled) {
+      assistantAwayStatus.textContent = "Assistant is off — you'll need to answer every message yourself.";
+    } else if (settings.awayMode === "always") {
+      assistantAwayStatus.textContent = "Assistant is always on for new messages.";
+    } else if (manuallyAway) {
+      assistantAwayStatus.textContent = `Marked away until ${formatAwayUntil(settings.manualAwayUntil)} — your assistant is handling new messages.`;
+    } else if (settings.awayMode === "delayed") {
+      assistantAwayStatus.textContent = `Assistant steps in if you haven't replied within ${settings.respondWithinMinutes} minutes.`;
+    } else {
+      assistantAwayStatus.textContent = "You're marked as online — new messages wait for you.";
+    }
+    markAwayButton.hidden = settings.awayMode !== "manual" || manuallyAway;
+    markBackButton.hidden = !manuallyAway;
+  };
+
+  const applySettingsToForm = (settings) => {
+    assistantEnabled.checked = settings.enabled;
+    assistantMode.value = settings.mode;
+    assistantAwayMode.value = settings.awayMode;
+    assistantRespondWithin.value = settings.respondWithinMinutes;
+    assistantMaxTurns.value = settings.maxAiTurnsPerConversation;
+    assistantHouseRules.value = settings.houseRules;
+    respondWithinRow.hidden = settings.awayMode !== "delayed";
+    renderAwayStatus(settings);
+  };
+
+  const loadAssistantSettings = async () => {
+    const response = await fetch(`/api/providers/${encodeURIComponent(currentUser.id)}/autoreply-settings`);
+    if (!response.ok) return;
+    const result = await response.json();
+    assistantNotConfiguredNote.hidden = Boolean(result.aiConfigured);
+    applySettingsToForm(result.autoReplySettings);
+  };
+
+  assistantAwayMode.addEventListener("change", () => {
+    respondWithinRow.hidden = assistantAwayMode.value !== "delayed";
+  });
+
+  const setAway = async (payload) => {
+    const response = await fetch(`/api/providers/${encodeURIComponent(currentUser.id)}/autoreply-settings/away`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      window.alert(result.error || "Couldn't update your away status.");
+      return;
+    }
+    applySettingsToForm(result.autoReplySettings);
+  };
+
+  markAwayButton.addEventListener("click", () => setAway({ minutes: 480 }));
+  markBackButton.addEventListener("click", () => setAway({ clear: true }));
+
+  assistantSettingsForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    assistantSaveStatus.textContent = "Saving…";
+    try {
+      const response = await fetch(`/api/providers/${encodeURIComponent(currentUser.id)}/autoreply-settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          enabled: assistantEnabled.checked,
+          mode: assistantMode.value,
+          awayMode: assistantAwayMode.value,
+          respondWithinMinutes: Number(assistantRespondWithin.value),
+          maxAiTurnsPerConversation: Number(assistantMaxTurns.value),
+          houseRules: assistantHouseRules.value
+        })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Couldn't save assistant settings.");
+      applySettingsToForm(result.autoReplySettings);
+      assistantSaveStatus.textContent = "Saved.";
+    } catch (error) {
+      assistantSaveStatus.textContent = error.message || "Something went wrong.";
+    }
+    setTimeout(() => { assistantSaveStatus.textContent = ""; }, 4000);
+  });
+
+  const renderAssistantQueueItem = (conversation) => {
+    const card = document.createElement("article");
+    card.className = "assistant-queue-card";
+
+    const header = document.createElement("div");
+    header.className = "assistant-queue-card-header";
+    header.innerHTML = `<strong>${conversation.otherPartyLabel || "Client"}</strong>`;
+    card.appendChild(header);
+
+    if (conversation.hasPendingAiDraft) {
+      const note = document.createElement("p");
+      note.textContent = "Your assistant drafted a reply — review it in Messages to send or edit it.";
+      card.appendChild(note);
+    } else if (conversation.needsProviderAttention) {
+      const note = document.createElement("p");
+      note.textContent = "This conversation has gone back and forth with your assistant — it needs you personally now.";
+      card.appendChild(note);
+    }
+
+    const openLink = document.createElement("a");
+    openLink.className = "outline-btn";
+    openLink.href = `chat.html?conversation=${encodeURIComponent(conversation.id)}`;
+    openLink.textContent = "Open conversation";
+    card.appendChild(openLink);
+
+    return card;
+  };
+
+  const loadAssistantQueue = async () => {
+    const response = await fetch("/api/conversations");
+    if (!response.ok) return;
+    const result = await response.json();
+    const needsAttention = (result.conversations || []).filter((c) => c.hasPendingAiDraft || c.needsProviderAttention);
+
+    assistantQueueList.innerHTML = "";
+    needsAttention.forEach((conversation) => assistantQueueList.appendChild(renderAssistantQueueItem(conversation)));
+    assistantQueueEmptyState.hidden = needsAttention.length > 0;
+  };
+
   const switchTab = (tab) => {
-    const showBookings = tab === "bookings";
-    bookingsTab.hidden = !showBookings;
-    clientsTab.hidden = showBookings;
-    bookingsTabButton.classList.toggle("is-active", showBookings);
-    clientsTabButton.classList.toggle("is-active", !showBookings);
-    bookingsTabButton.setAttribute("aria-selected", String(showBookings));
-    clientsTabButton.setAttribute("aria-selected", String(!showBookings));
+    bookingsTab.hidden = tab !== "bookings";
+    clientsTab.hidden = tab !== "clients";
+    assistantTab.hidden = tab !== "assistant";
+    bookingsTabButton.classList.toggle("is-active", tab === "bookings");
+    clientsTabButton.classList.toggle("is-active", tab === "clients");
+    assistantTabButton.classList.toggle("is-active", tab === "assistant");
+    bookingsTabButton.setAttribute("aria-selected", String(tab === "bookings"));
+    clientsTabButton.setAttribute("aria-selected", String(tab === "clients"));
+    assistantTabButton.setAttribute("aria-selected", String(tab === "assistant"));
   };
 
   bookingsTabButton.addEventListener("click", () => switchTab("bookings"));
   clientsTabButton.addEventListener("click", () => switchTab("clients"));
+  assistantTabButton.addEventListener("click", () => {
+    switchTab("assistant");
+    loadAssistantQueue();
+  });
   clientSearchInput.addEventListener("input", renderClients);
 
   const syncTabFromHash = () => {
     if (window.location.hash === "#clientsTab") {
       switchTab("clients");
+    } else if (window.location.hash === "#assistantTab") {
+      switchTab("assistant");
     }
   };
 
@@ -382,7 +536,7 @@ if (dashboardContent) {
       viewPublicProfileLink.href = `profile.html?provider=${encodeURIComponent(currentUser.id)}`;
       viewPublicProfileLink.hidden = false;
 
-      await Promise.all([loadBookings(), loadClients()]);
+      await Promise.all([loadBookings(), loadClients(), loadAssistantSettings(), loadAssistantQueue()]);
     } catch {
       signedOutPanel.hidden = false;
       dashboardContent.hidden = true;
