@@ -11,7 +11,7 @@
     content="TEMPTX is Australia's adult network, built around safety, support, verification and genuine connection."
   />
 
-  <link rel="stylesheet" href="style.css?v=20260923-02" />
+  <link rel="stylesheet" href="style.css?v=20261011-01" />
 </head>
 
 <body class="cinematic-background temptx-home">
@@ -54,6 +54,7 @@
         <span class="nav-toggle-bar"></span>
       </button>
       <nav class="store-nav home-nav" id="siteNav" aria-label="Main navigation">
+      <a href="profile.html" class="tx-mobile-signin">Sign In</a>
       <a href="index.html" aria-current="page">Home</a>
       <a href="directory.html">Directory</a><a href="district.html">District</a>
       <a href="safety-hub.html">Support</a>
@@ -184,32 +185,40 @@
 
     <div class="home-footer-columns">
       <div class="home-footer-col">
-        <span class="home-footer-col-title">Support</span>
-        <a href="safety-hub.html">Safety Hub</a>
-        <a href="community-support.html">Community Support</a>
-        <a href="report.html?type=profile">Report a Profile</a>
+        <button type="button" class="home-footer-col-title" aria-expanded="false" aria-controls="footerSupport">Support</button>
+        <div class="home-footer-col-links" id="footerSupport">
+          <a href="safety-hub.html">Safety Hub</a>
+          <a href="community-support.html">Community Support</a>
+          <a href="report.html?type=profile">Report a Profile</a>
+        </div>
       </div>
 
       <div class="home-footer-col">
-        <span class="home-footer-col-title">Resources</span>
-        <a href="educational-hub.html">Educational Hub</a>
-        <a href="sex-work-resources.html">Sex Work Resources</a>
-        <a href="friendly-businesses.html">Friendly Businesses</a>
+        <button type="button" class="home-footer-col-title" aria-expanded="false" aria-controls="footerResources">Resources</button>
+        <div class="home-footer-col-links" id="footerResources">
+          <a href="educational-hub.html">Educational Hub</a>
+          <a href="sex-work-resources.html">Sex Work Resources</a>
+          <a href="friendly-businesses.html">Friendly Businesses</a>
+        </div>
       </div>
 
       <div class="home-footer-col">
-        <span class="home-footer-col-title">Community</span>
-        <a href="community-standards.html">Community Guidelines</a>
-        <a href="verification.html">Verification</a>
-        <a href="news.html">News &amp; Announcements</a>
+        <button type="button" class="home-footer-col-title" aria-expanded="false" aria-controls="footerCommunity">Community</button>
+        <div class="home-footer-col-links" id="footerCommunity">
+          <a href="community-standards.html">Community Guidelines</a>
+          <a href="verification.html">Verification</a>
+          <a href="news.html">News &amp; Announcements</a>
+        </div>
       </div>
 
       <div class="home-footer-col">
-        <span class="home-footer-col-title">Policies</span>
-        <a href="terms.html">Terms of Service</a>
-        <a href="privacy.html">Privacy Policy</a>
-        <a href="provider-standards.html">Provider Standards</a>
-        <a href="client-standards.html">Client Standards</a>
+        <button type="button" class="home-footer-col-title" aria-expanded="false" aria-controls="footerPolicies">Policies</button>
+        <div class="home-footer-col-links" id="footerPolicies">
+          <a href="terms.html">Terms of Service</a>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="provider-standards.html">Provider Standards</a>
+          <a href="client-standards.html">Client Standards</a>
+        </div>
       </div>
     </div>
 
@@ -224,5 +233,17 @@
   </footer>
 
   <script src="script.js?v=20260824-02"></script>
+  <script>
+    // Footer accordion — mobile only. On desktop the CSS keeps every
+    // .home-footer-col-links panel open regardless of aria-expanded, so
+    // this script has no visible effect above the 767px breakpoint.
+    document.querySelectorAll(".home-footer-col-title").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const open = btn.getAttribute("aria-expanded") === "true";
+        btn.setAttribute("aria-expanded", String(!open));
+        btn.closest(".home-footer-col").classList.toggle("is-open", !open);
+      });
+    });
+  </script>
 </body>
 </html>

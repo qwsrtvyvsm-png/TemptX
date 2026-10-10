@@ -14783,3 +14783,270 @@ body.nav-open {
     display: none !important;
   }
 }
+
+/* ══════════════════════════════════════════════════
+   MOBILE REFINEMENT — homepage header / hero / pillars /
+   footer accordion, ≤767px only. Appended last so it wins
+   the cascade over the rules above without editing them.
+   Desktop layout, copy and brand system are untouched —
+   every colour below is an existing custom property.
+   ══════════════════════════════════════════════════ */
+
+/* .home-footer-col-title is now a <button> (was a <span>) so the mobile
+   accordion below has something focusable/clickable to bind to. This
+   reset strips native button chrome at EVERY width, so screens above
+   767px render it exactly as before — a plain label, not a button. */
+.home-footer-col-title {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  font-family: inherit;
+  cursor: default;
+}
+
+.home-footer-col-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (max-width: 767px) {
+
+  /* ─── Header: compact, sticky, safe-area aware ─── */
+
+  .temptx-home .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 700;
+  }
+
+  .temptx-home .announcement {
+    padding: 6px 0;
+  }
+
+  .temptx-home .tx-banner-set {
+    font-size: 0.6rem;
+    gap: 10px;
+  }
+
+  .temptx-home .site-header-bar {
+    padding: max(10px, env(safe-area-inset-top, 0px)) 20px 10px;
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+  }
+
+  .temptx-home .site-header .site-header-bar .brand-mark {
+    font-size: 1.05rem;
+  }
+
+  /* Desktop "Sign In" + hover dropdown relies on :hover, which doesn't
+     work on touch — hide it here and surface a single Sign In link as
+     the first item in the hamburger nav instead (markup already in
+     index.html, hidden on desktop below). */
+  .temptx-home .site-header-bar .account-dropdown {
+    display: none;
+  }
+
+  .temptx-home .tx-join-btn {
+    padding: 13px 20px;
+    font-size: 0.7rem;
+  }
+
+  .temptx-home .site-header .site-header-bar .store-nav a.tx-mobile-signin {
+    color: var(--gold);
+    font-weight: 800;
+  }
+
+  /* ─── Hero: tighter spacing, readable over photo, full-width CTAs ─── */
+
+  .tx-hero-copy {
+    padding: 22px 20px 0;
+  }
+
+  .tx-hero-eyebrow {
+    margin-bottom: 10px;
+  }
+
+  .tx-hero h1 {
+    font-size: clamp(2.5rem, 11vw, 3.2rem);
+  }
+
+  /* Swap the left-to-right desktop gradient for a top-to-bottom one so
+     the stacked mobile layout keeps the headline/copy area solid and
+     only lets the photo show through lower down, behind .tx-hero-art. */
+  .tx-hero::before {
+    background-image:
+      linear-gradient(180deg,
+        #0a0a0a 0%,
+        #0a0a0a 48%,
+        rgba(10, 10, 10, 0.82) 58%,
+        rgba(10, 10, 10, 0.28) 70%,
+        transparent 80%,
+        rgba(10, 10, 10, 0.6) 93%,
+        #0a0a0a 100%),
+      url("assets/temptx-hero-photo.jpg");
+    background-position: center 15%;
+  }
+
+  .tx-hero-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+    margin-top: 20px;
+    padding-top: 18px;
+    padding-bottom: 28px;
+  }
+
+  .tx-hero-mission {
+    max-width: none;
+    font-size: 1rem;
+    color: var(--cream);
+  }
+
+  .tx-hero-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .tx-btn-solid,
+  .tx-btn-outline {
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+    padding: 16px 24px;
+    min-height: 44px;
+  }
+
+  .tx-hero-art {
+    min-height: 200px;
+  }
+
+  /* ─── "Why TEMPTX?" pillars: single column, readable body copy ─── */
+
+  .tx-pillars {
+    grid-template-columns: 1fr;
+  }
+
+  .tx-pillar {
+    border-right: none;
+    padding: 26px 20px;
+  }
+
+  .tx-pillar p {
+    font-size: 1rem;
+    color: var(--cream);
+  }
+
+  .tx-section {
+    padding: 36px 20px;
+  }
+
+  .tx-section-intro {
+    font-size: 1rem;
+    color: var(--cream);
+  }
+
+  .tx-escort-body span {
+    font-size: 0.9rem;
+  }
+
+  /* ─── Footer: stacked accordion sections ─── */
+
+  .home-footer {
+    padding-top: 44px;
+  }
+
+  .home-footer-columns {
+    display: block;
+    padding-bottom: 8px;
+  }
+
+  .home-footer-col {
+    border-bottom: 1px solid rgba(var(--champagne-rgb), 0.18);
+  }
+
+  .home-footer-col-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 44px;
+    padding: 12px 2px;
+    margin: 0;
+    background: none;
+    border: none;
+    color: rgba(var(--cream-rgb), 0.9);
+    font: inherit;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .home-footer-col-title::after {
+    content: "+";
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--gold);
+  }
+
+  .home-footer-col-title[aria-expanded="true"]::after {
+    content: "\2212"; /* minus sign */
+  }
+
+  .home-footer-col-links {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 240ms ease;
+  }
+
+  .home-footer-col.is-open .home-footer-col-links {
+    max-height: 400px;
+  }
+
+  .home-footer-col-links a {
+    display: block;
+    padding: 11px 2px;
+    min-height: 44px;
+    box-sizing: border-box;
+    color: rgba(var(--cream-rgb), 0.85);
+    font-size: 1rem;
+  }
+
+  .home-footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 20px 20px 28px;
+  }
+
+  .home-footer-legal {
+    color: rgba(var(--cream-rgb), 0.7);
+    font-size: 0.72rem;
+  }
+
+  .home-footer-links a {
+    color: rgba(var(--cream-rgb), 0.75);
+    font-size: 0.72rem;
+  }
+}
+
+/* The mobile Sign In link lives inside the hamburger nav; keep it out
+   of the always-visible desktop nav row entirely. */
+.tx-mobile-signin {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .site-header .site-header-bar .store-nav a.tx-mobile-signin {
+    display: flex;
+  }
+}
