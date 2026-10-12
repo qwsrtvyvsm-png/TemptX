@@ -5,27 +5,18 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 const { sendEmail, sendSms } = require("./notifications");
 const { canTransition } = require("./lib/booking-transitions");
+const { ensureSchema, readCollection, writeCollection, COLLECTIONS } = require("./lib/db");
 
 const host = process.env.HOST || "0.0.0.0";
 const port = Number(process.env.PORT || 5510);
 const turnstileSiteKey = process.env.TURNSTILE_SITE_KEY || "";
 const turnstileSecretKey = process.env.TURNSTILE_SECRET_KEY || "";
 const root = __dirname;
+// "data" still exists on disk for the server-secret file (see below) and so
+// the static file server keeps refusing to ever serve it (line ~3888). The
+// JSON collection files that used to live here have moved into Postgres —
+// see lib/db.js.
 const dataDirectory = path.join(root, "data");
-const usersFile = path.join(dataDirectory, "users.json");
-const reportsFile = path.join(dataDirectory, "reports.json");
-const membershipsFile = path.join(dataDirectory, "memberships.json");
-const subscriptionsFile = path.join(dataDirectory, "subscriptions.json");
-const transactionsFile = path.join(dataDirectory, "transactions.json");
-const verificationEventsFile = path.join(dataDirectory, "verificationEvents.json");
-const bookingsFile = path.join(dataDirectory, "bookings.json");
-const clientNotesFile = path.join(dataDirectory, "client-notes.json");
-const communityPostsFile = path.join(dataDirectory, "community-posts.json");
-const communityFollowsFile = path.join(dataDirectory, "community-follows.json");
-const communitySavedFile = path.join(dataDirectory, "community-saved.json");
-const communityGroupsFile = path.join(dataDirectory, "community-groups.json");
-const communityGroupMembersFile = path.join(dataDirectory, "community-group-members.json");
-const communityFeedbackFile = path.join(dataDirectory, "community-feedback.json");
 const serverSecretFile = path.join(dataDirectory, "server-secret");
 const sessions = new Map();
 const resetTokens = new Map();
@@ -61,60 +52,13 @@ const atomicWrite = (filePath, data) => {
 };
 
 fs.mkdirSync(dataDirectory, { recursive: true });
-if (!fs.existsSync(usersFile)) {
-  fs.writeFileSync(usersFile, "[]\n");
-}
-if (!fs.existsSync(reportsFile)) {
-  fs.writeFileSync(reportsFile, "[]\n");
-}
-if (!fs.existsSync(membershipsFile)) {
-  fs.writeFileSync(membershipsFile, "[]\n");
-}
 
-if (!fs.existsSync(subscriptionsFile)) {
-  fs.writeFileSync(subscriptionsFile, "[]\n");
-}
-
-if (!fs.existsSync(transactionsFile)) {
-  fs.writeFileSync(transactionsFile, "[]\n");
-}
-
-if (!fs.existsSync(verificationEventsFile)) {
-  fs.writeFileSync(verificationEventsFile, "[]\n");
-}
-
-if (!fs.existsSync(bookingsFile)) {
-  fs.writeFileSync(bookingsFile, "[]\n");
-}
-
-if (!fs.existsSync(clientNotesFile)) {
-  fs.writeFileSync(clientNotesFile, "[]\n");
-}
-
-if (!fs.existsSync(communityPostsFile)) {
-  fs.writeFileSync(communityPostsFile, "[]\n");
-}
-
-if (!fs.existsSync(communityFollowsFile)) {
-  fs.writeFileSync(communityFollowsFile, "[]\n");
-}
-
-if (!fs.existsSync(communitySavedFile)) {
-  fs.writeFileSync(communitySavedFile, "[]\n");
-}
-
-if (!fs.existsSync(communityGroupMembersFile)) {
-  fs.writeFileSync(communityGroupMembersFile, "[]\n");
-}
-
-if (!fs.existsSync(communityFeedbackFile)) {
-  fs.writeFileSync(communityFeedbackFile, "[]\n");
-}
-
-// Seeded once on first boot — editorial-owned starter groups, not user-generated,
-// so this is the one community data file allowed to ship with non-empty defaults.
-if (!fs.existsSync(communityGroupsFile)) {
-  const seededGroups = [
+// Editorial-owned starter groups, seeded into community_groups the first
+// time that table is empty (see bootstrap() near the bottom of this file) —
+// not user-generated, so it's the one collection allowed to ship with
+// non-empty defaults.
+const defaultCommunityGroups = () =>
+  [
     { key: "providers", name: "Providers", description: "For independent providers to talk shop, screening, and best practice." },
     { key: "clients", name: "Clients", description: "Respectful discussion for clients navigating the directory and etiquette." },
     { key: "creators", name: "Creators", description: "Content creators sharing platforms, tools, and growth tactics." },
@@ -128,8 +72,6 @@ if (!fs.existsSync(communityGroupsFile)) {
     ...group,
     createdAt: new Date().toISOString()
   }));
-  atomicWrite(communityGroupsFile, `${JSON.stringify(seededGroups, null, 2)}\n`);
-}
 
 let serverSecret;
 if (process.env.SERVER_SECRET) {
@@ -155,27 +97,50 @@ const makeQueue = () => {
   };
 };
 
-const readUsers = () => JSON.parse(fs.readFileSync(usersFile, "utf8"));
-const writeUsers = (users) => atomicWrite(usersFile, `${JSON.stringify(users, null, 2)}\n`);
-const readReports = () => JSON.parse(fs.readFileSync(reportsFile, "utf8"));
-const writeReports = (reports) => atomicWrite(reportsFile, `${JSON.stringify(reports, null, 2)}\n`);
-const readMemberships = () =>
-  JSON.parse(fs.readFileSync(membershipsFile, "utf8"));
+// --- Postgres-backed collection store -------------------------------------
+// Each collection used to be a JSON file, read whole and written back whole
+// (see git history). It's now a JSONB "document table" in Postgres — see
+// lib/db.js for why a document table rather than a fully normalized schema.
+//
+// The rest of this file calls readX()/writeX() synchronously, hundreds of
+// times, and nothing about that should need to change just because storage
+// moved. So reads are served from an in-memory cache (hydrated from
+// Postgres once at boot, in bootstrap() below) and writes update that cache
+// immediately — same as the old synchronous file write — while persisting
+// to Postgres in the background, serialized per-collection by the same
+// queue (usersQueue, reportsQueue, etc.) that already guaranteed one
+// read-modify-write at a time. A failed persist is logged, never silently
+// swallowed, and the next successful write for that collection supersedes it.
+const collectionCache = {};
+const makeStore = (table) => {
+  collectionCache[table] = [];
+  return {
+    read: () => collectionCache[table],
+    write: (records) => {
+      collectionCache[table] = records;
+      writeCollection(table, records).catch((error) => {
+        console.error(`[db] failed to persist "${table}" to Postgres:`, error);
+      });
+    }
+  };
+};
 
-const writeMemberships = (memberships) =>
-  atomicWrite(
-    membershipsFile,
-    `${JSON.stringify(memberships, null, 2)}\n`
-  );
+const usersStore = makeStore("users");
+const readUsers = usersStore.read;
+const writeUsers = usersStore.write;
 
-const readSubscriptions = () =>
-  JSON.parse(fs.readFileSync(subscriptionsFile, "utf8"));
+const reportsStore = makeStore("reports");
+const readReports = reportsStore.read;
+const writeReports = reportsStore.write;
 
-const writeSubscriptions = (subscriptions) =>
-  atomicWrite(
-    subscriptionsFile,
-    `${JSON.stringify(subscriptions, null, 2)}\n`
-  );
+const membershipsStore = makeStore("memberships");
+const readMemberships = membershipsStore.read;
+const writeMemberships = membershipsStore.write;
+
+const subscriptionsStore = makeStore("subscriptions");
+const readSubscriptions = subscriptionsStore.read;
+const writeSubscriptions = subscriptionsStore.write;
+
 const getMembership = (userId) => {
   const memberships = readMemberships();
 
@@ -222,78 +187,50 @@ const setMembership = (userId, tier, extra = {}) =>
     return membership;
   });
 
-const readTransactions = () =>
-  JSON.parse(fs.readFileSync(transactionsFile, "utf8"));
+const transactionsStore = makeStore("transactions");
+const readTransactions = transactionsStore.read;
+const writeTransactions = transactionsStore.write;
 
-const writeTransactions = (transactions) =>
-  atomicWrite(
-    transactionsFile,
-    `${JSON.stringify(transactions, null, 2)}\n`
-  );
+const verificationEventsStore = makeStore("verification_events");
+const readVerificationEvents = verificationEventsStore.read;
+const writeVerificationEvents = verificationEventsStore.write;
 
-const readVerificationEvents = () =>
-  JSON.parse(fs.readFileSync(verificationEventsFile, "utf8"));
+const bookingsStore = makeStore("bookings");
+const readBookings = bookingsStore.read;
+const writeBookings = bookingsStore.write;
 
-const writeVerificationEvents = (events) =>
-  atomicWrite(
-    verificationEventsFile,
-    `${JSON.stringify(events, null, 2)}\n`
-  );
+const clientNotesStore = makeStore("client_notes");
+const readClientNotes = clientNotesStore.read;
+const writeClientNotes = clientNotesStore.write;
 
-const readBookings = () => JSON.parse(fs.readFileSync(bookingsFile, "utf8"));
-const writeBookings = (bookings) =>
-  atomicWrite(bookingsFile, `${JSON.stringify(bookings, null, 2)}\n`);
+// The old file-corruption recovery dance (read .tmp, quarantine the corrupt
+// file) doesn't apply to Postgres: writeCollection() is a single transaction,
+// so readers only ever see the last fully-committed state — there's no
+// partial-write to recover from.
+const communityPostsStore = makeStore("community_posts");
+const readCommunityPosts = communityPostsStore.read;
+const writeCommunityPosts = communityPostsStore.write;
 
-const readClientNotes = () => JSON.parse(fs.readFileSync(clientNotesFile, "utf8"));
-const writeClientNotes = (clientNotes) =>
-  atomicWrite(clientNotesFile, `${JSON.stringify(clientNotes, null, 2)}\n`);
+const communityFollowsStore = makeStore("community_follows");
+const readCommunityFollows = communityFollowsStore.read;
+const writeCommunityFollows = communityFollowsStore.write;
 
-const readCommunityPosts = () => {
-  const parsePostsFile = (filePath) => {
-    const posts = JSON.parse(fs.readFileSync(filePath, "utf8"));
-    if (!Array.isArray(posts)) throw new Error("Community posts data must be an array.");
-    return posts;
-  };
+const communitySavedStore = makeStore("community_saved");
+const readCommunitySaved = communitySavedStore.read;
+const writeCommunitySaved = communitySavedStore.write;
 
-  try {
-    return parsePostsFile(communityPostsFile);
-  } catch (error) {
-    const temporaryFile = `${communityPostsFile}.tmp`;
+// Groups are editorial-seeded (see defaultCommunityGroups above) and never
+// mutated at runtime — read-only, like before.
+const communityGroupsStore = makeStore("community_groups");
+const readCommunityGroups = communityGroupsStore.read;
 
-    try {
-      const recoveredPosts = parsePostsFile(temporaryFile);
-      const backupFile = `${communityPostsFile}.corrupt-${Date.now()}`;
-      fs.renameSync(communityPostsFile, backupFile);
-      atomicWrite(communityPostsFile, `${JSON.stringify(recoveredPosts, null, 2)}\n`);
-      console.warn(`[community] Recovered posts from temporary file; preserved invalid data at ${backupFile}`);
-      return recoveredPosts;
-    } catch (recoveryError) {
-      throw new Error(
-        `Unable to read community posts without risking data loss: ${error.message}; recovery failed: ${recoveryError.message}`
-      );
-    }
-  }
-};
-const writeCommunityPosts = (posts) =>
-  atomicWrite(communityPostsFile, `${JSON.stringify(posts, null, 2)}\n`);
+const communityGroupMembersStore = makeStore("community_group_members");
+const readCommunityGroupMembers = communityGroupMembersStore.read;
+const writeCommunityGroupMembers = communityGroupMembersStore.write;
 
-const readCommunityFollows = () => JSON.parse(fs.readFileSync(communityFollowsFile, "utf8"));
-const writeCommunityFollows = (follows) =>
-  atomicWrite(communityFollowsFile, `${JSON.stringify(follows, null, 2)}\n`);
-
-const readCommunitySaved = () => JSON.parse(fs.readFileSync(communitySavedFile, "utf8"));
-const writeCommunitySaved = (saved) =>
-  atomicWrite(communitySavedFile, `${JSON.stringify(saved, null, 2)}\n`);
-
-const readCommunityGroups = () => JSON.parse(fs.readFileSync(communityGroupsFile, "utf8"));
-
-const readCommunityGroupMembers = () => JSON.parse(fs.readFileSync(communityGroupMembersFile, "utf8"));
-const writeCommunityGroupMembers = (members) =>
-  atomicWrite(communityGroupMembersFile, `${JSON.stringify(members, null, 2)}\n`);
-
-const readCommunityFeedback = () => JSON.parse(fs.readFileSync(communityFeedbackFile, "utf8"));
-const writeCommunityFeedback = (items) =>
-  atomicWrite(communityFeedbackFile, `${JSON.stringify(items, null, 2)}\n`);
+const communityFeedbackStore = makeStore("community_feedback");
+const readCommunityFeedback = communityFeedbackStore.read;
+const writeCommunityFeedback = communityFeedbackStore.write;
 
 const usersQueue = makeQueue();
 const reportsQueue = makeQueue();
@@ -2168,7 +2105,7 @@ const handleApi = async (request, response, pathname) => {
 
     // ---------------------------------------------------------------------
     // Groups — join/leave membership. Group definitions themselves are
-    // editorial-seeded (see communityGroupsFile bootstrap above), not user
+    // editorial-seeded (see defaultCommunityGroups above), not user
     // created, so there's no create/delete-group route yet.
     // ---------------------------------------------------------------------
 
@@ -4029,6 +3966,33 @@ const server = http.createServer((request, response) => {
   return serveStatic(request, response, url.pathname);
 });
 
-server.listen(port, host, () => {
-  console.log(`TEMPTX running at http://${host}:${port}`);
+// Boot sequence: create/verify the Postgres schema, hydrate every
+// collection's in-memory cache from it (so the synchronous readX() calls
+// throughout this file have data from the first request onward), seed the
+// editorial community groups on a brand-new database, then start accepting
+// connections. A failure here (e.g. Postgres not reachable) stops the
+// process instead of serving traffic against an empty, unhydrated cache.
+const bootstrap = async () => {
+  await ensureSchema();
+
+  await Promise.all(
+    COLLECTIONS.map(async (table) => {
+      collectionCache[table] = await readCollection(table);
+    })
+  );
+
+  if (collectionCache.community_groups.length === 0) {
+    const seededGroups = defaultCommunityGroups();
+    collectionCache.community_groups = seededGroups;
+    await writeCollection("community_groups", seededGroups);
+  }
+
+  server.listen(port, host, () => {
+    console.log(`TEMPTX running at http://${host}:${port}`);
+  });
+};
+
+bootstrap().catch((error) => {
+  console.error("[boot] failed to start — is Postgres running and DATABASE_URL correct?", error);
+  process.exit(1);
 });
