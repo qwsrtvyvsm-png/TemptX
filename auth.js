@@ -35,6 +35,12 @@ if (authForm) {
   const personalPhoneNote = document.querySelector("#personalPhoneNote");
   const authWorkingName = document.querySelector("#authWorkingName");
   const clientIdField = document.querySelector("#clientIdField");
+  const clientSignupDetails = document.querySelector("#clientSignupDetails");
+  const clientDisplayName = document.querySelector("#clientDisplayName");
+  const clientEmail = document.querySelector("#clientEmail");
+  const clientPhone = document.querySelector("#clientPhone");
+  const clientAge = document.querySelector("#clientAge");
+  const clientGender = document.querySelector("#clientGender");
   const authEmail = document.querySelector("#authEmail");
   const authGender = document.querySelector("#authGender");
   const authAccountCategory = document.querySelector("#authAccountCategory");
@@ -203,6 +209,7 @@ if (authForm) {
     if (authSteps) authSteps.hidden = !isSignup;
     if (authNextHint) authNextHint.hidden = !isSignup;
     clientIdField.hidden = isEmailAccount || isSignup;
+    if (clientSignupDetails) clientSignupDetails.hidden = !(role === "client" && isSignup);
     authWorkingName.required = isWorkerSignup || isBusinessSignup;
     authEmail.required = isEmailAccount;
     if (authGender) authGender.required = isWorkerSignup;
@@ -300,12 +307,61 @@ if (authForm) {
     });
   });
 
+  // Clients log in with their TX- client ID, so make it impossible to miss:
+  // a dedicated card with the ID and a copy button, not just a status line.
+  const showClientIdCard = (clientId) => {
+    document.querySelector("#clientIdCard")?.remove();
+    const card = document.createElement("div");
+    card.className = "client-id-card";
+    card.id = "clientIdCard";
+    card.setAttribute("role", "status");
+
+    const label = document.createElement("p");
+    label.className = "eyebrow";
+    label.textContent = "Your TEMPTX client ID";
+
+    const value = document.createElement("p");
+    value.className = "client-id-value";
+    value.textContent = clientId;
+
+    const hint = document.createElement("p");
+    hint.className = "client-id-hint";
+    hint.textContent = "You'll need this ID and your password to log in. Save it somewhere private.";
+
+    const copy = document.createElement("button");
+    copy.type = "button";
+    copy.className = "outline-btn client-id-copy";
+    copy.textContent = "Copy client ID";
+    copy.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(clientId);
+        copy.textContent = "Copied";
+      } catch {
+        copy.textContent = "Copy failed — write it down";
+      }
+    });
+
+    card.append(label, value, hint, copy);
+    authStatus.insertAdjacentElement("beforebegin", card);
+    if (clientSignupDetails) clientSignupDetails.hidden = true;
+  };
+
   authForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     if (mode === "signup" && authConfirmPassword && authConfirmPassword.value !== authPassword.value) {
       setStatus(authStatus, "Passwords don't match.", "error");
       return;
+    }
+
+    if (role === "client" && mode === "signup" && clientSignupDetails) {
+      const hasEmail = Boolean(clientEmail?.value.trim());
+      const hasPhone = Boolean(clientPhone?.value.trim());
+      if (!hasEmail && !hasPhone) {
+        setStatus(authStatus, "Add an email address or phone number so we can keep your account safe.", "error");
+        (clientEmail || clientPhone)?.focus();
+        return;
+      }
     }
 
     setStatus(authStatus, "Checking your details…");
@@ -331,6 +387,13 @@ if (authForm) {
       payload.businessPhone = authBusinessPhone?.value || "";
     }
     if (role === "client" && mode === "login") payload.clientId = authClientId.value;
+    if (role === "client" && mode === "signup") {
+      payload.email = clientEmail?.value.trim() || "";
+      payload.phone = clientPhone?.value.trim() || "";
+      payload.displayName = clientDisplayName?.value.trim() || "";
+      payload.age = clientAge?.value || "";
+      payload.gender = clientGender?.value || "";
+    }
 
     if (mode === "signup") {
       await ensureTurnstileReady();
@@ -360,10 +423,12 @@ if (authForm) {
           return;
         }
 
+        if (role === "client" && result.clientId) showClientIdCard(result.clientId);
+
         setStatus(
           authStatus,
           role === "client"
-            ? `Account created. Your client ID is ${result.clientId}. Generate a recovery key in Settings.`
+            ? "Account created. Generate a recovery key in Settings."
             : role === "creator"
             ? "Creator account created. Generate a recovery key in Settings."
             : role === "business"
