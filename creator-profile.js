@@ -1,7 +1,7 @@
 // Creator Profile editor — loads and saves the Creator profile object
 // (displayName, creatorType, headline, bio, contentFormats,
 // contentSpecialties, acceptsCustomContent, offersLivestreams, primaryUrl,
-// secondaryUrl, location, isVisible) via the private /api/creators/profile
+// secondaryUrl, location, age, isVisible) via the private /api/creators/profile
 // routes. Kept entirely separate from the Provider (provider-profile.js)
 // and Business (business-profile.js) editors — no shared state, no shared
 // field names.
@@ -52,6 +52,8 @@ if (creatorProfileForm || creatorProfileErrorContainer) {
   const primaryUrlEl = document.querySelector("#creatorPrimaryUrl");
   const secondaryUrlEl = document.querySelector("#creatorSecondaryUrl");
   const locationEl = document.querySelector("#creatorLocation");
+  const ageEl = document.querySelector("#creatorAge");
+  const AGE_RANGES = ["18-21", "22-24", "25-29", "30-34", "35-39", "40-49", "50+"];
   const isVisibleEl = document.querySelector("#creatorIsVisible");
   const statusEl = document.querySelector("#creatorProfileStatus");
   const submitButton = creatorProfileForm?.querySelector('button[type="submit"]');
@@ -127,6 +129,7 @@ if (creatorProfileForm || creatorProfileErrorContainer) {
     if (primaryUrlEl) primaryUrlEl.value = String(profile.primaryUrl || "");
     if (secondaryUrlEl) secondaryUrlEl.value = String(profile.secondaryUrl || "");
     if (locationEl) locationEl.value = String(profile.location || "").slice(0, LOCATION_MAX_LENGTH);
+    if (ageEl) ageEl.value = AGE_RANGES.includes(profile.age) ? profile.age : "";
 
     if (isVisibleEl) isVisibleEl.checked = profile.isVisible === true;
   };
@@ -196,6 +199,7 @@ if (creatorProfileForm || creatorProfileErrorContainer) {
       primaryUrl: String(primaryUrlEl?.value || "").trim(),
       secondaryUrl: String(secondaryUrlEl?.value || "").trim(),
       location: String(locationEl?.value || "").trim().slice(0, LOCATION_MAX_LENGTH),
+      age: AGE_RANGES.includes(ageEl?.value) ? ageEl.value : "",
       isVisible: isVisibleEl?.checked === true
     };
 

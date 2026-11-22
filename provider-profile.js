@@ -516,6 +516,15 @@ if (profileEditForm) {
   // ── Save ─────────────────────────────────────────────────────────────────────
   profileEditForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+
+    // Age is required on every provider profile (the server enforces this too).
+    const ageEl = document.querySelector("#detailAge");
+    if (ageEl && !ageEl.value) {
+      setStatus("Select your age range to save your profile.", "error");
+      ageEl.focus();
+      return;
+    }
+
     submitButton.disabled = true;
     setStatus("Saving…");
 

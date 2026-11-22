@@ -3,6 +3,7 @@ const settingsForm = document.querySelector("#settingsForm");
 if (settingsForm) {
   const fields = {
     displayName: document.querySelector("#displayName"),
+    clientAge: document.querySelector("#clientAge"),
     directMessages: document.querySelector("#directMessages"),
     groupInvites: document.querySelector("#groupInvites"),
     messagePreviews: document.querySelector("#messagePreviews"),
@@ -81,6 +82,9 @@ if (settingsForm) {
     if (xyncRole) xyncSettingsLink.textContent = `Manage ${xyncRole} Xync`;
 
     fields.displayName.value = settings.displayName;
+    const clientAgeField = document.querySelector("#clientAgeField");
+    if (clientAgeField) clientAgeField.hidden = user.role !== "client";
+    if (fields.clientAge) fields.clientAge.value = settings.age || "";
     fields.directMessages.checked = settings.directMessages;
     fields.groupInvites.checked = settings.groupInvites;
     fields.messagePreviews.checked = settings.messagePreviews;
@@ -117,6 +121,7 @@ if (settingsForm) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           displayName: fields.displayName.value,
+          age: document.querySelector("#clientAgeField")?.hidden === false ? fields.clientAge.value : "",
           directMessages: fields.directMessages.checked,
           groupInvites: fields.groupInvites.checked,
           messagePreviews: fields.messagePreviews.checked,
