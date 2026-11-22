@@ -313,7 +313,31 @@ const validEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const accountRole = (role) => (["client", "creator", "provider", "business"].includes(role) ? role : null);
 // Phone numbers compared on digits only, so "0412 345 678" and "0412345678"
 // count as the same number for duplicate-account checks.
-const phoneDigits = (phone) => String(phone || "").replace(/\D/g, "");
+// Australian numbers are canonicalised so "+61 412 345 678" and "0412 345 678"
+// are treated as the same number.
+const phoneDigits = (phone) => {
+  const digits = String(phone || "").replace(/\D/g, "");
+  return digits.length === 11 && digits.startsWith("61") ? `0${digits.slice(2)}` : digits;
+};
+
+// Clients can log in with their TX- client ID, their private email, or their
+// private phone number. Returns the matching client record (or undefined).
+const findClientByIdentifier = (users, rawIdentifier) => {
+  const raw = String(rawIdentifier || "").trim();
+  if (!raw) return undefined;
+  const clients = users.filter((item) => item.role === "client");
+  if (raw.includes("@")) {
+    const email = normaliseEmail(raw);
+    return clients.find((item) => item.email === email);
+  }
+  if (/^tx-/i.test(raw)) {
+    const clientId = normaliseClientId(raw);
+    return clients.find((item) => item.clientId === clientId);
+  }
+  const digits = phoneDigits(raw);
+  if (digits.length < 8) return undefined;
+  return clients.find((item) => item.phone && phoneDigits(item.phone) === digits);
+};
 const validPhone = (phone) => {
   const digits = phoneDigits(phone);
   return digits.length >= 8 && digits.length <= 15 && /^[+\d\s().-]+$/.test(String(phone).trim());
@@ -2949,25 +2973,31 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
     if (pathname === "/api/auth/login" && request.method === "POST") {
       const body = await readJsonBody(request);
       const role = accountRole(body.role);
-      const identifier = isEmailAccount(role) ? normaliseEmail(body.email) : normaliseClientId(body.clientId);
+      // Clients may send `identifier` (client ID, email or phone); `clientId` is
+      // still accepted for older cached pages.
+      const clientIdentifierRaw = String(body.identifier || body.clientId || "").trim().toLowerCase();
+      const identifier = isEmailAccount(role) ? normaliseEmail(body.email) : clientIdentifierRaw;
       if (!requireAuthRateLimit(request, response, "login", `${role}:${identifier}`)) return;
-
-      if (role === "client" && identifier && isClientIdLocked(identifier)) {
-        return json(response, 401, { error: "Those login details do not match an account." });
-      }
 
       const users = readUsers();
       const user =
         isEmailAccount(role)
           ? users.find((item) => item.role === role && item.email === normaliseEmail(body.email))
-          : users.find((item) => item.role === role && item.clientId === normaliseClientId(body.clientId));
+          : findClientByIdentifier(users, clientIdentifierRaw);
 
-      if (!user || !verifyPassword(String(body.password || ""), user)) {
-        if (role === "client" && identifier) recordClientIdFailure(identifier);
+      // Lockout is keyed to the account (its client ID) when one matches, so
+      // switching between ID, email and phone can't reset the failure count.
+      const lockoutKey = role === "client" ? user?.clientId || identifier : "";
+      if (role === "client" && lockoutKey && isClientIdLocked(lockoutKey)) {
         return json(response, 401, { error: "Those login details do not match an account." });
       }
 
-      if (role === "client" && identifier) clearClientIdFailures(identifier);
+      if (!user || !verifyPassword(String(body.password || ""), user)) {
+        if (role === "client" && lockoutKey) recordClientIdFailure(lockoutKey);
+        return json(response, 401, { error: "Those login details do not match an account." });
+      }
+
+      if (role === "client" && lockoutKey) clearClientIdFailures(lockoutKey);
 
       const wasDeactivated = Boolean(user.deactivatedAt);
       let ipChanged = false;

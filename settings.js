@@ -75,6 +75,22 @@ if (settingsForm) {
     document.querySelector("#accountIdentifierLabel").textContent =
       isProvider ? "Provider email" : isCreator ? "Creator email" : "TEMPTX client ID";
     document.querySelector("#accountIdentifier").textContent = identifier;
+    const isClient = user.role === "client";
+    const copyClientIdButton = document.querySelector("#copyClientIdButton");
+    const clientIdLoginHint = document.querySelector("#clientIdLoginHint");
+    if (clientIdLoginHint) clientIdLoginHint.hidden = !isClient;
+    if (copyClientIdButton) {
+      copyClientIdButton.hidden = !(isClient && user.clientId);
+      copyClientIdButton.textContent = "Copy client ID";
+      copyClientIdButton.onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(user.clientId);
+          copyClientIdButton.textContent = "Copied";
+        } catch {
+          copyClientIdButton.textContent = "Copy failed — write it down";
+        }
+      };
+    }
     document.querySelector("#profileVisibleRow").hidden = !isProvider;
     document.querySelector("#providerDirectorySettings").hidden = !isProvider;
     const xyncRole = isProvider ? "Provider" : isCreator ? "Creator" : user.role === "client" ? "Provider & Creator" : "";

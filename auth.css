@@ -407,33 +407,3 @@ body.auth-v2 .tx-next-hint strong {
   letter-spacing: 0;
   text-transform: none;
 }
-
-.client-id-card {
-  display: grid;
-  gap: 8px;
-  justify-items: center;
-  margin: 16px 0 0;
-  padding: 18px 16px;
-  text-align: center;
-  border: 1px solid rgba(var(--gold-rgb), 0.55);
-  background: rgba(var(--wine-rgb), 0.35);
-}
-
-.client-id-card .eyebrow {
-  margin: 0;
-}
-
-.client-id-value {
-  margin: 0;
-  color: var(--cream);
-  font-family: var(--font-display);
-  font-size: 1.9rem;
-  letter-spacing: 0.08em;
-  user-select: all;
-}
-
-.client-id-hint {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.82rem;
-}
