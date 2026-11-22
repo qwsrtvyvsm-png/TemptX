@@ -307,45 +307,6 @@ if (authForm) {
     });
   });
 
-  // Clients log in with their TX- client ID, so make it impossible to miss:
-  // a dedicated card with the ID and a copy button, not just a status line.
-  const showClientIdCard = (clientId) => {
-    document.querySelector("#clientIdCard")?.remove();
-    const card = document.createElement("div");
-    card.className = "client-id-card";
-    card.id = "clientIdCard";
-    card.setAttribute("role", "status");
-
-    const label = document.createElement("p");
-    label.className = "eyebrow";
-    label.textContent = "Your TEMPTX client ID";
-
-    const value = document.createElement("p");
-    value.className = "client-id-value";
-    value.textContent = clientId;
-
-    const hint = document.createElement("p");
-    hint.className = "client-id-hint";
-    hint.textContent = "You'll need this ID and your password to log in. Save it somewhere private.";
-
-    const copy = document.createElement("button");
-    copy.type = "button";
-    copy.className = "outline-btn client-id-copy";
-    copy.textContent = "Copy client ID";
-    copy.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(clientId);
-        copy.textContent = "Copied";
-      } catch {
-        copy.textContent = "Copy failed — write it down";
-      }
-    });
-
-    card.append(label, value, hint, copy);
-    authStatus.insertAdjacentElement("beforebegin", card);
-    if (clientSignupDetails) clientSignupDetails.hidden = true;
-  };
-
   authForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -386,7 +347,7 @@ if (authForm) {
       payload.accountCategory = authAccountCategory.value;
       payload.businessPhone = authBusinessPhone?.value || "";
     }
-    if (role === "client" && mode === "login") payload.clientId = authClientId.value;
+    if (role === "client" && mode === "login") payload.identifier = authClientId.value.trim();
     if (role === "client" && mode === "signup") {
       payload.email = clientEmail?.value.trim() || "";
       payload.phone = clientPhone?.value.trim() || "";
@@ -423,7 +384,16 @@ if (authForm) {
           return;
         }
 
-        if (role === "client" && result.clientId) showClientIdCard(result.clientId);
+        // Clients go straight on to the next step. Their client ID (and a copy
+        // button) lives in Settings, and they can also log in with the email or
+        // phone they just gave.
+        if (role === "client") {
+          setStatus(authStatus, "Account created. Taking you in…", "success");
+          window.setTimeout(() => {
+            window.location.href = safeNext || "chat.html";
+          }, 650);
+          return;
+        }
 
         setStatus(
           authStatus,
