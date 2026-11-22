@@ -15050,3 +15050,117 @@ body.nav-open {
     display: flex;
   }
 }
+
+/* ══════════════════════════════════════════════════
+   18+ GATE + FOOTER CENTRING (mobile)
+   Root causes, fixed here rather than patched per page:
+   1. The mobile `h1 { max-width: 9ch }` rule (hero heading sizing) also
+      caught the age-gate wordmark, shrinking it to a left-aligned box.
+   2. `.footer` switches to a column flex layout at ≤900px with
+      `align-items: flex-start`, so every footer block shrank to its
+      content width and hugged the left edge.
+   The gate's old warm brown surfaces (hardcoded rgba browns) are replaced
+   with tokenised near-black + a deep wine glow to match the red brand.
+   ══════════════════════════════════════════════════ */
+
+.age-gate,
+.cinematic-background .age-gate {
+  background:
+    radial-gradient(circle at 50% 40%, rgba(var(--wine-rgb), 0.45), transparent 32rem),
+    rgba(var(--black-rgb), 0.94);
+}
+
+.age-box,
+.cinematic-background .age-box {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(var(--gold-rgb), 0.22), transparent 70%),
+    linear-gradient(165deg, var(--soft-black) 0%, var(--black) 100%);
+  border-color: rgba(var(--gold-rgb), 0.45);
+}
+
+.age-box h1 {
+  display: block;
+  width: 100%;
+  max-width: none;
+  margin-inline: auto;
+  text-align: center;
+  /* balance the trailing letter-spacing so the word sits optically centred */
+  text-indent: 0.04em;
+}
+
+@media (max-width: 900px) {
+  .home-footer {
+    align-items: stretch;
+    box-sizing: border-box;
+    width: 100%;
+    padding-inline: 20px;
+  }
+
+  .home-footer-brand {
+    align-items: center;
+    text-align: center;
+  }
+
+  .footer.home-footer .logo {
+    padding-left: 0;
+  }
+
+  .home-footer-tagline {
+    /* offset trailing letter-spacing so the line is optically centred */
+    padding-left: 0.2em;
+  }
+
+  .home-footer-columns {
+    width: 100%;
+  }
+
+  .home-footer-col {
+    align-items: center;
+    text-align: center;
+  }
+
+  .home-footer-col-title {
+    text-align: center;
+  }
+
+  .home-footer-bottom {
+    align-items: center;
+    text-align: center;
+    padding-inline: 0;
+  }
+
+  .home-footer-links {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 767px) {
+  .home-footer-col {
+    align-items: stretch;
+  }
+
+  /* Accordion header: label centred, +/− pinned to the right edge */
+  .home-footer-col-title {
+    position: relative;
+    justify-content: center;
+    width: 100%;
+    max-width: none; /* escape the global mobile `button { max-width: 260px }` */
+    padding-inline: 32px;
+  }
+
+  .home-footer-col-title::after {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .home-footer-col-links a {
+    text-align: center;
+  }
+
+  /* keep the floating install pill from covering the legal links */
+  .home-footer-bottom {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+}

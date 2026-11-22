@@ -623,12 +623,35 @@ const cleanDirectorySelections = (values, allowedValues) => {
   return [...new Set(values.filter((value) => allowedValues.includes(value)))].slice(0, 80);
 };
 
+// Age is stored as a broad bracket rather than an exact age or date of birth,
+// so public profiles never expose a precise, identifying number. One allow-list
+// backs provider (user.profile.details.age), creator (user.creatorProfile.age)
+// and client (user.settings.age, optional) ages. Anything outside the list —
+// including any number under 18 — sanitises to "". Legacy exact numbers saved
+// before the bracket select existed are mapped onto their bracket.
+const AGE_RANGES = ["18-21", "22-24", "25-29", "30-34", "35-39", "40-49", "50+"];
+
+const cleanAgeRange = (value) => {
+  const trimmed = String(value ?? "").trim();
+  if (AGE_RANGES.includes(trimmed)) return trimmed;
+  if (!/^\d{1,3}$/.test(trimmed)) return "";
+  const numeric = Number(trimmed);
+  if (numeric < 18 || numeric > 120) return "";
+  if (numeric <= 21) return "18-21";
+  if (numeric <= 24) return "22-24";
+  if (numeric <= 29) return "25-29";
+  if (numeric <= 34) return "30-34";
+  if (numeric <= 39) return "35-39";
+  if (numeric <= 49) return "40-49";
+  return "50+";
+};
+
 const cleanProfile = (body) => {
   const details = body.details || {};
   return {
     details: {
       location:       cleanText(details.location,       100),
-      age:            cleanText(details.age,             20),
+      age:            cleanAgeRange(details.age),
       height:         cleanText(details.height,          20),
       bustSize:       cleanText(details.bustSize,        20),
       orientation:    cleanText(details.orientation,     40),
@@ -840,6 +863,8 @@ const cleanCreatorProfile = (input, existingProfile = {}) => {
 
   const location = cleanText(has("location") ? source.location : previous.location, 100);
 
+  const age = cleanAgeRange(has("age") ? source.age : previous.age);
+
   const isVisible = has("isVisible") ? source.isVisible === true : previous.isVisible === true;
 
   return {
@@ -854,6 +879,7 @@ const cleanCreatorProfile = (input, existingProfile = {}) => {
     primaryUrl,
     secondaryUrl,
     location,
+    age,
     isVisible,
     // Always server-set — a client-supplied updatedAt is never trusted.
     updatedAt: new Date().toISOString()
@@ -1185,6 +1211,7 @@ const publicUser = (user) => ({
     activityStatus: user.settings?.activityStatus !== false,
     emailNotifications: Boolean(user.settings?.emailNotifications),
     profileVisible: user.settings?.profileVisible !== false,
+    age: user.role === "client" ? cleanAgeRange(user.settings?.age) : "",
     locations: cleanDirectorySelections(user.settings?.locations, DIRECTORY_OPTIONS.locations),
     services: cleanDirectorySelections(user.settings?.services, DIRECTORY_OPTIONS.services),
     attributes: cleanDirectorySelections(user.settings?.attributes, DIRECTORY_OPTIONS.attributes)
@@ -3564,6 +3591,8 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
           activityStatus: body.activityStatus !== false,
           emailNotifications: Boolean(body.emailNotifications),
           profileVisible: user.role === "provider" ? body.profileVisible !== false : true,
+          // Optional, client-only. Providers and creators set age on their profile.
+          age: user.role === "client" ? cleanAgeRange(body.age) : "",
           locations:
             user.role === "provider"
               ? cleanDirectorySelections(body.locations, DIRECTORY_OPTIONS.locations)
@@ -3696,13 +3725,16 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
         const users = readUsers();
         const user = users.find((item) => item.id === authenticatedUser.id);
         if (!user) return { notFound: true };
-        user.profile = cleanProfile(body);
+        const profile = cleanProfile(body);
+        if (!profile.details.age) return { missingAge: true };
+        user.profile = profile;
         user.profileUpdatedAt = new Date().toISOString();
         writeUsers(users);
         return { profile: user.profile };
       });
 
       if (saved.notFound) return json(response, 404, { error: "Account not found." });
+      if (saved.missingAge) return json(response, 400, { error: "Select your age range to save your profile." });
       return json(response, 200, { message: "Profile saved.", profile: saved.profile });
     }
 
@@ -3727,6 +3759,7 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
           primaryUrl: existing.primaryUrl || "",
           secondaryUrl: existing.secondaryUrl || "",
           location: existing.location || "",
+          age: cleanAgeRange(existing.age),
           isVisible: existing.isVisible === true,
           updatedAt: existing.updatedAt || null
         }
@@ -3748,12 +3781,15 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
         const users = readUsers();
         const user = users.find((item) => item.id === authenticatedUser.id);
         if (!user) return { notFound: true };
-        user.creatorProfile = cleanCreatorProfile(body, user.creatorProfile || {});
+        const profile = cleanCreatorProfile(body, user.creatorProfile || {});
+        if (!profile.age) return { missingAge: true };
+        user.creatorProfile = profile;
         writeUsers(users);
         return { profile: user.creatorProfile };
       });
 
       if (saved.notFound) return json(response, 404, { error: "Account not found." });
+      if (saved.missingAge) return json(response, 400, { error: "Select your age range to save your Creator profile." });
       return json(response, 200, { message: "Creator profile saved.", profile: saved.profile });
     }
 
@@ -3803,6 +3839,7 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
           workingName: user.workingName || null,
           accountCategory: user.accountCategory || null,
           bio: user.creatorProfile.bio || "",
+          age: cleanAgeRange(user.creatorProfile.age),
           contentFormats: Array.isArray(user.creatorProfile.contentFormats)
             ? user.creatorProfile.contentFormats
             : [],
