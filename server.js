@@ -311,6 +311,15 @@ const normaliseEmail = (email) => String(email || "").trim().toLowerCase();
 const normaliseClientId = (clientId) => String(clientId || "").trim().toUpperCase();
 const validEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const accountRole = (role) => (["client", "creator", "provider", "business"].includes(role) ? role : null);
+// Phone numbers compared on digits only, so "0412 345 678" and "0412345678"
+// count as the same number for duplicate-account checks.
+const phoneDigits = (phone) => String(phone || "").replace(/\D/g, "");
+const validPhone = (phone) => {
+  const digits = phoneDigits(phone);
+  return digits.length >= 8 && digits.length <= 15 && /^[+\d\s().-]+$/.test(String(phone).trim());
+};
+const CLIENT_GENDERS = new Set(["female", "male", "non-binary", "other"]);
+
 const isEmailAccount = (role) => role === "provider" || role === "creator" || role === "business";
 const providerCategories = new Set([
   "escorts",
@@ -2370,7 +2379,13 @@ if (pathname === "/api/bookings" && request.method === "GET") {
     .map((booking) => {
       if (user.role === "provider") {
         const clientUser = users.find((u) => u.id === booking.clientId);
-        return { ...booking, clientLabel: clientUser?.clientId || null };
+        // Age is shared only if the client chose to add it in Settings — read live,
+        // so removing it there hides it from every provider immediately.
+        return {
+          ...booking,
+          clientLabel: clientUser?.clientId || null,
+          clientAge: cleanAgeRange(clientUser?.settings?.age) || null
+        };
       }
       const providerUser = users.find((u) => u.id === booking.providerId);
       return { ...booking, providerLabel: providerUser?.settings?.displayName || providerUser?.workingName || null };
@@ -2592,10 +2607,14 @@ if (clientsListMatch && request.method === "GET") {
   const notes = readClientNotes().filter((n) => n.providerId === authenticatedUser.id);
   const users = readUsers();
 
-  const clients = notes.map((note) => ({
-    ...clientNoteView(note, fullAccess),
-    clientLabel: users.find((u) => u.id === note.clientId)?.clientId || null
-  }));
+  const clients = notes.map((note) => {
+    const clientUser = users.find((u) => u.id === note.clientId);
+    return {
+      ...clientNoteView(note, fullAccess),
+      clientLabel: clientUser?.clientId || null,
+      clientAge: cleanAgeRange(clientUser?.settings?.age) || null
+    };
+  });
 
   return json(response, 200, { clients, fullAccess });
 }
@@ -2757,6 +2776,27 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
       // Validate email-account fields before the expensive scrypt call.
       let email, workingName, gender, accountCategory, businessAbn, phone;
       let businessPhone = "";
+      let clientDetails = null;
+      if (role === "client") {
+        // Clients still log in with an anonymous TX- client ID, but must give at
+        // least one private contact method (email or phone) for safety and
+        // account recovery. Contact details are never shown to providers.
+        const clientEmail = normaliseEmail(body.email);
+        const clientPhone = cleanText(body.phone, 40);
+        if (!clientEmail && !clientPhone) {
+          return json(response, 400, { error: "Add an email address or phone number so we can keep your account safe." });
+        }
+        if (clientEmail && !validEmail(clientEmail)) return json(response, 400, { error: "Enter a valid email address." });
+        if (clientPhone && !validPhone(clientPhone)) return json(response, 400, { error: "Enter a valid phone number." });
+        const clientGender = cleanText(body.gender, 20).toLowerCase();
+        clientDetails = {
+          email: clientEmail,
+          phone: clientPhone,
+          displayName: cleanText(body.displayName, 50),
+          age: cleanAgeRange(body.age),
+          gender: CLIENT_GENDERS.has(clientGender) ? clientGender : ""
+        };
+      }
       if (isEmailAccount(role)) {
         email = normaliseEmail(body.email);
         workingName = cleanText(body.workingName, 80);
@@ -2809,8 +2849,20 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
       const signup = await usersQueue(() => {
         const users = readUsers();
 
+        // Email stays unique across every account type (email verification
+        // relies on this), including the private contact email clients now give.
         if (isEmailAccount(role) && users.some((item) => item.email === email)) {
           return { status: 409, error: "A TEMPTX account already uses that email." };
+        }
+        if (clientDetails) {
+          if (clientDetails.email && users.some((item) => item.email === clientDetails.email)) {
+            return { status: 409, error: "A TEMPTX account already uses that email." };
+          }
+          const clients = users.filter((item) => item.role === "client");
+          const digits = phoneDigits(clientDetails.phone);
+          if (digits && clients.some((item) => item.phone && phoneDigits(item.phone) === digits)) {
+            return { status: 409, error: "A TEMPTX client account already uses that phone number." };
+          }
         }
 
         const user = {
@@ -2858,6 +2910,13 @@ if (pathname === "/api/dev/grant-membership" && request.method === "POST") {
           user.lastIpHash = user.signupIpHash;
           user.lastIpChangedAt = null;
           user.pendingDeviceToken = deviceToken;
+          if (clientDetails.email) user.email = clientDetails.email;
+          if (clientDetails.phone) user.phone = clientDetails.phone;
+          if (clientDetails.gender) user.gender = clientDetails.gender;
+          user.settings = {
+            displayName: clientDetails.displayName,
+            age: clientDetails.age
+          };
         }
 
         const pendingDeviceToken = user.pendingDeviceToken;

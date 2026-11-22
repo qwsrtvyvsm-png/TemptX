@@ -6,7 +6,7 @@
   <title>Client Sign Up | TEMPTX</title>
   <meta name="description" content="Create a private TEMPTX client account and receive a unique client ID." />
   <link rel="stylesheet" href="style.css?v=20260923-02" />
-  <link rel="stylesheet" href="auth.css?v=20260819-02" />
+  <link rel="stylesheet" href="auth.css?v=20261122-01" />
 </head>
 
 <body class="auth-body auth-v2 cinematic-background" data-auth-mode="signup" data-auth-role="client">
@@ -49,6 +49,46 @@
             <option value="other">Other</option>
           </select>
         </label>
+
+        <fieldset class="auth-field client-signup-details" id="clientSignupDetails" hidden>
+          <legend>Your details</legend>
+          <label class="auth-field">
+            <span>Display name <small>(optional)</small></span>
+            <input id="clientDisplayName" type="text" maxlength="50" autocomplete="nickname" placeholder="Shown in chats and bookings" />
+          </label>
+          <label class="auth-field">
+            <span>Email address</span>
+            <input id="clientEmail" type="email" autocomplete="email" placeholder="e.g. alex@example.com" />
+          </label>
+          <label class="auth-field">
+            <span>Phone number</span>
+            <input id="clientPhone" type="tel" autocomplete="tel" inputmode="tel" placeholder="e.g. 0412 345 678" />
+          </label>
+          <p class="tx-field-note">🔒 Add an email or phone (at least one). It stays private — never shown to providers — and is used for safety and account recovery.</p>
+          <label class="auth-field">
+            <span>Age <small>(optional)</small></span>
+            <select id="clientAge">
+              <option value="">Prefer not to say</option>
+              <option value="18-21">18-21</option>
+              <option value="22-24">22-24</option>
+              <option value="25-29">25-29</option>
+              <option value="30-34">30-34</option>
+              <option value="35-39">35-39</option>
+              <option value="40-49">40-49</option>
+              <option value="50+">50+</option>
+            </select>
+          </label>
+          <label class="auth-field">
+            <span>Gender <small>(optional)</small></span>
+            <select id="clientGender">
+              <option value="">Prefer not to say</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+              <option value="non-binary">Non-Binary</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+        </fieldset>
 
         <label class="auth-field" id="clientIdField" hidden>
           <span>TEMPTX client ID</span>
@@ -165,6 +205,6 @@
     </section>
   </div>
 
-  <script src="auth.js?v=20260819-01"></script>
+  <script src="auth.js?v=20261122-01"></script>
 </body>
 </html>

@@ -377,3 +377,63 @@ body.auth-v2 .tx-next-hint strong {
     border-bottom: 1px solid var(--line);
   }
 }
+
+/* ── Client signup: private details block + client ID card ── */
+.client-signup-details {
+  display: grid;
+  gap: 13px;
+  margin: 0;
+  padding: 16px 0 4px;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+.client-signup-details[hidden] {
+  display: none;
+}
+
+.client-signup-details legend {
+  padding: 0 0 6px;
+  color: var(--cream);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.auth-field small {
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.client-id-card {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  margin: 16px 0 0;
+  padding: 18px 16px;
+  text-align: center;
+  border: 1px solid rgba(var(--gold-rgb), 0.55);
+  background: rgba(var(--wine-rgb), 0.35);
+}
+
+.client-id-card .eyebrow {
+  margin: 0;
+}
+
+.client-id-value {
+  margin: 0;
+  color: var(--cream);
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  letter-spacing: 0.08em;
+  user-select: all;
+}
+
+.client-id-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}

@@ -130,7 +130,10 @@ if (dashboardContent) {
     const titleWrap = document.createElement("div");
     const title = document.createElement("p");
     title.className = "booking-card-title";
-    title.textContent = `${booking.clientLabel || "Client"} · ${booking.service?.name || "Session"} · ${formatDateTime(booking.scheduledFor)}`;
+    const clientName = booking.clientAge
+      ? `${booking.clientLabel || "Client"} (age ${booking.clientAge})`
+      : booking.clientLabel || "Client";
+    title.textContent = `${clientName} · ${booking.service?.name || "Session"} · ${formatDateTime(booking.scheduledFor)}`;
     titleWrap.appendChild(title);
 
     const meta = document.createElement("p");
@@ -226,7 +229,9 @@ if (dashboardContent) {
 
     const nameLine = document.createElement("p");
     nameLine.className = "booking-card-title";
-    nameLine.textContent = client.clientLabel || client.clientId;
+    nameLine.textContent = client.clientAge
+      ? `${client.clientLabel || client.clientId} (age ${client.clientAge})`
+      : client.clientLabel || client.clientId;
     top.appendChild(nameLine);
 
     if (fullCrmAccess && client.tags?.length) {
